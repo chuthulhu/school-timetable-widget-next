@@ -1,0 +1,30 @@
+# Feature Map
+
+새 제품의 간단한 tracking 문서다. [Product Contract v0.1](PRODUCT-CONTRACT.md)이 authoritative 계약이며,
+아래 상태는 구현 진행 상태다. `PLANNED`는 승인된 방향의 구현 전 상태이고,
+`DEFERRED`는 제공 범위나 상세 설계 결정을 남긴 상태다. 구현 또는 검증 완료를 뜻하지 않는다.
+PLANNED 기능에도 계약에 명시된 DEFERRED 상세는 그대로 남아 있다.
+
+| Feature | 상태 | Product Contract ID / section | 관련 ADR / 남은 상세 |
+| --- | --- | --- | --- |
+| Timetable | PLANNED | A2, M1, I6–I7, R1–R3 | [0001](adr/0001-golden-reference-policy.md); 독립 35셀, plain text 보존 |
+| Period / Current Status | PLANNED | M3–M4, P4, R4–R7, I9, I16 | [0004](adr/0004-application-time-source.md); validation/갱신 상세 DEFERRED |
+| Current Status Header | PLANNED | A4, I15–I16; Current Status Header | [0004](adr/0004-application-time-source.md); countdown formatting/layout 상세 DEFERRED |
+| Application Clock / KRISS | PLANNED | A5, I16–I20 | [0004](adr/0004-application-time-source.md); endpoint/client/보정/주입 상세 DEFERRED |
+| Timetable Editing | PLANNED | M1–M2, A2, R16, I3, I6–I7 | [0001](adr/0001-golden-reference-policy.md); 무손실 편집과 Save 실패 경계 |
+| Period Editing | PLANNED | M2–M3, P4, R6, R16 | [0004](adr/0004-application-time-source.md); time validation 상세 DEFERRED |
+| Settings | PLANNED | P2–P3, M5, R8–R14, I2, I10, I13–I14 | [0003](adr/0003-settings-transaction.md); overflow/Reset UI 상세 DEFERRED |
+| Persistence | PLANNED | R15–R21, I1, I3–I4; Data Safety Principles | [0003](adr/0003-settings-transaction.md); technology/schema/durability DEFERRED |
+| Legacy Migration | PLANNED | P8, C1–C6, I4–I5; Migration Contract | [0001](adr/0001-golden-reference-policy.md); provenance/concurrency 상세 DEFERRED |
+| Backup / Restore | PLANNED | P9, C6, R17–R21, I4 | [0003](adr/0003-settings-transaction.md); format/manifest/recovery 상세 DEFERRED |
+| File Sharing | PLANNED | A3, P10, C3, C7; Sharing Scope | [0001](adr/0001-golden-reference-policy.md); 새 format 및 Legacy envelope 지원 상세 DEFERRED |
+| Window / DPI / Multi-monitor | PLANNED | P3, P6, M6, I8–I9, I14 | [0002](adr/0002-windows-desktop-stack.md); close/z-order/monitor 제거/overflow DEFERRED |
+| Tray | PLANNED | P6; Window / Tray Contract | [0002](adr/0002-windows-desktop-stack.md); Windows adapter 검증 필요 |
+| Single Instance | PLANNED | P6, R23 | [0002](adr/0002-windows-desktop-stack.md); 사용자/profile당 writer 하나 |
+| Autostart | PLANNED | A1, P7, C1, I11 | [0002](adr/0002-windows-desktop-stack.md); OS registration 상세 DEFERRED |
+| Notifications | PLANNED | P5, C5, R24, I11, I16 | [0002](adr/0002-windows-desktop-stack.md), [0004](adr/0004-application-time-source.md); delivery/빈 수업 판정 상세 DEFERRED |
+| Installer | DEFERRED | A1, P1; Installation / Lifecycle | [0002](adr/0002-windows-desktop-stack.md); 설치형 방향 승인, technology/배포 상세 DEFERRED |
+| Updater | DEFERRED | R22; Installation / Lifecycle | [0002](adr/0002-windows-desktop-stack.md); 제공 범위/library/정책/서명·rollback DEFERRED |
+
+이 파일은 Legacy evidence 문서의 복사본이 아니다. 과거 기능의 증거가 필요하면
+[Legacy Reference](LEGACY-REFERENCE.md)의 고정 commit 문서를 읽는다.

@@ -1,0 +1,32 @@
+# School Timetable Widget Next
+
+Modern Windows rewrite of School Timetable Widget.
+
+## Status
+
+- Product Contract v0.1 approved
+- Repository bootstrap
+- Production implementation not started
+
+기술 baseline은 **WPF + .NET 10 LTS + CommunityToolkit.Mvvm**이다.
+현재는 승인된 계약과 ADR을 정리한 documentation bootstrap 단계다.
+
+## Product direction
+
+- 월~금 × 7교시 독립 35셀 시간표와 안전한 편집.
+- Current Status Header에 `HH:mm:ss`와 학교 시간 상태를 함께 표시.
+- KRISS 대한민국 표준시(KST) 우선 Application Clock, PC local time으로 즉시 시작 및 동기화 불가 시 fallback.
+- DPI/multi-monitor에서 안정적인 크기·위치 유지.
+- 안전한 persistence와 원본을 보존하는 Legacy migration.
+- Tray, 선택적 autostart, 전체 profile backup/restore, PC 간 파일 공유.
+
+QR, 초기 셀 병합, Legacy Python architecture reuse는 현재 제품 범위에서 제외한다.
+
+## Documents
+
+- [Product Contract v0.1](docs/PRODUCT-CONTRACT.md): authoritative 제품 계약.
+- [Accepted ADRs](docs/adr/0001-golden-reference-policy.md): [Windows stack](docs/adr/0002-windows-desktop-stack.md), [Settings transaction](docs/adr/0003-settings-transaction.md), [Application time source](docs/adr/0004-application-time-source.md).
+- [Legacy Reference](docs/LEGACY-REFERENCE.md): 고정된 Golden Reference와 증거 사용 범위.
+- [Architecture](docs/ARCHITECTURE.md): 확정된 baseline, 구조 방향과 유보 결정.
+- [Feature Map](docs/FEATURE-MAP.md): 기능별 계획 상태.
+- [Agent rules](AGENTS.md): 장기 작업 규칙.
