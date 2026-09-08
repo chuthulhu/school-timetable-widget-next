@@ -5,11 +5,15 @@ Modern Windows rewrite of School Timetable Widget.
 ## Status
 
 - Product Contract v0.1 approved
-- Repository bootstrap
-- Production implementation not started
+- Phase 0 solution skeleton + development bootstrap
+- Product feature implementation not started
 
 기술 baseline은 **WPF + .NET 10 LTS + CommunityToolkit.Mvvm**이다.
-현재는 승인된 계약과 ADR을 정리한 documentation bootstrap 단계다.
+현재는 Desktop/Core/Tests 3개 project와 CLI 개발 bootstrap을 구성한 Phase 0 단계다.
+
+## Development
+
+[Development Setup](docs/DEVELOPMENT.md): 신규 PC bootstrap, 환경 점검과 CLI build/test.
 
 ## Product direction
 

@@ -88,7 +88,7 @@ A1–A5, P1–P10 및 연결된 MATCH/COMPATIBLE/REDESIGN의 제품 수준 계�
 
 | ID | Status | 승인된 제품 결정 | 상세 / 유보 경계 |
 | --- | --- | --- | --- |
-| P1 | APPROVED | WPF + .NET 10 LTS + CommunityToolkit.Mvvm | WinUI 3 비교 및 위험은 [ADR 0002](adr/0002-windows-desktop-stack.md); 구조·installer·updater 미확정 |
+| P1 | APPROVED | WPF + .NET 10 LTS + CommunityToolkit.Mvvm | WinUI 3 비교 및 위험은 [ADR 0002](adr/0002-windows-desktop-stack.md); Phase 0 구조는 [ADR 0005](adr/0005-phase-zero-project-structure.md), installer·updater DEFERRED |
 | P2 | APPROVED | Committed → Draft → Live Preview, 성공 Apply마다 baseline 갱신 | Theme/Reset도 동일 규칙; [ADR 0003](adr/0003-settings-transaction.md) |
 | P3 | APPROVED | preferred size와 applied size 구분, Preview에서도 content minimum 재측정 | actual < minimum 금지; 화면보다 큰 minimum의 overflow UX는 DEFERRED |
 | P4 | APPROVED | current-period 구간 `[start, end)` | 시작 포함·종료 제외; legacy exact-end inclusive를 의도적으로 변경 |
@@ -387,15 +387,17 @@ OS 실패 시 preference 재조정/보상 순서의 기술 상세는 해당 adap
 정상 Exit는 pending 사용자 저장을 처리하고 소유 자원을 정리한다. 저장 실패를 숨긴 채 종료 성공으로
 표시하지 않는다. 강제 종료/전원 손실의 내구성은 별도 검증하며 legacy aggressive process killer를 가져오지 않는다.
 
-## Candidate Architecture
+## Architecture
 
 **APPROVED — P1:** WPF + .NET 10 LTS + CommunityToolkit.Mvvm.
-**DEFERRED — candidate architecture:** feature-oriented 구성, Windows adapter isolation, persistence boundary,
-거대한 AppState/MainWindowViewModel 방지, Shared/Utils에 책임을 몰아넣지 않는 구체적 구조.
+**APPROVED — Phase 0 B안:** Desktop/Core/Tests 3 projects, Desktop → Core와 Tests → Core.
+Core는 WPF/Toolkit/Desktop에 독립적이며 Toolkit은 Desktop만 참조한다.
+Feature-oriented 구성은 project 내부 폴더/namespace로 표현하고 Windows adapter를 Desktop 경계에 둔다.
+거대한 AppState/MainWindowViewModel 및 Shared/Utils dumping ground를 금지한다.
 A5의 공통 application clock 사용은 APPROVED invariant이며 type/배치/주입 방식만 DEFERRED다.
-정확한 모듈·폴더·type·schema 및 P1에서 선택한 것 외의 library 선택은 DEFERRED다.
-이 문서나 Legacy Feature Map의 경로 예시만으로 구조를 확정하지 않는다. 실제 project/assembly/folder layout은
-Phase 0에서 결정하며 현재 방향은 [Architecture](ARCHITECTURE.md)에 정리한다.
+세부 모듈·폴더·type·schema 및 DI/installer/updater 선택은 DEFERRED다.
+확정 project 구조와 남은 결정은 [Architecture](ARCHITECTURE.md),
+[ADR 0005](adr/0005-phase-zero-project-structure.md)에 정리한다. Legacy Feature Map의 예시만으로 구조를 확정하지 않는다.
 
 ## Product-Level Invariants
 
@@ -449,9 +451,9 @@ I15–I20은 A4/A5의 새 APPROVED invariant다. 구현 acceptance 기준이며 
 | P1–P10 미승인 blocker | 0 — 모두 APPROVED |
 | Golden Reference remaining MUST | 0 — COMPLETE AS GOLDEN REFERENCE |
 | Product-level approval blocker | 0 — A1–A5 및 연결된 계약 확정 |
-| 저장소 상태 | Documentation bootstrap; production implementation not started |
+| 저장소 상태 | Phase 0 solution skeleton + dev bootstrap; 제품 기능 구현 전 |
 | 남은 결정 | DEFERRED implementation decisions; 해당 기능 구현 전 ADR/spike/UX 검토 |
 
 이 baseline은 release-ready나 모든 구현 상세 확정을 뜻하지 않는다.
 QR compatibility 또는 legacy bug 수리를 새 blocker로 추가하지 않는다.
-후속 Phase 0에서 실제 구조와 관련 DEFERRED 결정을 검토한다.
+Phase 0 이후에도 해당 기능 구현 전에 관련 DEFERRED 결정을 검토한다.

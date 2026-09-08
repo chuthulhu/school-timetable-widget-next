@@ -5,7 +5,7 @@ Status: **Accepted**
 Date: 2026-09-08
 
 Decision status: **APPROVED — P1, 2026-09-08 사용자 명시적 승인**.
-`school-timetable-widget-next`의 Accepted stack 결정이다. 구체적 project 구조는 DEFERRED다.
+`school-timetable-widget-next`의 Accepted stack 결정이다. 당시 유보한 project 구조는 후속 [ADR 0005](0005-phase-zero-project-structure.md)에서 Phase 0 B안으로 확정했다.
 
 ## Context
 
@@ -49,7 +49,7 @@ MVVM의 binding/command와 명확한 기능 경계가 AI-assisted maintenance �
 Candidate architecture는 feature-oriented/MVVM, Windows adapter isolation, persistence boundary다.
 거대한 AppState/MainWindowViewModel 및 Shared/Utils에 책임을 모으는 구성을 피하는 방향을 고려한다.
 이 candidate의 구체적 구조는 stack 승인으로 확정되지 않는다.
-Repo structure, module/type 배치 자체는 DEFERRED다.
+Project 분할/의존 방향은 후속 ADR 0005를 따르며 세부 module/type 배치는 DEFERRED다.
 
 ## Risks
 
@@ -80,6 +80,6 @@ Framework/library servicing과 Windows 지원 범위도 구현/배포 시점에 
 P1 승인에 따라 WPF stack을 새 repository bootstrap의 기준으로 사용한다.
 제품 수준 미승인 blocker는 0이며, 구현 상세와 native 검증은 남아 있다.
 Prototype이 주요 요구를 충족하지 못하면 WPF/WinUI 3 비교를 재검토한다.
-실제 project/assembly/folder layout은 Phase 0에서 결정하며 Python 구조를 복사하지 않는다.
+Phase 0 project/assembly 구조는 ADR 0005를 따르며 Python 구조를 복사하지 않는다.
 **DEFERRED:** persistence format, installer technology(MSIX/MSI/WiX/Squirrel 등), updater library.
 이 ADR은 이들 기술을 선택하지 않는다.

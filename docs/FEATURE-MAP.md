@@ -7,6 +7,7 @@ PLANNED 기능에도 계약에 명시된 DEFERRED 상세는 그대로 남아 있
 
 | Feature | 상태 | Product Contract ID / section | 관련 ADR / 남은 상세 |
 | --- | --- | --- | --- |
+| Repository / Skeleton | IMPLEMENTED — Phase 0 skeleton + dev bootstrap | Architecture / Development Setup | [0005](adr/0005-phase-zero-project-structure.md); 3 projects, CLI runner 구성. 제품 기능/native 검증 완료를 뜻하지 않음 |
 | Timetable | PLANNED | A2, M1, I6–I7, R1–R3 | [0001](adr/0001-golden-reference-policy.md); 독립 35셀, plain text 보존 |
 | Period / Current Status | PLANNED | M3–M4, P4, R4–R7, I9, I16 | [0004](adr/0004-application-time-source.md); validation/갱신 상세 DEFERRED |
 | Current Status Header | PLANNED | A4, I15–I16; Current Status Header | [0004](adr/0004-application-time-source.md); countdown formatting/layout 상세 DEFERRED |
