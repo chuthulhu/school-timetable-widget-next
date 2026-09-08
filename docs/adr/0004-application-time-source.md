@@ -85,3 +85,18 @@ Offline에서도 PC 시각으로 사용할 수 있으며 앱 내부 시간 처�
 - Sync 상세 표시 위치와 countdown formatting.
 
 설치 기술, updater library, persistence format은 이 ADR이 결정하지 않는다.
+
+## Phase 0.2 implementation record — 2026-09-08
+
+위 Accepted 제품 결정은 유지한다. 당시 유보한 type/모듈/기본 주입 경계 중 다음을 구현했다:
+
+- Core: `Time/IApplicationClock`, `ApplicationTimeSnapshot`, `ApplicationTimeSource`.
+  Immutable snapshot 하나에 DateTimeOffset, source, reference revision을 담아 전달한다.
+- Desktop: `Infrastructure/Time/PcFallbackApplicationClock`에서 PC local time을 읽는다.
+  `App`이 instance 하나를 소유하고 향후 소비자 constructor에 전달하는 composition 경계를 둔다.
+- Tests: 내부 fake clock으로 고정 시각과 reference 교체를 주입한다. Production fake 또는 DI container는 없다.
+
+필드/offset/revision의 정확한 의미와 직접 system clock read 예외는
+[Architecture의 Phase 0.2](../ARCHITECTURE.md#phase-02-application-clock-foundation)를 따른다.
+기본 contract injection만 확정했다. KRISS/NTP 네트워크, sync reference의 동시 전환,
+monotonic 진행 및 실패/suspend 주입과 처리는 여전히 DEFERRED이며 이번 구현 범위에 포함하지 않는다.

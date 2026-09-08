@@ -4,6 +4,7 @@
 아래 상태는 구현 진행 상태다. `PLANNED`는 승인된 방향의 구현 전 상태이고,
 `DEFERRED`는 제공 범위나 상세 설계 결정을 남긴 상태다. 구현 또는 검증 완료를 뜻하지 않는다.
 PLANNED 기능에도 계약에 명시된 DEFERRED 상세는 그대로 남아 있다.
+`PARTIAL`은 명시된 기반만 구현했으며 전체 기능 완료가 아닌 상태다.
 
 | Feature | 상태 | Product Contract ID / section | 관련 ADR / 남은 상세 |
 | --- | --- | --- | --- |
@@ -11,7 +12,7 @@ PLANNED 기능에도 계약에 명시된 DEFERRED 상세는 그대로 남아 있
 | Timetable | PLANNED | A2, M1, I6–I7, R1–R3 | [0001](adr/0001-golden-reference-policy.md); 독립 35셀, plain text 보존 |
 | Period / Current Status | PLANNED | M3–M4, P4, R4–R7, I9, I16 | [0004](adr/0004-application-time-source.md); validation/갱신 상세 DEFERRED |
 | Current Status Header | PLANNED | A4, I15–I16; Current Status Header | [0004](adr/0004-application-time-source.md); countdown formatting/layout 상세 DEFERRED |
-| Application Clock / KRISS | PLANNED | A5, I16–I20 | [0004](adr/0004-application-time-source.md); endpoint/client/보정/주입 상세 DEFERRED |
+| Application Clock / KRISS | PARTIAL — Phase 0.2 foundation | A5, I16–I20 | [0004](adr/0004-application-time-source.md); Core snapshot/interface, Desktop PC fallback, App 소유 경계, Tests fake/contract tests 구현. KRISS 동기화는 미구현; endpoint/client/보정/동시 전환 DEFERRED |
 | Timetable Editing | PLANNED | M1–M2, A2, R16, I3, I6–I7 | [0001](adr/0001-golden-reference-policy.md); 무손실 편집과 Save 실패 경계 |
 | Period Editing | PLANNED | M2–M3, P4, R6, R16 | [0004](adr/0004-application-time-source.md); time validation 상세 DEFERRED |
 | Settings | PLANNED | P2–P3, M5, R8–R14, I2, I10, I13–I14 | [0003](adr/0003-settings-transaction.md); overflow/Reset UI 상세 DEFERRED |

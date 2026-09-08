@@ -146,10 +146,14 @@ SDK 10.0.400의 기본 `dotnet new xunit`은 xUnit v2 2.9.3을 생성했다.
 [Toolkit 버전](https://www.nuget.org/packages/CommunityToolkit.Mvvm/8.4.2)은 2026-09-08 확인했다.
 
 `dotnet test`는 VSTest와 xUnit adapter를 사용한다. 공식 `mtp-off` package로 MTP 통합을 제외했다. 기본 `xunit.v3` package의 MTP 2 통합은 .NET 10에서 VSTest 경로를 거부하므로 두 runner를 섞지 않는다. [공식 선택 안내](https://xunit.net/docs/getting-started/v3/microsoft-testing-platform#choosing-the-microsoft-testing-platform-version).
-Template의 Class1/UnitTest1과 coverage collector를 제거했다. Core production behavior가 없으므로
-Phase 0에는 제품 테스트가 0개이며 no-tests 진단이 예상된다. 빈 테스트 실행을 제품 계약 검증으로 해석하지 않는다.
-이 단계의 검증 대상은 restore, Debug build와 runner/discovery 정상 실행이다.
-실질 Product Contract 테스트는 다음 기능 단계에서 작성한다.
+Template의 Class1/UnitTest1과 coverage collector를 제거했다. 최초 Phase 0 skeleton에서는 제품 테스트가
+0개였으며 아래 Phase 0 검증 표는 그 당시 기록이다. Phase 0.2에는
+`Time/ApplicationClockContractTests.cs`와 Tests 내부 `Time/FakeApplicationClock.cs`를 추가했다.
+고정 DateTimeOffset과 fake 교체로 시각/offset 보존, reference identity, 자정 및 source 전환 전후
+snapshot 전달을 검증한다. 실제 system clock 변경, native UI/input 또는 네트워크를 사용하지 않는다.
+Tests는 Core만 참조하므로 Desktop adapter와 WPF startup의 실제 실행 검증은 포함하지 않는다.
+직접 system time 읽기는 Desktop의 `Infrastructure/Time/PcFallbackApplicationClock.cs`만 허용한다.
+Core snapshot 필드와 composition/source/revision 의미는 [Architecture](ARCHITECTURE.md#phase-02-application-clock-foundation)를 따른다.
 
 ## Developer bootstrap vs. end-user installation
 
@@ -193,3 +197,28 @@ WPF 부재, restore/build/test 단계별 실패를 검증한다. 다음 단계 �
 Windows PowerShell 5.1의 기본 execution policy는 script 실행을 막아 검증 자식 프로세스에만
 `-ExecutionPolicy Bypass`를 사용했다. 시스템/사용자 policy, PATH, 네트워크 설정은 변경하지 않았다.
 실제 SDK 설치, native WPF UI/input/IME/DPI, 제품 기능 및 Release build는 이 단계에서 검증하지 않았다.
+
+## Phase 0.2 verification — 2026-09-08
+
+| 검사 | 실행 결과 / 증거 범위 |
+| --- | --- |
+| Environment | Windows PowerShell의 `check-dev-env.ps1` exit 0. x64 SDK 10.0.400, WPF template 및 세 project 확인 |
+| Restore | `dotnet restore` exit 0; 모든 프로젝트 최신 상태 |
+| Debug build | `dotnet build --no-restore` exit 0; warning 0 / error 0 |
+| Contract tests | `dotnet test --no-build --logger "console;verbosity=normal"` exit 0; 13 passed, 0 failed, 0 skipped |
+| Snapshot facts | PC offset +09:00/00:00/-07:00과 subsecond ticks 보존 3 cases; UTC 날짜와 다른 KST 날짜/시각/source/revision 1 case |
+| Reference identity | 같은 instant의 fallback→sync, sync→새 sync reference, sync→fallback 구분 3 cases; 시간 진행과 revision 유지 1 case |
+| Consistent calculation | 자정 및 자정과 source 전환에서 한 번 캡처한 snapshot을 관련 계산에 전달 2 cases. 테스트용 소비자이며 실제 current-period 기능은 없음 |
+| Invalid snapshot | 알 수 없는 source, 음수 revision, synchronized source의 비-KST offset 거부 3 cases |
+| Architecture | Project reference는 Desktop→Core, Tests→Core만 존재. Core MSBuild 평가에서 project/package reference 없음, framework는 Microsoft.NETCore.App만 존재. Core source의 WPF/Toolkit/Desktop 참조 없음 |
+| Direct system reads | bin/obj 제외 production .cs에서 DateTime.Now, DateTimeOffset.Now, DateTime.UtcNow, DateTimeOffset.UtcNow 검색. PcFallbackApplicationClock.cs의 DateTimeOffset.Now 1건만 존재 |
+
+최종 source review에서 clock의 책임을 시간 사실과 reference identity로 제한했음을 확인했다.
+Snapshot은 get-only이고 날짜/시각은 같은 DateTimeOffset에서 파생한다. Production fake, 미래 NTP client
+abstraction, formatting/rounding 또는 학교 상태 계산을 추가하지 않았다.
+PC fallback의 비-KST offset은 그대로 보존하며 추가 timezone 정책은 도입하지 않았다.
+이번 범위의 제품 의미 확인 blocker는 없다. 실제 sync correction/concurrency/resume 정책은 후속 spike 범위다.
+
+WPF 창을 실행하거나 활성화하지 않았고 native input, system clock mutation, KRISS/NTP 통신은 수행하지 않았다.
+Desktop adapter/composition은 build와 source inspection으로 확인했다. Contract tests는 Core와 fake 증거이며
+실제 OS adapter 실행, native startup 또는 동시 sync 전환 검증으로 해석하지 않는다.
