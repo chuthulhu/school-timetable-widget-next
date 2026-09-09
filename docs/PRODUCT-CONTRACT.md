@@ -6,6 +6,7 @@
 이 문서는 `school-timetable-widget-next`의 authoritative Product Contract v0.1이다.
 사용자가 P1–P10을 승인하고 A4/A5를 추가 승인하여 제품 계약 baseline을 확정했다.
 2026-09-09 사용자가 A6 Current Status State Model을 추가 승인했다.
+2026-09-09 사용자가 A7 Countdown Display Semantics를 추가 승인했다.
 승인된 planning handoff에서 이관했으며 제품 결정의 의미는 유지한다.
 DEFERRED 구현 상세는 남아 있으며 모든 설계 완료, release-ready 또는 모든 상세의
 implementation-ready를 뜻하지 않는다.
@@ -71,7 +72,7 @@ Windows 바탕화면에서 주간 시간표와 현재 수업을 빠르게 확인
 | LEGACY EVIDENCE | 과거 동작의 근거이며 새 제품 요구가 아님 |
 
 **MATCH / COMPATIBLE / REDESIGN은 이식 분류이며 승인 상태가 아니다.**
-A1–A6, P1–P10 및 연결된 MATCH/COMPATIBLE/REDESIGN의 제품 수준 계약과 invariants는 APPROVED다.
+A1–A7, P1–P10 및 연결된 MATCH/COMPATIBLE/REDESIGN의 제품 수준 계약과 invariants는 APPROVED다.
 명시적 DEFERRED 항목은 구현 단계에서 결정하며 승인 상태를 전파하지 않는다.
 이 baseline의 승인 근거는 사용자 승인 결과다. 기존 RECOMMENDED, updater/build B 판정이나 테스트 존재만으로 승인한 것이 아니다.
 
@@ -82,9 +83,10 @@ A1–A6, P1–P10 및 연결된 MATCH/COMPATIBLE/REDESIGN의 제품 수준 계�
 | A1 | APPROVED | 일반 사용자 단위 설치형 기본 배포, Windows 시작 시 실행 옵션, 정상 uninstall, Portable 초기 필수 아님 | installer technology와 updater library는 DEFERRED; autostart 기본 OFF는 P7 |
 | A2 | APPROVED | 월~금 × 7교시 독립 35 cells, 초기 셀 병합 없음. 반복 문자열에서 병합 의도 추론 금지. import는 문자열 보존 | 향후 병합 요구가 생기면 새 metadata 기능으로 별도 검토 |
 | A3 | APPROVED | QR 기능 제외. 공유는 PC ↔ PC 파일 기반을 기본으로 함 | timetable/time 선택 공유 상세는 P10, 파일 format은 DEFERRED |
-| A4 | APPROVED | Current Status Header: 요일 헤더 위의 독립된 고정 높이 영역에 현재 시각 `HH:mm:ss`(24시간제)와 학교 시간 상태를 항상 함께 표시 | countdown formatting, font/layout 구현, Upcoming 보조 강조는 DEFERRED |
+| A4 | APPROVED | Current Status Header: 요일 헤더 위의 독립된 고정 높이 영역에 현재 시각 `HH:mm:ss`(24시간제)와 학교 시간 상태를 항상 함께 표시 | countdown 의미는 A7; presentation formatting/localization, font/layout 구현, Upcoming 보조 강조는 DEFERRED |
 | A5 | APPROVED | Application Clock / Standard Time Source: 공통 앱 시간원, KRISS 대한민국 표준시(KST) 우선, PC local time으로 즉시 시작 및 동기화 불가 시 fallback, Windows system clock 변경 금지 | endpoint/NTP/timeout/retry/resync/correction/monotonic 구현 및 test injection은 DEFERRED; [ADR 0004](adr/0004-application-time-source.md) |
-| A6 | APPROVED | Current Status State Model: BeforeFirstPeriod, InPeriod, Break, AfterLastPeriod, Weekend의 정확히 5상태와 아래 current/next/transition 사실 계약 | Core는 display string을 제공하지 않음; countdown 계산/formatting 및 UI는 별도 단계 |
+| A6 | APPROVED | Current Status State Model: BeforeFirstPeriod, InPeriod, Break, AfterLastPeriod, Weekend의 정확히 5상태와 아래 current/next/transition 사실 계약 | 상태 사실과 A7 countdown 계산은 별도 책임; Core는 display string을 제공하지 않으며 UI는 별도 단계 |
+| A7 | APPROVED | Countdown Display Semantics: 초를 표시하지 않고 전체 남은 분을 floor; 양수 1분 미만은 LessThanMinute, 1시간 이상은 hours/minutes로 정규화, 0분 표시 없이 exact transition에 새 상태 사용 | 아래 의미 계약만 확정; 한국어 문자열 생성/localization 및 Header UI는 presentation 책임으로 미구현 |
 
 ## Approved Decisions — P1–P10
 
@@ -104,7 +106,7 @@ A1–A6, P1–P10 및 연결된 MATCH/COMPATIBLE/REDESIGN의 제품 수준 계�
 ## MATCH Product Contracts
 
 아래는 Golden Reference의 정상 사용자 의미를 추출한 APPROVED 제품 계약이다.
-A4 Status Header, A5 Application Clock 및 A6 Current Status State Model은 새 제품 결정이며 legacy MATCH 증거로 분류하지 않는다.
+A4 Status Header, A5 Application Clock, A6 Current Status State Model 및 A7 Countdown Display Semantics는 새 제품 결정이며 legacy MATCH 증거로 분류하지 않는다.
 각 성공 조건은 persistence 성공을 전제로 하며 실패를 성공처럼 처리하는 legacy quirk는 제외한다.
 
 | ID | 영역 | 새 제품에서 유지할 사용자 의미 | Reference / 관련 결정 |
@@ -148,8 +150,8 @@ UI 갱신 지연 허용치와 clock/resume 처리 세부는 DEFERRED다.
 | Weekend | 토요일/일요일 | null | null | null |
 
 TransitionTime은 현재 상태가 다음 상태로 바뀌는 예정 local school time이며 날짜가 없다.
-이는 countdown duration이 아니다. Core는 display/localized string, countdown 계산·formatting,
-반올림/버림, 색상, WPF type 또는 notification 정보를 제공하지 않는다.
+이는 countdown duration이 아니다. 상태 결과/Resolver는 countdown 계산·정규화를 하지 않으며
+별도 A7 계산기가 담당한다. Core는 display/localized string, 색상, WPF type 또는 notification 정보를 제공하지 않는다.
 점심시간을 별도 상태로 만들거나 gap 길이로 추론하지 않는다. 기본 profile의 13:00은
 Break, Next=5, TransitionTime=14:00이다. 공휴일/휴업일/특별일정 상태는 이번 범위에 추가하지 않는다.
 
@@ -165,6 +167,52 @@ Clock을 다시 읽거나 source/revision/offset 자체로 분기하지 않는�
 schedule 기준으로 계산한다. 이 계산 API의 허용이 persisted profile의 유효성 승인을 뜻하지 않는다.
 Editor/import의 전체 1–7교시 존재 여부 등 완전성 정책은 별도 validation 단계다.
 기존 CurrentPeriodResolver의 빈 입력 → null 계약은 유지한다.
+
+## Countdown Display Semantics
+
+**APPROVED — A7 (2026-09-09 사용자 명시적 승인).** Current Status Header의 현재 시각은
+별도로 `HH:mm:ss` 24시간제로 표시하며 countdown에는 초를 직접 표시하지 않는다.
+
+- 정확한 양수 duration이 1분 이상이면 전체 남은 분을 floor(내림)한다.
+  `wholeMinutes = remainingTicks / TimeSpan.TicksPerMinute`의 정수 나눗셈을 사용한다.
+- `0 < duration < 1분`은 `LessThanMinute` 의미다. 표시 예는 "1분 미만"이다.
+- 전체 분을 `Hours = wholeMinutes / 60`, `Minutes = wholeMinutes % 60`으로 정규화한다.
+  1시간 이상은 H시간 M분 의미이며 remainder가 0이면 H시간 의미다.
+  예: 1시간 10분 → "1시간 10분", 2시간 00분 → "2시간".
+- "0분", "0시간 0분" 또는 상태 전환 중 잠깐 countdown 0을 표시하지 않는다.
+  정확한 transition 시각에는 동일 snapshot으로 구한 새 Current Status를 즉시 사용한다.
+
+| 상태 | TransitionTime / countdown 의미 |
+| --- | --- |
+| BeforeFirstPeriod | 첫 교시 Start까지 |
+| InPeriod | 현재 교시 End까지 |
+| Break | 다음 교시 Start까지; 긴 gap도 동일하며 별도 점심 정책 없음 |
+| AfterLastPeriod / Weekend | countdown 없음 (`null`) |
+
+Core는 작은 immutable semantic value만 제공한다. `LessThanMinute = true`이면 Hours/Minutes는 0/0,
+그 외에는 Hours >= 0, Minutes 0..59이며 Hours == 0이면 Minutes >= 1이다.
+잘못된 필드 조합의 public 생성·변경을 허용하지 않는다. Exact duration은 내부 tick 계산에만 쓰고
+결과에 보관하지 않는다. 한국어 예시 문자열, "종료까지"/"N교시까지", localization과 Header 문구 조합은
+향후 Desktop presentation 책임이며 Core 타입에 저장하거나 반환하지 않는다. Notification scheduling으로 확장하지 않는다.
+
+계산기는 caller가 상태 계산에 사용한 **동일한 ApplicationTimeSnapshot**을 받는다.
+Clock/schedule 재조회, resolver 재호출, source/revision/offset 분기를 하지 않는다.
+TransitionTime과 TimeOfDay는 같은 local school day이며 tick 차이를 직접 계산한다.
+자정 wrap-around를 지원하지 않으며 PeriodDefinition의 Start < End 계약을 유지한다.
+TransitionTime이 있는데 snapshot.TimeOfDay >= TransitionTime이면 잘못된 argument 조합이므로
+`ArgumentException` (`status`)으로 거부한다. 이는 stale/inconsistent input 오용 방어이며 정상 UX가 아니다.
+날짜·schedule provenance 전체를 검사하지 않으므로 동일 snapshot 전달은 caller 책임이다.
+
+| 기본 profile 시각 | 상태 | 표시 의미 예 |
+| --- | --- | --- |
+| 08:42:11 | BeforeFirstPeriod | 17분 |
+| 09:23:18 | InPeriod(1) | 26분 |
+| 09:49:59 및 09:49:59.9999999 | InPeriod(1) | 1분 미만 |
+| 09:50:00 | Break | 10분 |
+| 09:54:07 | Break | 5분 |
+| 12:50:00 | Break | 1시간 10분 |
+| 13:59:00 / 13:59:01 | Break | 1분 / 1분 미만 |
+| 16:50:00 | AfterLastPeriod | countdown 없음 |
 
 ## Current Status Header
 
@@ -182,7 +230,7 @@ Editor/import의 전체 1–7교시 존재 여부 등 완전성 정책은 별도
 | 마지막 수업 이후 | 16:58:26 | 오늘 수업 종료 | 강조 없음 |
 | 주말 | 11:24:03 | 오늘은 수업이 없습니다 | 강조 없음 |
 
-표는 기본 교시 profile의 UX 예다. 분 표시의 반올림/버림 규칙을 확정한 예가 아니다.
+표는 기본 교시 profile의 UX 예이며 countdown의 내림·정규화 의미는 A7을 따른다.
 수업 중 countdown은 현재 교시 종료까지, 수업 전/쉬는시간은 다음 교시 시작까지의 남은 시간을 뜻한다.
 P4 `[start,end)`에 따라 정확한 종료 시각에는 종료한 교시를 current로 강조하지 않는다.
 주말에는 시각상 수업 구간과 겹쳐도 주말 상태를 표시하며 current 강조가 없다.
@@ -196,9 +244,8 @@ Header update는 35셀 전체 layout 재측정을 매초 요구하지 않는다.
 Current highlight 변경도 layout measurement를 바꾸지 않는다.
 
 **DEFERRED:** 다음 교시 Upcoming 보조 highlight는 optional UX candidate이며 필수가 아니다.
-Current와 Upcoming을 혼동하지 않는다. 초 단위 countdown 표시 여부, 분 반올림/버림,
-`1분 미만`, 정확히 00분 및 transition 직전 문자열은 formatting policy에서 결정한다.
-현재 시각의 초 표시(`HH:mm:ss`)는 APPROVED이며 countdown 정밀도 유보와 구분한다.
+Current와 Upcoming을 혼동하지 않는다. Presentation formatting/localization 및 font/layout 구현은 남아 있다.
+현재 시각의 초 표시(`HH:mm:ss`)는 A4, countdown의 초 생략·내림·1분 미만·시간/분 의미는 A7 APPROVED다.
 
 ## Application Time Source
 
@@ -475,7 +522,7 @@ I15–I20은 A4/A5의 새 APPROVED invariant다. 구현 acceptance 기준이며 
 | P4/P5 | DEFERRED | time validation 세부, clock/resume 갱신 지연, 알림 빈 수업 판정 및 delivery adapter |
 | P9/P10 | DEFERRED | backup manifest/schema/checksum/naming, sharing format와 부분 적용 UX |
 | P10/C7 | DEFERRED | legacy sharing JSON envelope의 실제 지원 상세; raw timetable JSON과 구분 |
-| A4 | DEFERRED | countdown formatting(초/분, 반올림/버림, 1분 미만/00분/transition 표현), font/layout 구현, Upcoming optional 보조 강조 |
+| A4/A7 | DEFERRED | countdown presentation formatting/localization, font/layout 구현, Upcoming optional 보조 강조; 표시 의미는 A7 APPROVED |
 | A5 | DEFERRED | 공식 endpoint 재확인, NTP client, timeout/retry/resync, drift/correction/slew, offline cache, monotonic 구현, test injection, suspend/resume 처리 |
 | A5 | DEFERRED | Settings/tooltip/status detail 중 sync 상세 표시 위치 |
 
@@ -485,8 +532,8 @@ I15–I20은 A4/A5의 새 APPROVED invariant다. 구현 acceptance 기준이며 
 | --- | --- |
 | P1–P10 미승인 blocker | 0 — 모두 APPROVED |
 | Golden Reference remaining MUST | 0 — COMPLETE AS GOLDEN REFERENCE |
-| Product-level approval blocker | 0 — A1–A6 및 연결된 계약 확정 |
-| 저장소 상태 | Phase 0.4 Current Status Core foundation까지 구현; 전체 제품/UI 완료 아님 |
+| Product-level approval blocker | 0 — A1–A7 및 연결된 계약 확정 |
+| 저장소 상태 | Phase 0.5 countdown Core semantics까지 구현; 전체 제품/UI 완료 아님 |
 | 남은 결정 | DEFERRED implementation decisions; 해당 기능 구현 전 ADR/spike/UX 검토 |
 
 이 baseline은 release-ready나 모든 구현 상세 확정을 뜻하지 않는다.

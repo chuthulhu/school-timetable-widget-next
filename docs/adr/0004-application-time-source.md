@@ -100,3 +100,10 @@ Offline에서도 PC 시각으로 사용할 수 있으며 앱 내부 시간 처�
 [Architecture의 Phase 0.2](../ARCHITECTURE.md#phase-02-application-clock-foundation)를 따른다.
 기본 contract injection만 확정했다. KRISS/NTP 네트워크, sync reference의 동시 전환,
 monotonic 진행 및 실패/suspend 주입과 처리는 여전히 DEFERRED이며 이번 구현 범위에 포함하지 않는다.
+
+## Phase 0.5 countdown policy follow-up — 2026-09-09
+
+위에서 별도 formatting policy로 남겨 둔 countdown의 표시 의미는 사용자가 후속 승인한
+[Product Contract A7 — Countdown Display Semantics](../PRODUCT-CONTRACT.md#countdown-display-semantics)를 따른다.
+초 생략, 전체 남은 분 floor, 양수 1분 미만, hours/minutes 및 exact transition 의미는 더 이상 유보 사항이 아니다.
+문자열 조합/localization과 Header UI 구현은 남아 있다. Application Clock/KRISS 결정과 동기화 유보 범위는 유지한다.

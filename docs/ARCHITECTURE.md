@@ -1,6 +1,6 @@
 # Architecture
 
-현재는 Phase 0.4 Current Status Core foundation까지 구현했다. Break를 포함한 5상태 사실 계산을 제공하며, Current Status Header, countdown과 Highlight/UI 연결은 아직 구현하지 않았다.
+현재는 Phase 0.5 countdown Core semantics까지 구현했다. Break를 포함한 5상태 사실 계산과 countdown 표시 의미 정규화를 제공한다. Countdown presentation formatting/localization, Current Status Header ViewModel/XAML과 Highlight/UI 연결은 아직 구현하지 않았다.
 이 문서는 확정된 baseline과 설계 방향을 구분한다. 상세 계약은
 [Product Contract](PRODUCT-CONTRACT.md), 진행 상태는 [Feature Map](FEATURE-MAP.md)을 따른다.
 
@@ -8,6 +8,7 @@
 
 - WPF + .NET 10 LTS + CommunityToolkit.Mvvm, MVVM: P1 / [ADR 0002](adr/0002-windows-desktop-stack.md).
 - Current Status 5상태 사실 계약: A6 / Product Contract의 Current Status State Model.
+- Countdown 표시 의미: A7 / Product Contract의 Countdown Display Semantics.
 - 공통 Application Clock: A5, I16–I20 / [ADR 0004](adr/0004-application-time-source.md).
 - Settings의 Committed → Draft → Live Preview와 성공 Apply baseline: P2 / [ADR 0003](adr/0003-settings-transaction.md).
 - Golden Reference는 behavior/evidence source: [ADR 0001](adr/0001-golden-reference-policy.md). Python 구조는 재사용하지 않는다.
@@ -42,8 +43,8 @@ Tests   → Core
 | Project | 책임 / 현재 범위 |
 | --- | --- |
 | Desktop | View/ViewModel, Windows integration, infrastructure adapter. 현재 template MainWindow, App composition root와 PC fallback clock adapter가 있다. CommunityToolkit.Mvvm은 이 project에만 참조한다. |
-| Core | 순수 계산, 상태 전이, product contract logic, 시간 abstraction, persistence/migration contract의 소유 경계. 현재 Time/의 clock interface, immutable snapshot, source enum과 Features/Periods/의 교시 정의·기본 profile·current-period 계산, Features/CurrentStatus/의 5상태 계산이 있으며 WPF/Toolkit/Desktop 의존성이 없다. |
-| Tests | Core 중심 테스트의 진입점. xUnit v3로 Application Clock, current-period 및 Current Status contract tests를 실행한다. Fake clock과 snapshot helper는 Tests 내부에만 둔다. |
+| Core | 순수 계산, 상태 전이, product contract logic, 시간 abstraction, persistence/migration contract의 소유 경계. 현재 Time/의 clock interface, immutable snapshot, source enum과 Features/Periods/의 교시 정의·기본 profile·current-period 계산, Features/CurrentStatus/의 5상태 계산·countdown 의미 정규화가 있으며 WPF/Toolkit/Desktop 의존성이 없다. |
+| Tests | Core 중심 테스트의 진입점. xUnit v3로 Application Clock, current-period, Current Status 및 countdown contract tests를 실행한다. Fake clock과 snapshot helper는 Tests 내부에만 둔다. |
 
 Core → Desktop 의존은 금지한다. Feature별 assembly를 추가하지 않고 project 내부 폴더/namespace로
 책임을 나눈다. Feature/Platform/Infrastructure 상세 폴더는 실제 첫 코드가 필요할 때 생성한다.
@@ -94,7 +95,7 @@ Clock endpoint/client/보정 구현 등 feature별 유보 사항은 Product Cont
   offset/날짜/시각/source/revision 및 자정·source 전환 중 snapshot 전달 방식을 검증한다.
   이 clock 테스트가 실제 KRISS 동기화나 concurrent source switching을 구현·검증했다는 뜻은 아니다. Current-period 계산 검증은 아래 Phase 0.3에서 구분한다.
 
-Clock은 시간 사실만 제공한다. 교시 계산은 별도 Periods feature가 담당한다. UI formatting,
+Clock은 시간 사실만 제공한다. 교시 계산은 별도 Periods feature가 담당한다. Phase 0.2 당시 UI formatting,
 countdown rounding, notification, persistence, 네트워크 및 system clock mutation은 구현하지 않았다.
 이 foundation의 테스트용 수치를 제품 정책으로 확대하지 않는다.
 
@@ -171,7 +172,7 @@ countdown rounding, notification, persistence, 네트워크 및 system clock mut
   source/offset/revision 독립성, local/UTC 날짜 차이, 캡처 뒤 clock 전환, 두 resolver 일관성,
   빈/잘못된 schedule의 주말 이전 거부, 단일 열거와 Result invariant를 검증한다.
   기존 Clock/CurrentPeriod 테스트는 수정·삭제하지 않았다.
-- Core는 WPF/Toolkit/Desktop에 독립적이다. 사용자 문자열, countdown 계산/formatting, Header ViewModel/XAML,
+- Phase 0.4 당시 Core는 WPF/Toolkit/Desktop에 독립적이다. 사용자 문자열, countdown 계산/formatting, Header ViewModel/XAML,
   Highlight integration, notification, KRISS/NTP, persistence, editor는 추가하지 않았다.
 
 ### Phase 0.4 verification — 2026-09-09
@@ -194,3 +195,53 @@ countdown rounding, notification, persistence, 네트워크 및 system clock mut
 - 증거는 Core contract tests, build와 source inspection이다. WPF 창 실행·활성화, native input,
   clipboard 변경, system clock 변경 또는 KRISS/NTP 통신을 수행하지 않았다.
   Header/Highlight UI나 Desktop adapter의 실제 native 동작 검증으로 해석하지 않는다.
+
+## Phase 0.5 Countdown Core semantics
+
+- 구현 전에 A7 Countdown Display Semantics의 사용자 승인(2026-09-09)을 Product Contract에 기록했다.
+  A4 현재 시각 HH:mm:ss와 별도로 countdown 초 생략, 전체 남은 분 floor, LessThanMinute,
+  hours/minutes 정규화 및 0분 없는 exact transition 의미를 확정했다. 새로운 ADR은 필요하지 않으며
+  ADR 0004의 기존 formatting 유보에 후속 A7 결정 링크만 추가했다.
+- Core Features/CurrentStatus/에 CountdownDisplayValue와 CurrentStatusCountdownCalculator를 추가했다.
+  기존 CurrentStatusResult/Resolver, Periods, Time 및 Desktop production 코드는 변경하지 않았다.
+- CountdownDisplayValue는 sealed class, get-only LessThanMinute(bool), Hours(int), Minutes(int)만 제공한다.
+  Public constructor/factory/setter가 없고 internal constructor는 양수 remainingTicks만 받아 정규화한다.
+  LessThanMinute이면 Hours/Minutes = 0/0이다. 그 외 Hours >= 0, Minutes 0..59이며
+  Hours == 0이면 Minutes >= 1이다. Exact TimeSpan/ticks를 결과에 보관하지 않는다.
+- API는 CurrentStatusCountdownCalculator.Calculate(ApplicationTimeSnapshot snapshot, CurrentStatusResult status)
+  → CountdownDisplayValue?다. BeforeFirstPeriod/InPeriod/Break는 status의 TransitionTime까지 계산하고,
+  AfterLastPeriod/Weekend는 기존 결과 invariant(transition 없음)에 따라 null이다. 긴 gap도 Break다.
+- Caller는 resolver와 calculator에 같은 snapshot을 전달한다. Calculator는 clock 조회, schedule 재조회,
+  resolver 재호출, source/revision/offset 분기 및 UTC/KST 재변환을 하지 않는다.
+  모든 provenance를 검사하는 API는 아니며 날짜/schedule/snapshot 일치 보장은 caller 책임이다.
+- 같은 local school day의 transition.Ticks - snapshot.TimeOfDay.Ticks로 정확한 차이를 구한다.
+  TimeOnly의 wrap-around subtraction을 사용하지 않는다. Start < End 계약을 유지하며 자정을 넘는 교시는 지원하지 않는다.
+  차이가 0 이하이면 잘못된 argument 조합이므로 ArgumentException(nameof(status))으로 거부한다.
+  이는 정상 transition UX가 아니라 stale/inconsistent input 방어다. Null arguments는 ArgumentNullException이다.
+- 양수 ticks / TimeSpan.TicksPerMinute의 정수 나눗셈으로 floor한다. 0 wholeMinutes는 LessThanMinute,
+  그 외 wholeMinutes / 60 및 % 60이 Hours/Minutes다. 1분은 (0,1,false), 59.9999999초는 (0,0,true),
+  1시간 00분 59초는 (1,0,false), 1시간 1분은 (1,1,false), 2시간은 (2,0,false)다.
+- 향후 Desktop presentation이 status kind/current/next와 의미 값을 조합한다. Hours > 0 및 Minutes == 0은
+  시간만 표시하는 의미다. Core는 한국어/localized 문자열, 단위/접두 문구, formatter/localization framework를 제공하지 않는다.
+  Notification duration/scheduling, KRISS/NTP, persistence 또는 다른 기능 책임으로 확장하지 않았다.
+- Tests/CurrentStatus/CurrentStatusCountdownContractTests는 승인 예시, 1 tick/subsecond duration과 minute/hour 경계,
+  모든 기본 start/end 전후 resolver→calculator, 맞닿은 교시, AfterLast/Weekend null, source/revision/offset 독립성,
+  캡처 뒤 clock 변경, 세 countdown 상태의 stale exact/지난 transition 거부, null arguments와 public 생성/변경 차단을 검증한다.
+  하루 안의 각 minute 경계 양쪽에서 의미 값의 범위와 실제 남은 시간과의 floor 오차도 검사한다.
+  기존 98개 테스트를 담은 파일은 변경·삭제하지 않았다.
+
+### Phase 0.5 verification — 2026-09-09
+
+- SDK 10.0.401에서 dotnet restore, dotnet build --no-restore,
+  dotnet test --no-build --logger "console;verbosity=normal" 모두 exit 0.
+  Build warning 0 / error 0. 기존 98 + 신규 countdown 34 = 132 passed, failed/skipped 0.
+- Core MSBuild 평가: net10.0, UseWPF 없음, ProjectReference/PackageReference 없음,
+  FrameworkReference는 Microsoft.NETCore.App만 존재. WPF/Toolkit/Desktop/localization 의존을 추가하지 않았다.
+- bin/obj 제외 production .cs의 DateTime.Now / DateTimeOffset.Now / DateTime.UtcNow /
+  DateTimeOffset.UtcNow 검색은 PcFallbackApplicationClock의 DateTimeOffset.Now 1건뿐이다.
+  새 countdown Core의 직접 시간 읽기/clock 조회는 0건이다.
+- 자체 검토에서 positive sub-minute와 0분의 구분, floor, hour/remainder, exact transition의 새 상태,
+  AfterLast/Weekend null, stale input 예외, snapshot 재사용 및 Core/표시 책임 분리를 확인했다.
+- 검증 증거는 Core contract tests, build/MSBuild와 source inspection이다. WPF 창 실행·활성화, native input,
+  clipboard 변경, system clock 변경 및 KRISS/NTP 통신을 수행하지 않았다.
+  Countdown presentation formatting/localization, Status Header ViewModel/XAML, Highlight UI와 KRISS sync는 미구현이다.
