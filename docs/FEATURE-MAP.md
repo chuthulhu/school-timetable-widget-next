@@ -15,9 +15,10 @@ PLANNED 기능에도 계약에 명시된 DEFERRED 상세는 그대로 남아 있
 | Highlight integration | PLANNED | M4, R4–R5, I9, I16 | [0004](adr/0004-application-time-source.md); UI 연결·갱신 상세 DEFERRED |
 | Break status Core | IMPLEMENTED — FOUNDATION / Phase 0.4 | A6, P4; Current Status State Model | CurrentStatusResult의 Break, NextPeriodNumber, TransitionTime으로 구현; 긴 gap도 Break |
 | Countdown Core foundation | IMPLEMENTED — FOUNDATION / Phase 0.5 | A7, A5, P4, I16; Countdown Display Semantics | 동일 snapshot/status의 tick 차이, floor·LessThanMinute·hours/minutes 의미 값, stale input 거부; UI 미구현 |
-| Countdown presentation formatting/localization | PLANNED | A7; Countdown Display Semantics | Core 의미를 단위·문구로 조합하는 Desktop formatter 미구현 |
-| Current Status Header | PLANNED | A4, A7, I15–I16; Current Status Header | [0004](adr/0004-application-time-source.md); 표시 의미는 A7 승인, presentation/layout 미구현 |
-| Header ViewModel/XAML | PLANNED | A4, A7, I15–I16 | snapshot/status/countdown UI 연결·갱신 미구현 |
+| Countdown presentation formatter | IMPLEMENTED — FOUNDATION / Phase 0.6 | A8, A7; Current Status Header Presentation Text | Desktop의 한국어 formatter 및 immutable 두 텍스트 결과, countdown 조합 검증, presentation contract tests. 다국어 infrastructure는 현재 범위 밖 |
+| Current Status Header | PLANNED | A4, A7, A8, I15–I16; Current Status Header | [0004](adr/0004-application-time-source.md); 표시 의미 A7, 한국어 텍스트 A8; Header UI/layout 미구현 |
+| Header ViewModel/XAML | PLANNED | A4, A7, A8, I15–I16 | snapshot/status/countdown UI 연결·갱신 미구현 |
+| Live clock update | PLANNED | A4, A5, I15–I16 | Header timer/polling/live update loop 미구현 |
 | Application Clock / KRISS | PARTIAL — Phase 0.2 foundation | A5, I16–I20 | [0004](adr/0004-application-time-source.md); Core snapshot/interface, Desktop PC fallback, App 소유 경계, Tests fake/contract tests 구현. KRISS 동기화는 미구현; endpoint/client/보정/동시 전환 DEFERRED |
 | Timetable Editing | PLANNED | M1–M2, A2, R16, I3, I6–I7 | [0001](adr/0001-golden-reference-policy.md); 무손실 편집과 Save 실패 경계 |
 | Period Editing | PLANNED | M2–M3, P4, R6, R16 | [0004](adr/0004-application-time-source.md); time validation 상세 DEFERRED |

@@ -1,6 +1,6 @@
 # Architecture
 
-현재는 Phase 0.5 countdown Core semantics까지 구현했다. Break를 포함한 5상태 사실 계산과 countdown 표시 의미 정규화를 제공한다. Countdown presentation formatting/localization, Current Status Header ViewModel/XAML과 Highlight/UI 연결은 아직 구현하지 않았다.
+현재는 Phase 0.6 Desktop presentation formatter foundation까지 구현했다. Core의 5상태 사실/countdown 의미 값을 한국어 Header 텍스트 두 개로 변환한다. Current Status Header ViewModel/XAML, live clock update와 Highlight/UI 연결은 아직 구현하지 않았다. 다국어 infrastructure는 현재 범위 밖이다.
 이 문서는 확정된 baseline과 설계 방향을 구분한다. 상세 계약은
 [Product Contract](PRODUCT-CONTRACT.md), 진행 상태는 [Feature Map](FEATURE-MAP.md)을 따른다.
 
@@ -9,6 +9,7 @@
 - WPF + .NET 10 LTS + CommunityToolkit.Mvvm, MVVM: P1 / [ADR 0002](adr/0002-windows-desktop-stack.md).
 - Current Status 5상태 사실 계약: A6 / Product Contract의 Current Status State Model.
 - Countdown 표시 의미: A7 / Product Contract의 Countdown Display Semantics.
+- 한국어 Header 표시 문구: A8 / Product Contract의 Current Status Header Presentation Text.
 - 공통 Application Clock: A5, I16–I20 / [ADR 0004](adr/0004-application-time-source.md).
 - Settings의 Committed → Draft → Live Preview와 성공 Apply baseline: P2 / [ADR 0003](adr/0003-settings-transaction.md).
 - Golden Reference는 behavior/evidence source: [ADR 0001](adr/0001-golden-reference-policy.md). Python 구조는 재사용하지 않는다.
@@ -31,20 +32,21 @@ src/
   SchoolTimetableWidget.Desktop/  (net10.0-windows, WPF)
   SchoolTimetableWidget.Core/     (net10.0)
 tests/
-  SchoolTimetableWidget.Tests/    (net10.0)
+  SchoolTimetableWidget.Tests/    (net10.0-windows; Phase 0.6)
 scripts/
   check-dev-env.ps1
   bootstrap-dev.ps1
 
 Desktop → Core
 Tests   → Core
+Tests   → Desktop  (Phase 0.6 presentation contract tests)
 ```
 
 | Project | 책임 / 현재 범위 |
 | --- | --- |
-| Desktop | View/ViewModel, Windows integration, infrastructure adapter. 현재 template MainWindow, App composition root와 PC fallback clock adapter가 있다. CommunityToolkit.Mvvm은 이 project에만 참조한다. |
+| Desktop | View/ViewModel, Windows integration, infrastructure adapter. 현재 template MainWindow, App composition root, PC fallback clock adapter와 Features/CurrentStatus의 순수 한국어 formatter가 있다. CommunityToolkit.Mvvm은 이 project에만 직접 참조한다. |
 | Core | 순수 계산, 상태 전이, product contract logic, 시간 abstraction, persistence/migration contract의 소유 경계. 현재 Time/의 clock interface, immutable snapshot, source enum과 Features/Periods/의 교시 정의·기본 profile·current-period 계산, Features/CurrentStatus/의 5상태 계산·countdown 의미 정규화가 있으며 WPF/Toolkit/Desktop 의존성이 없다. |
-| Tests | Core 중심 테스트의 진입점. xUnit v3로 Application Clock, current-period, Current Status 및 countdown contract tests를 실행한다. Fake clock과 snapshot helper는 Tests 내부에만 둔다. |
+| Tests | 기존 Core tests와 Desktop presentation tests의 진입점. xUnit v3로 Application Clock, current-period, Current Status, countdown 및 Header formatter contract tests를 실행한다. Fake clock과 snapshot helper는 Tests 내부에만 둔다. |
 
 Core → Desktop 의존은 금지한다. Feature별 assembly를 추가하지 않고 project 내부 폴더/namespace로
 책임을 나눈다. Feature/Platform/Infrastructure 상세 폴더는 실제 첫 코드가 필요할 때 생성한다.
@@ -245,3 +247,52 @@ countdown rounding, notification, persistence, 네트워크 및 system clock mut
 - 검증 증거는 Core contract tests, build/MSBuild와 source inspection이다. WPF 창 실행·활성화, native input,
   clipboard 변경, system clock 변경 및 KRISS/NTP 통신을 수행하지 않았다.
   Countdown presentation formatting/localization, Status Header ViewModel/XAML, Highlight UI와 KRISS sync는 미구현이다.
+
+## Phase 0.6 Desktop Current Status presentation formatter foundation
+
+- 구현 전에 Product Contract A8에 한국어 단일 언어, 두 텍스트 분리, HH:mm:ss,
+  5상태 문구와 countdown 변환의 사용자 승인(2026-09-09)을 기록했다.
+- Desktop `Features/CurrentStatus/CurrentStatusHeaderFormatter`는 static 순수 formatter다.
+  `Format(ApplicationTimeSnapshot snapshot, CurrentStatusResult status, CountdownDisplayValue? countdown)`
+  → `CurrentStatusHeaderText`를 제공한다. Result는 sealed class, internal constructor와
+  get-only string 속성 `CurrentTimeText`, `StatusText`만 가진다. WPF/Toolkit/UI type은 사용하지 않는다.
+- 현재 시각은 `snapshot.LocalTime.ToString("HH:mm:ss", CultureInfo.InvariantCulture)`이며
+  timezone/source/revision을 노출하거나 UTC/KST로 재변환하지 않는다. 교시/시간/분 숫자도
+  FormattableString.Invariant로 Arabic digits를 유지한다. 모든 한국어 production 표시 문자열은 formatter에만 둔다.
+- StatusText는 A8의 5문구와 ` · ` 구분자를 그대로 사용한다. BeforeFirstPeriod/Break는
+  NextPeriodNumber, InPeriod는 CurrentPeriodNumber를 사용한다. Countdown은 LessThanMinute를
+  먼저 처리하고 minutes-only, hours-only, hours + minutes로 변환한다. Floor/duration 재계산은 없다.
+  Core가 보장하는 semantic value invariant를 신뢰하므로 정상 입력에서 0분을 만들지 않는다.
+- BeforeFirstPeriod/InPeriod/Break의 null countdown과 AfterLastPeriod/Weekend의 non-null countdown은
+  `ArgumentException(nameof(countdown))`으로 거부한다. Null snapshot/status는 ArgumentNullException이다.
+  전체 날짜/schedule/provenance 검증은 하지 않으며 caller가 동일 snapshot으로 계산된 입력을 전달한다.
+- Formatter는 clock/Resolver/Calculator/schedule을 조회하지 않는다. KRISS sync, notification,
+  persistence, timer/polling, Header ViewModel/XAML, Highlight UI와 localization framework를 추가하지 않았다.
+- 기존 Tests에 Desktop ProjectReference를 추가하고 target을 net10.0-windows로 변경했다.
+  Tests의 UseWPF 설정이나 신규 test project는 필요하지 않았다. Desktop의 WPF runtime 참조가
+  테스트 실행에 전이되므로 Windows Desktop runtime이 필요하지만 WPF Application/Window나 STA 입력은 필요하지 않다.
+  Desktop의 CommunityToolkit.Mvvm 8.4.2 직접 dependency는 그대로다. Core는 net10.0 독립성을 유지한다.
+  [ADR 0005 후속 기록](adr/0005-phase-zero-project-structure.md#phase-06-test-reference-follow-up--2026-09-09)에 이 구조 변경을 기록했다.
+- 신규 presentation contract tests는 승인 예시, zero-padding/24시간제/소수초 생략, 1 tick 및 minute/hour
+  표시 경계, custom schedule의 current/next 번호, 5상태 null 조합, source/revision/offset 독립성을 검증한다.
+  ko-KR/en-US/ar-SA와 의도적으로 변경한 시간 구분자를 dedicated thread에만 적용하고 finally로 복원한다.
+  DefaultThreadCurrentCulture 등 process 기본 culture는 바꾸지 않는다. 기존 132개 tests의 source는 변경하지 않았다.
+
+### Phase 0.6 verification — 2026-09-09
+
+- dotnet restore, dotnet build --no-restore, dotnet test --no-build --logger "console;verbosity=normal" 실행.
+  첫 restore는 NuGet 서비스 인덱스를 읽지 못해 NU1900 1건을 보고했고, 권한을 확장한 일반 restore도
+  캐시된 경고를 보고했다. 같은 권한에서 dotnet restore --force --no-http-cache로 재조회해 exit 0,
+  warning/error 0을 확인했다. NuGet 감사 비활성화 및 DNS/proxy/credential 설정 변경은 하지 않았다.
+- Build exit 0, warning 0 / error 0. 기존 132 + 신규 presentation 37 = 169 passed, failed/skipped 0.
+  기존 테스트 프로젝트의 Desktop 참조와 Windows target으로 실제 runner 실행에 성공했다.
+- Core MSBuild 평가: net10.0, UseWPF 없음, ProjectReference/PackageReference 없음,
+  FrameworkReference는 Microsoft.NETCore.App만 존재한다. bin/obj 제외 Core production source의
+  한국어 표시 단어(쉬는시간/교시/오늘 수업/분/시간), WPF/Toolkit/Desktop 참조 검색은 0건이다.
+- bin/obj 제외 production .cs의 DateTime.Now / DateTimeOffset.Now / DateTime.UtcNow /
+  DateTimeOffset.UtcNow는 기존 PcFallbackApplicationClock의 DateTimeOffset.Now 1건뿐이다.
+  Formatter의 직접 시간 읽기, GetSnapshot, Resolver/Calculator 호출 및 WPF/Toolkit 의존 검색은 0건이다.
+  Core, 기존 tests와 XAML/code-behind의 diff는 없다.
+- 검증 증거는 contract tests, build/MSBuild와 source inspection이다. WPF 창 실행·활성화,
+  native input, clipboard 변경, system clock 변경 또는 KRISS/NTP 통신을 수행하지 않았다.
+  이 결과는 Header UI, font/layout, live update 또는 native 동작 검증이 아니다.

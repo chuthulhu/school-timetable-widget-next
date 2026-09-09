@@ -7,6 +7,7 @@
 사용자가 P1–P10을 승인하고 A4/A5를 추가 승인하여 제품 계약 baseline을 확정했다.
 2026-09-09 사용자가 A6 Current Status State Model을 추가 승인했다.
 2026-09-09 사용자가 A7 Countdown Display Semantics를 추가 승인했다.
+2026-09-09 사용자가 A8 Current Status Header Presentation Text를 추가 승인했다.
 승인된 planning handoff에서 이관했으며 제품 결정의 의미는 유지한다.
 DEFERRED 구현 상세는 남아 있으며 모든 설계 완료, release-ready 또는 모든 상세의
 implementation-ready를 뜻하지 않는다.
@@ -72,7 +73,7 @@ Windows 바탕화면에서 주간 시간표와 현재 수업을 빠르게 확인
 | LEGACY EVIDENCE | 과거 동작의 근거이며 새 제품 요구가 아님 |
 
 **MATCH / COMPATIBLE / REDESIGN은 이식 분류이며 승인 상태가 아니다.**
-A1–A7, P1–P10 및 연결된 MATCH/COMPATIBLE/REDESIGN의 제품 수준 계약과 invariants는 APPROVED다.
+A1–A8, P1–P10 및 연결된 MATCH/COMPATIBLE/REDESIGN의 제품 수준 계약과 invariants는 APPROVED다.
 명시적 DEFERRED 항목은 구현 단계에서 결정하며 승인 상태를 전파하지 않는다.
 이 baseline의 승인 근거는 사용자 승인 결과다. 기존 RECOMMENDED, updater/build B 판정이나 테스트 존재만으로 승인한 것이 아니다.
 
@@ -83,10 +84,11 @@ A1–A7, P1–P10 및 연결된 MATCH/COMPATIBLE/REDESIGN의 제품 수준 계�
 | A1 | APPROVED | 일반 사용자 단위 설치형 기본 배포, Windows 시작 시 실행 옵션, 정상 uninstall, Portable 초기 필수 아님 | installer technology와 updater library는 DEFERRED; autostart 기본 OFF는 P7 |
 | A2 | APPROVED | 월~금 × 7교시 독립 35 cells, 초기 셀 병합 없음. 반복 문자열에서 병합 의도 추론 금지. import는 문자열 보존 | 향후 병합 요구가 생기면 새 metadata 기능으로 별도 검토 |
 | A3 | APPROVED | QR 기능 제외. 공유는 PC ↔ PC 파일 기반을 기본으로 함 | timetable/time 선택 공유 상세는 P10, 파일 format은 DEFERRED |
-| A4 | APPROVED | Current Status Header: 요일 헤더 위의 독립된 고정 높이 영역에 현재 시각 `HH:mm:ss`(24시간제)와 학교 시간 상태를 항상 함께 표시 | countdown 의미는 A7; presentation formatting/localization, font/layout 구현, Upcoming 보조 강조는 DEFERRED |
+| A4 | APPROVED | Current Status Header: 요일 헤더 위의 독립된 고정 높이 영역에 현재 시각 `HH:mm:ss`(24시간제)와 학교 시간 상태를 항상 함께 표시 | countdown 의미는 A7, 한국어 presentation text는 A8; font/layout 구현, Upcoming 보조 강조는 DEFERRED |
 | A5 | APPROVED | Application Clock / Standard Time Source: 공통 앱 시간원, KRISS 대한민국 표준시(KST) 우선, PC local time으로 즉시 시작 및 동기화 불가 시 fallback, Windows system clock 변경 금지 | endpoint/NTP/timeout/retry/resync/correction/monotonic 구현 및 test injection은 DEFERRED; [ADR 0004](adr/0004-application-time-source.md) |
 | A6 | APPROVED | Current Status State Model: BeforeFirstPeriod, InPeriod, Break, AfterLastPeriod, Weekend의 정확히 5상태와 아래 current/next/transition 사실 계약 | 상태 사실과 A7 countdown 계산은 별도 책임; Core는 display string을 제공하지 않으며 UI는 별도 단계 |
-| A7 | APPROVED | Countdown Display Semantics: 초를 표시하지 않고 전체 남은 분을 floor; 양수 1분 미만은 LessThanMinute, 1시간 이상은 hours/minutes로 정규화, 0분 표시 없이 exact transition에 새 상태 사용 | 아래 의미 계약만 확정; 한국어 문자열 생성/localization 및 Header UI는 presentation 책임으로 미구현 |
+| A7 | APPROVED | Countdown Display Semantics: 초를 표시하지 않고 전체 남은 분을 floor; 양수 1분 미만은 LessThanMinute, 1시간 이상은 hours/minutes로 정규화, 0분 표시 없이 exact transition에 새 상태 사용 | 한국어 문자열 조합은 A8 Desktop presentation 책임; Header UI 미구현 |
+| A8 | APPROVED | Current Status Header Presentation Text: v1 한국어 단일 언어, CurrentTimeText/StatusText 분리, invariant `HH:mm:ss`, 아래 5상태 문구와 countdown 한국어 변환 | Core는 localized text를 소유하지 않음; 다국어 infrastructure는 현재 범위 밖, Header ViewModel/XAML 및 live update는 미구현 |
 
 ## Approved Decisions — P1–P10
 
@@ -106,7 +108,7 @@ A1–A7, P1–P10 및 연결된 MATCH/COMPATIBLE/REDESIGN의 제품 수준 계�
 ## MATCH Product Contracts
 
 아래는 Golden Reference의 정상 사용자 의미를 추출한 APPROVED 제품 계약이다.
-A4 Status Header, A5 Application Clock, A6 Current Status State Model 및 A7 Countdown Display Semantics는 새 제품 결정이며 legacy MATCH 증거로 분류하지 않는다.
+A4 Status Header, A5 Application Clock, A6 Current Status State Model, A7 Countdown Display Semantics 및 A8 Presentation Text는 새 제품 결정이며 legacy MATCH 증거로 분류하지 않는다.
 각 성공 조건은 persistence 성공을 전제로 하며 실패를 성공처럼 처리하는 legacy quirk는 제외한다.
 
 | ID | 영역 | 새 제품에서 유지할 사용자 의미 | Reference / 관련 결정 |
@@ -193,7 +195,7 @@ Core는 작은 immutable semantic value만 제공한다. `LessThanMinute = true`
 그 외에는 Hours >= 0, Minutes 0..59이며 Hours == 0이면 Minutes >= 1이다.
 잘못된 필드 조합의 public 생성·변경을 허용하지 않는다. Exact duration은 내부 tick 계산에만 쓰고
 결과에 보관하지 않는다. 한국어 예시 문자열, "종료까지"/"N교시까지", localization과 Header 문구 조합은
-향후 Desktop presentation 책임이며 Core 타입에 저장하거나 반환하지 않는다. Notification scheduling으로 확장하지 않는다.
+A8 Desktop presentation 책임이며 Core 타입에 저장하거나 반환하지 않는다. Notification scheduling으로 확장하지 않는다.
 
 계산기는 caller가 상태 계산에 사용한 **동일한 ApplicationTimeSnapshot**을 받는다.
 Clock/schedule 재조회, resolver 재호출, source/revision/offset 분기를 하지 않는다.
@@ -213,6 +215,43 @@ TransitionTime이 있는데 snapshot.TimeOfDay >= TransitionTime이면 잘못된
 | 12:50:00 | Break | 1시간 10분 |
 | 13:59:00 / 13:59:01 | Break | 1분 / 1분 미만 |
 | 16:50:00 | AfterLastPeriod | countdown 없음 |
+
+## Current Status Header Presentation Text
+
+**APPROVED — A8 (2026-09-09 사용자 명시적 승인, Phase 0.6 구현 전에 기록).**
+v1은 한국어 단일 언어다. Header 결과는 `CurrentTimeText`와 `StatusText`라는 별도 텍스트로
+제공하며 하나의 giant string으로 합치지 않는다. `CurrentTimeText`는 snapshot.LocalTime의
+24시간제 `HH:mm:ss`이며 culture와 무관하게 zero-padding과 콜론을 유지한다(예: `09:05:07`).
+Timezone/source/revision이나 오전/오후·AM/PM을 Header에 넣지 않는다.
+
+| Kind | StatusText |
+| --- | --- |
+| BeforeFirstPeriod | `{NextPeriodNumber}교시까지 {CountdownText}` |
+| InPeriod | `{CurrentPeriodNumber}교시 · 종료까지 {CountdownText}` |
+| Break | `쉬는시간 · {NextPeriodNumber}교시까지 {CountdownText}` |
+| AfterLastPeriod | `오늘 수업 종료` |
+| Weekend | `오늘은 수업이 없습니다` |
+
+구분자는 양쪽 공백을 포함한 ` · `이며 교시 번호는 Arabic digit + `교시`(1교시, 2교시 등)다.
+Core `CountdownDisplayValue`를 아래와 같이 변환하며 floor나 duration을 다시 계산하지 않는다.
+
+| CountdownDisplayValue | CountdownText |
+| --- | --- |
+| LessThanMinute == true | `1분 미만` |
+| Hours == 0, Minutes > 0 | `{Minutes}분` |
+| Hours > 0, Minutes == 0 | `{Hours}시간` |
+| Hours > 0, Minutes > 0 | `{Hours}시간 {Minutes}분` |
+
+예: `17분`, `1분 미만`, `1시간`, `1시간 10분`, `2시간`, `1시간 1분`.
+Core invariant상 정상 입력에서는 `0분`이나 `0시간 0분`을 생성하지 않는다.
+BeforeFirstPeriod/InPeriod/Break는 countdown 필수, AfterLastPeriod/Weekend는 countdown이 없어야 한다.
+잘못된 null/non-null 조합은 명시적으로 거부한다. Current/Next 번호와 countdown 필드의
+Core invariant는 신뢰한다. Caller가 동일 snapshot으로 계산한 status/countdown을 전달할 책임을 갖는다.
+Formatter는 clock 읽기, resolver 호출, schedule 조회, countdown 계산 및 source/revision 판단을 하지 않는다.
+
+한국어 production 표시 문자열은 Desktop formatter 한 곳에 집중한다. Core는 localized text를 소유하지 않는다.
+`.resx`, localization service, culture switch, resource provider 등 다국어 infrastructure는 현재 범위 밖이다.
+이번 foundation은 UI type, Header ViewModel/XAML, timer/polling/live update, Highlight UI를 포함하지 않는다.
 
 ## Current Status Header
 
@@ -244,7 +283,7 @@ Header update는 35셀 전체 layout 재측정을 매초 요구하지 않는다.
 Current highlight 변경도 layout measurement를 바꾸지 않는다.
 
 **DEFERRED:** 다음 교시 Upcoming 보조 highlight는 optional UX candidate이며 필수가 아니다.
-Current와 Upcoming을 혼동하지 않는다. Presentation formatting/localization 및 font/layout 구현은 남아 있다.
+Current와 Upcoming을 혼동하지 않는다. 한국어 presentation text는 A8로 확정했으며 font/layout 구현은 남아 있다.
 현재 시각의 초 표시(`HH:mm:ss`)는 A4, countdown의 초 생략·내림·1분 미만·시간/분 의미는 A7 APPROVED다.
 
 ## Application Time Source
@@ -473,6 +512,7 @@ OS 실패 시 preference 재조정/보상 순서의 기술 상세는 해당 adap
 
 **APPROVED — P1:** WPF + .NET 10 LTS + CommunityToolkit.Mvvm.
 **APPROVED — Phase 0 B안:** Desktop/Core/Tests 3 projects, Desktop → Core와 Tests → Core.
+Phase 0.6은 기존 Tests에 Desktop 참조를 추가해 presentation을 검증하며 Tests target은 net10.0-windows다.
 Core는 WPF/Toolkit/Desktop에 독립적이며 Toolkit은 Desktop만 참조한다.
 Feature-oriented 구성은 project 내부 폴더/namespace로 표현하고 Windows adapter를 Desktop 경계에 둔다.
 거대한 AppState/MainWindowViewModel 및 Shared/Utils dumping ground를 금지한다.
@@ -522,7 +562,7 @@ I15–I20은 A4/A5의 새 APPROVED invariant다. 구현 acceptance 기준이며 
 | P4/P5 | DEFERRED | time validation 세부, clock/resume 갱신 지연, 알림 빈 수업 판정 및 delivery adapter |
 | P9/P10 | DEFERRED | backup manifest/schema/checksum/naming, sharing format와 부분 적용 UX |
 | P10/C7 | DEFERRED | legacy sharing JSON envelope의 실제 지원 상세; raw timetable JSON과 구분 |
-| A4/A7 | DEFERRED | countdown presentation formatting/localization, font/layout 구현, Upcoming optional 보조 강조; 표시 의미는 A7 APPROVED |
+| A4/A7/A8 | DEFERRED | font/layout 구현, Header UI 연결·갱신, Upcoming optional 보조 강조; 의미는 A7, 한국어 표시 문구는 A8 APPROVED. 다국어 infrastructure는 현재 범위 밖 |
 | A5 | DEFERRED | 공식 endpoint 재확인, NTP client, timeout/retry/resync, drift/correction/slew, offline cache, monotonic 구현, test injection, suspend/resume 처리 |
 | A5 | DEFERRED | Settings/tooltip/status detail 중 sync 상세 표시 위치 |
 
@@ -532,8 +572,8 @@ I15–I20은 A4/A5의 새 APPROVED invariant다. 구현 acceptance 기준이며 
 | --- | --- |
 | P1–P10 미승인 blocker | 0 — 모두 APPROVED |
 | Golden Reference remaining MUST | 0 — COMPLETE AS GOLDEN REFERENCE |
-| Product-level approval blocker | 0 — A1–A7 및 연결된 계약 확정 |
-| 저장소 상태 | Phase 0.5 countdown Core semantics까지 구현; 전체 제품/UI 완료 아님 |
+| Product-level approval blocker | 0 — A1–A8 및 연결된 계약 확정 |
+| 저장소 상태 | Phase 0.6 Desktop presentation formatter foundation; 전체 제품/UI 완료 아님 |
 | 남은 결정 | DEFERRED implementation decisions; 해당 기능 구현 전 ADR/spike/UX 검토 |
 
 이 baseline은 release-ready나 모든 구현 상세 확정을 뜻하지 않는다.

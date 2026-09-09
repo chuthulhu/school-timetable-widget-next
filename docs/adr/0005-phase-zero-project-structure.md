@@ -32,3 +32,14 @@ Phase 0는 template App/MainWindow, 빈 Core, test runner, 개발 bootstrap만 �
 **DEFERRED:** DI container/composition, persistence technology/format, installer/updater,
 세부 feature folder, interface/type 배치와 Windows App SDK 사용 범위.
 Legacy는 evidence source이며 구현 코드를 복사하지 않는다.
+
+## Phase 0.6 test reference follow-up — 2026-09-09
+
+사용자가 요청한 Desktop presentation formatter 검증에서 기존 Tests 재사용(A안)을 채택했다.
+Tests → Desktop 참조를 추가하고 Tests target을 net10.0-windows로 변경했다.
+Tests → Core와 Desktop → Core는 유지하며 Core → Desktop은 여전히 금지한다.
+Core의 net10.0, WPF/Toolkit 독립성 및 세 project 제한을 유지한다.
+Tests 자체에 UseWPF나 Toolkit 직접 package를 추가하지 않는다. Desktop의 WPF runtime dependency는
+전이되므로 테스트 실행 환경에 Windows Desktop runtime이 필요하다.
+WPF Application/Window를 만들지 않는 순수 formatter tests를 기존 runner에서 실제 실행해 검증했다.
+결과는 [Architecture Phase 0.6](../ARCHITECTURE.md#phase-06-desktop-current-status-presentation-formatter-foundation)을 따른다.
