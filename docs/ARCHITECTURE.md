@@ -1,6 +1,6 @@
 # Architecture
 
-현재는 Phase 0.6 Desktop presentation formatter foundation까지 구현했다. Core의 5상태 사실/countdown 의미 값을 한국어 Header 텍스트 두 개로 변환한다. Current Status Header ViewModel/XAML, live clock update와 Highlight/UI 연결은 아직 구현하지 않았다. 다국어 infrastructure는 현재 범위 밖이다.
+현재는 Phase 0.7 Header ViewModel + live refresh loop foundation까지 구현했다. Desktop loop가 한 snapshot으로 Core 상태/countdown과 한국어 formatter를 조립하고 표시 전용 ViewModel을 갱신한다. 실제 Header XAML/rendering, App activation/wiring과 Highlight/UI 연결은 아직 구현하지 않았다. 다국어 infrastructure는 현재 범위 밖이다.
 이 문서는 확정된 baseline과 설계 방향을 구분한다. 상세 계약은
 [Product Contract](PRODUCT-CONTRACT.md), 진행 상태는 [Feature Map](FEATURE-MAP.md)을 따른다.
 
@@ -10,6 +10,7 @@
 - Current Status 5상태 사실 계약: A6 / Product Contract의 Current Status State Model.
 - Countdown 표시 의미: A7 / Product Contract의 Countdown Display Semantics.
 - 한국어 Header 표시 문구: A8 / Product Contract의 Current Status Header Presentation Text.
+- Header refresh/lifecycle: A9 / Product Contract의 Current Status Header Refresh Lifecycle.
 - 공통 Application Clock: A5, I16–I20 / [ADR 0004](adr/0004-application-time-source.md).
 - Settings의 Committed → Draft → Live Preview와 성공 Apply baseline: P2 / [ADR 0003](adr/0003-settings-transaction.md).
 - Golden Reference는 behavior/evidence source: [ADR 0001](adr/0001-golden-reference-policy.md). Python 구조는 재사용하지 않는다.
@@ -44,9 +45,9 @@ Tests   → Desktop  (Phase 0.6 presentation contract tests)
 
 | Project | 책임 / 현재 범위 |
 | --- | --- |
-| Desktop | View/ViewModel, Windows integration, infrastructure adapter. 현재 template MainWindow, App composition root, PC fallback clock adapter와 Features/CurrentStatus의 순수 한국어 formatter가 있다. CommunityToolkit.Mvvm은 이 project에만 직접 참조한다. |
+| Desktop | View/ViewModel, Windows integration, infrastructure adapter. 현재 template MainWindow, App composition root, PC fallback clock adapter와 Features/CurrentStatus의 한국어 formatter, 표시 전용 ViewModel, DispatcherTimer refresh loop foundation이 있다. Loop의 실제 App activation은 아직 없다. CommunityToolkit.Mvvm은 이 project에만 직접 참조한다. |
 | Core | 순수 계산, 상태 전이, product contract logic, 시간 abstraction, persistence/migration contract의 소유 경계. 현재 Time/의 clock interface, immutable snapshot, source enum과 Features/Periods/의 교시 정의·기본 profile·current-period 계산, Features/CurrentStatus/의 5상태 계산·countdown 의미 정규화가 있으며 WPF/Toolkit/Desktop 의존성이 없다. |
-| Tests | 기존 Core tests와 Desktop presentation tests의 진입점. xUnit v3로 Application Clock, current-period, Current Status, countdown 및 Header formatter contract tests를 실행한다. Fake clock과 snapshot helper는 Tests 내부에만 둔다. |
+| Tests | 기존 Core tests와 Desktop presentation/lifecycle tests의 진입점. xUnit v3로 Application Clock, current-period, Current Status, countdown, Header formatter 및 ViewModel/refresh loop contract tests를 실행한다. Fake clock과 dispatcher object test helper는 Tests 내부에만 둔다. |
 
 Core → Desktop 의존은 금지한다. Feature별 assembly를 추가하지 않고 project 내부 폴더/namespace로
 책임을 나눈다. Feature/Platform/Infrastructure 상세 폴더는 실제 첫 코드가 필요할 때 생성한다.
@@ -296,3 +297,51 @@ countdown rounding, notification, persistence, 네트워크 및 system clock mut
 - 검증 증거는 contract tests, build/MSBuild와 source inspection이다. WPF 창 실행·활성화,
   native input, clipboard 변경, system clock 변경 또는 KRISS/NTP 통신을 수행하지 않았다.
   이 결과는 Header UI, font/layout, live update 또는 native 동작 검증이 아니다.
+
+## Phase 0.7 Header ViewModel and live refresh loop foundation
+
+- 구현 전에 Product Contract A9에 약 1초 cadence, 즉시 Start refresh, cycle당 snapshot 1회,
+  같은 snapshot pipeline, 표시/lifecycle 책임 분리와 catch-up 금지의 사용자 승인을 기록했다.
+- `CurrentStatusHeaderViewModel : ObservableObject`는 get-only CurrentTimeText/StatusText만 공개한다.
+  초기값은 string.Empty이며 `Apply(CurrentStatusHeaderText)`가 backing field를 SetProperty로 변경한다.
+  같은 문자열은 알림을 발생시키지 않는다. 시각만 바뀌면 CurrentTimeText만, 교시 경계에서 두 문자열이
+  바뀌면 각 property를 알린다. 외부 public setter, clock/schedule/계산기/timer, UI styling/layout 상태는 없다.
+- `CurrentStatusHeaderRefreshLoop` 생성자는 IApplicationClock, IEnumerable<PeriodDefinition>, ViewModel을
+  받는다. Schedule은 생성 시 배열로 복사해 loop 수명 동안 유지하고 각 refresh에서 기존 Core resolver가
+  검증한다. DefaultPeriodSchedule hardcode나 provider/repository/service abstraction은 추가하지 않았다.
+  Editable period persistence의 schedule source 교체는 별도 설계다.
+- Loop는 생성한 dispatcher에 속한 실제 DispatcherTimer(Background priority)를 소유한다.
+  Interval은 TimeSpan.FromSeconds(1)이며 real-time deadline 보장이 아니다. Public API는 Start, Stop,
+  RefreshNow, Dispose 및 get-only IsRunning이다. 생성과 모든 호출은 소유 UI dispatcher thread에서
+  수행해야 하며 VerifyAccess로 다른 thread의 사용을 거부한다. ViewModel.Apply도 같은 UI thread에서 호출한다.
+- RefreshNow는 정확히 한 번 `_clock.GetSnapshot()`을 호출한다. 그 snapshot을 Resolver → CountdownCalculator
+  → Formatter에 그대로 전달하고 전체 계산 성공 후 ViewModel.Apply를 호출한다. Stopped 상태에서도 사용 가능하며
+  timer를 켜지 않는다. Source/revision/offset 판단, 직접 PC 시간 읽기 및 별도 countdown 계산은 없다.
+- Start는 즉시 RefreshNow 후 timer를 시작한다. 이미 running이면 no-op이며 Stop은 반복 호출 가능하다.
+  Stop 후 Start는 현재 snapshot으로 즉시 새 refresh를 한다. Initial refresh 실패는 호출자에게 전파하고
+  timer를 시작하지 않는다. Initial notification 중 중복 Start도 no-op이며 Stop/Dispose가 발생하면
+  외부 Start가 돌아와 timer를 다시 켜지 않는다. IsRunning은 즉시 refresh 중인 activation도 포함한다.
+- Dispose는 Stop 후 Tick handler를 해제한다. 반복 Dispose/Stop은 안전하며 disposed Start/RefreshNow는
+  ObjectDisposedException으로 거부한다. Tick handler는 실행 중일 때 RefreshNow 한 번만 호출한다.
+  Missed tick 수 계산이나 재생은 없으며 09:49:58 → 09:50:03 점프도 현재 Break 한 번만 반영한다.
+- App/MainWindow 및 code-behind는 변경하지 않았다. Phase 0.8에서 기존 App 소유 clock, 사용할 schedule과
+  ViewModel을 loop 생성자에 전달하고 실제 Header UI lifecycle에서 Start/Dispose를 연결할 경계다.
+  표시 소비자가 없는 현재 앱에서 불필요한 1Hz loop를 실행하지 않는다. 실제 live Header 표시는 아직 없다.
+- Header XAML/rendering/layout, Highlight, KRISS/NTP, notification, persistence 및 period editor는 미구현이다.
+  Tray visibility lifecycle과 suspend/resume detection/integration은 DEFERRED다. 향후 show/resume에서
+  RefreshNow를 사용할 수 있다는 것이 해당 OS integration 구현을 뜻하지 않는다.
+
+### Phase 0.7 verification — 2026-09-09
+
+- dotnet restore, dotnet build --no-restore, dotnet test --no-build --logger "console;verbosity=normal" 모두 exit 0.
+  Warning/error 0. 기존 169 + 신규 22 = 191 passed, failed/skipped 0.
+- 신규 CurrentStatusHeaderRefreshContractTests는 표시 속성/알림, 단일 snapshot 경계, 지연 후 재평가,
+  Start/Stop/Dispose, 초기 refresh 실패, 주입 schedule, source/revision/offset 독립성 및 thread 경계를 검증한다.
+  기존 169개 테스트 소스, Core, formatter, project/package 및 XAML/code-behind는 변경하지 않았다.
+- Loop 테스트는 dedicated STA thread에 실제 DispatcherTimer를 생성하고 finally에 dispatcher를 종료한다.
+  Reflection은 이 저장소 loop의 private timer 설정/IsEnabled 확인과 OnTick handler 직접 호출에만 사용한다.
+  WPF 내부 event 저장 구조에는 의존하지 않는다. Tick 구독/Dispose 해제는 source inspection으로 확인한다.
+  실제 1초 sleep, Dispatcher message pump, WPF Application/Window 생성·실행은 하지 않는다.
+- 증거는 contract/object/event tests, build/MSBuild 및 source inspection이다. 실제 timer cadence/delivery,
+  Header rendering/font/layout, App activation, native keyboard/IME/focus 동작 검증이 아니다.
+  창 활성화, native input, clipboard 변경, system clock 변경 및 KRISS/NTP 통신을 수행하지 않았다.

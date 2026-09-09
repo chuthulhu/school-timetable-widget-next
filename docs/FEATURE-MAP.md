@@ -16,9 +16,13 @@ PLANNED 기능에도 계약에 명시된 DEFERRED 상세는 그대로 남아 있
 | Break status Core | IMPLEMENTED — FOUNDATION / Phase 0.4 | A6, P4; Current Status State Model | CurrentStatusResult의 Break, NextPeriodNumber, TransitionTime으로 구현; 긴 gap도 Break |
 | Countdown Core foundation | IMPLEMENTED — FOUNDATION / Phase 0.5 | A7, A5, P4, I16; Countdown Display Semantics | 동일 snapshot/status의 tick 차이, floor·LessThanMinute·hours/minutes 의미 값, stale input 거부; UI 미구현 |
 | Countdown presentation formatter | IMPLEMENTED — FOUNDATION / Phase 0.6 | A8, A7; Current Status Header Presentation Text | Desktop의 한국어 formatter 및 immutable 두 텍스트 결과, countdown 조합 검증, presentation contract tests. 다국어 infrastructure는 현재 범위 밖 |
-| Current Status Header | PLANNED | A4, A7, A8, I15–I16; Current Status Header | [0004](adr/0004-application-time-source.md); 표시 의미 A7, 한국어 텍스트 A8; Header UI/layout 미구현 |
-| Header ViewModel/XAML | PLANNED | A4, A7, A8, I15–I16 | snapshot/status/countdown UI 연결·갱신 미구현 |
-| Live clock update | PLANNED | A4, A5, I15–I16 | Header timer/polling/live update loop 미구현 |
+| Current Status Header | PLANNED | A4, A7, A8, A9, I15–I16; Current Status Header | 표시/refresh foundation은 있으나 실제 Header UI/layout과 App activation은 미구현 |
+| Header ViewModel foundation | IMPLEMENTED — FOUNDATION / Phase 0.7 | A8, A9, I15–I16 | 두 read-only 문자열, 계산 결과 Apply, 같은 문자열 PropertyChanged 억제; clock/timer/layout 책임 없음 |
+| Live refresh loop foundation | IMPLEMENTED — FOUNDATION / Phase 0.7 | A9, A5, I16 | Desktop DispatcherTimer 약 1초, Start 즉시 refresh, cycle당 snapshot 1회, Start/Stop/Dispose, missed tick replay 없음 |
+| Actual Header XAML/rendering | PLANNED | A4, A8, I15 | Binding/layout/font 및 실제 렌더링 미구현 |
+| Actual app activation/wiring | PLANNED | A9, A5, I16 | App/MainWindow 미변경; UI 소비자 없는 1Hz loop를 켜지 않음. Phase 0.8에서 UI lifecycle 연결 |
+| Tray visibility refresh lifecycle | DEFERRED | A9, P6 | hide/show에 따른 loop Start/Stop 정책 미결정 |
+| Suspend/resume integration | DEFERRED | A9, A5 | OS detection/event 연결 미구현; RefreshNow로 현재 상태 재평가 가능한 기반만 제공 |
 | Application Clock / KRISS | PARTIAL — Phase 0.2 foundation | A5, I16–I20 | [0004](adr/0004-application-time-source.md); Core snapshot/interface, Desktop PC fallback, App 소유 경계, Tests fake/contract tests 구현. KRISS 동기화는 미구현; endpoint/client/보정/동시 전환 DEFERRED |
 | Timetable Editing | PLANNED | M1–M2, A2, R16, I3, I6–I7 | [0001](adr/0001-golden-reference-policy.md); 무손실 편집과 Save 실패 경계 |
 | Period Editing | PLANNED | M2–M3, P4, R6, R16 | [0004](adr/0004-application-time-source.md); time validation 상세 DEFERRED |

@@ -8,6 +8,7 @@
 2026-09-09 사용자가 A6 Current Status State Model을 추가 승인했다.
 2026-09-09 사용자가 A7 Countdown Display Semantics를 추가 승인했다.
 2026-09-09 사용자가 A8 Current Status Header Presentation Text를 추가 승인했다.
+2026-09-09 사용자가 A9 Current Status Header Refresh Lifecycle을 추가 승인했다.
 승인된 planning handoff에서 이관했으며 제품 결정의 의미는 유지한다.
 DEFERRED 구현 상세는 남아 있으며 모든 설계 완료, release-ready 또는 모든 상세의
 implementation-ready를 뜻하지 않는다.
@@ -73,7 +74,7 @@ Windows 바탕화면에서 주간 시간표와 현재 수업을 빠르게 확인
 | LEGACY EVIDENCE | 과거 동작의 근거이며 새 제품 요구가 아님 |
 
 **MATCH / COMPATIBLE / REDESIGN은 이식 분류이며 승인 상태가 아니다.**
-A1–A8, P1–P10 및 연결된 MATCH/COMPATIBLE/REDESIGN의 제품 수준 계약과 invariants는 APPROVED다.
+A1–A9, P1–P10 및 연결된 MATCH/COMPATIBLE/REDESIGN의 제품 수준 계약과 invariants는 APPROVED다.
 명시적 DEFERRED 항목은 구현 단계에서 결정하며 승인 상태를 전파하지 않는다.
 이 baseline의 승인 근거는 사용자 승인 결과다. 기존 RECOMMENDED, updater/build B 판정이나 테스트 존재만으로 승인한 것이 아니다.
 
@@ -88,7 +89,8 @@ A1–A8, P1–P10 및 연결된 MATCH/COMPATIBLE/REDESIGN의 제품 수준 계�
 | A5 | APPROVED | Application Clock / Standard Time Source: 공통 앱 시간원, KRISS 대한민국 표준시(KST) 우선, PC local time으로 즉시 시작 및 동기화 불가 시 fallback, Windows system clock 변경 금지 | endpoint/NTP/timeout/retry/resync/correction/monotonic 구현 및 test injection은 DEFERRED; [ADR 0004](adr/0004-application-time-source.md) |
 | A6 | APPROVED | Current Status State Model: BeforeFirstPeriod, InPeriod, Break, AfterLastPeriod, Weekend의 정확히 5상태와 아래 current/next/transition 사실 계약 | 상태 사실과 A7 countdown 계산은 별도 책임; Core는 display string을 제공하지 않으며 UI는 별도 단계 |
 | A7 | APPROVED | Countdown Display Semantics: 초를 표시하지 않고 전체 남은 분을 floor; 양수 1분 미만은 LessThanMinute, 1시간 이상은 hours/minutes로 정규화, 0분 표시 없이 exact transition에 새 상태 사용 | 한국어 문자열 조합은 A8 Desktop presentation 책임; Header UI 미구현 |
-| A8 | APPROVED | Current Status Header Presentation Text: v1 한국어 단일 언어, CurrentTimeText/StatusText 분리, invariant `HH:mm:ss`, 아래 5상태 문구와 countdown 한국어 변환 | Core는 localized text를 소유하지 않음; 다국어 infrastructure는 현재 범위 밖, Header ViewModel/XAML 및 live update는 미구현 |
+| A8 | APPROVED | Current Status Header Presentation Text: v1 한국어 단일 언어, CurrentTimeText/StatusText 분리, invariant `HH:mm:ss`, 아래 5상태 문구와 countdown 한국어 변환 | Core는 localized text를 소유하지 않음; 다국어 infrastructure는 현재 범위 밖, refresh lifecycle은 A9, Header XAML은 미구현 |
+| A9 | APPROVED | Current Status Header Refresh Lifecycle: 약 1초 DispatcherTimer, Start 즉시 refresh, cycle당 snapshot 1회와 동일 snapshot pipeline, 표시 ViewModel/loop 분리, missed tick replay 없음, 아래 Start/Stop/Dispose 계약 | Tray visibility lifecycle 및 suspend/resume detection은 DEFERRED; Header XAML/layout과 실제 앱 activation은 별도 단계 |
 
 ## Approved Decisions — P1–P10
 
@@ -108,7 +110,7 @@ A1–A8, P1–P10 및 연결된 MATCH/COMPATIBLE/REDESIGN의 제품 수준 계�
 ## MATCH Product Contracts
 
 아래는 Golden Reference의 정상 사용자 의미를 추출한 APPROVED 제품 계약이다.
-A4 Status Header, A5 Application Clock, A6 Current Status State Model, A7 Countdown Display Semantics 및 A8 Presentation Text는 새 제품 결정이며 legacy MATCH 증거로 분류하지 않는다.
+A4 Status Header, A5 Application Clock, A6 Current Status State Model, A7 Countdown Display Semantics, A8 Presentation Text 및 A9 Refresh Lifecycle은 새 제품 결정이며 legacy MATCH 증거로 분류하지 않는다.
 각 성공 조건은 persistence 성공을 전제로 하며 실패를 성공처럼 처리하는 legacy quirk는 제외한다.
 
 | ID | 영역 | 새 제품에서 유지할 사용자 의미 | Reference / 관련 결정 |
@@ -251,7 +253,43 @@ Formatter는 clock 읽기, resolver 호출, schedule 조회, countdown 계산 �
 
 한국어 production 표시 문자열은 Desktop formatter 한 곳에 집중한다. Core는 localized text를 소유하지 않는다.
 `.resx`, localization service, culture switch, resource provider 등 다국어 infrastructure는 현재 범위 밖이다.
-이번 foundation은 UI type, Header ViewModel/XAML, timer/polling/live update, Highlight UI를 포함하지 않는다.
+A8 formatter foundation은 UI type, Header ViewModel/XAML, timer/polling/live update, Highlight UI를 포함하지 않는다.
+
+## Current Status Header Refresh Lifecycle
+
+**APPROVED — A9 (2026-09-09 사용자 명시적 승인, Phase 0.7 구현 전에 기록).**
+기본 cadence는 DispatcherTimer의 약 1초(`TimeSpan.FromSeconds(1)`)다. 정확한 1000ms deadline을
+보장하는 real-time timer가 아니다. ViewModel은 이미 계산된 CurrentTimeText/StatusText 표시 상태만
+소유하며 clock, schedule, 계산기, timer 또는 layout 상태를 소유하지 않는다. 같은 문자열을 다시
+적용할 때 불필요한 PropertyChanged를 발생시키지 않는다. 초기 빈 문자열은 구현 초기값이며
+사용자-visible placeholder 계약이 아니다.
+
+별도 Desktop refresh loop가 clock, 주입된 schedule, ViewModel과 DispatcherTimer를 조립한다.
+한 RefreshNow cycle은 IApplicationClock.GetSnapshot()을 정확히 한 번 호출하고 그 snapshot 하나로
+CurrentStatusResolver → CurrentStatusCountdownCalculator → CurrentStatusHeaderFormatter를 수행한 뒤
+ViewModel에 결과를 적용한다. 중간 clock 재조회나 ViewModel 내부의 기본 schedule hardcode는 없다.
+
+| Action | Lifecycle 의미 |
+| --- | --- |
+| Start | 실행 중이 아니면 즉시 RefreshNow 1회, 그 뒤 timer 시작 |
+| 실행 중 Start | no-op; 추가 즉시 refresh 또는 중복 timer 시작 없음 |
+| Stop | timer 중지; 반복 호출 가능 |
+| Stop 후 Start | 현재 snapshot으로 즉시 새 refresh; 과거 missed tick 재생 없음 |
+| RefreshNow | timer 실행 여부와 무관하게 현재 상태를 즉시 재계산; timer를 시작하지 않음 |
+| Dispose | timer 중지, Tick handler 해제; 반복 Dispose 가능, 이후 Start/RefreshNow는 명시적으로 거부 |
+
+Timer Tick 하나당 현재 snapshot 기반 refresh 하나만 실행한다. 지연·일시 정지 후 elapsed tick을
+세거나 과거 시각을 순서대로 재생하지 않는다. 예를 들어 09:49:58 이후 현재가 09:50:03이면
+한 번 계산하여 09:50:03의 Break를 적용한다. Windows system clock은 변경하지 않는다.
+
+Loop 생성과 lifecycle/RefreshNow 호출은 소유 WPF dispatcher thread에서 수행하며 timer Tick도
+같은 thread에서 ViewModel을 갱신한다. Background worker, generic scheduler 또는 별도
+SynchronizationContext abstraction을 도입하지 않는다. Future resume/show에서 RefreshNow를
+호출할 수 있지만 tray hide/show에 따른 Start/Stop 정책과 suspend/resume detection/integration은
+**DEFERRED**다. Editable period persistence의 schedule source 교체 방식도 별도 설계다.
+
+Phase 0.7은 ViewModel + live refresh loop foundation이다. Header XAML/rendering/layout,
+실제 App activation/wiring, Highlight 및 KRISS sync 완료를 뜻하지 않는다.
 
 ## Current Status Header
 
@@ -562,7 +600,8 @@ I15–I20은 A4/A5의 새 APPROVED invariant다. 구현 acceptance 기준이며 
 | P4/P5 | DEFERRED | time validation 세부, clock/resume 갱신 지연, 알림 빈 수업 판정 및 delivery adapter |
 | P9/P10 | DEFERRED | backup manifest/schema/checksum/naming, sharing format와 부분 적용 UX |
 | P10/C7 | DEFERRED | legacy sharing JSON envelope의 실제 지원 상세; raw timetable JSON과 구분 |
-| A4/A7/A8 | DEFERRED | font/layout 구현, Header UI 연결·갱신, Upcoming optional 보조 강조; 의미는 A7, 한국어 표시 문구는 A8 APPROVED. 다국어 infrastructure는 현재 범위 밖 |
+| A4/A7/A8/A9 | DEFERRED | font/layout 구현, Header XAML 및 실제 App activation/wiring, Upcoming optional 보조 강조; 의미 A7, 한국어 문구 A8, refresh lifecycle A9 APPROVED. 다국어 infrastructure는 현재 범위 밖 |
+| A9 | DEFERRED | Tray visibility lifecycle, suspend/resume detection/integration, editable period persistence의 schedule source 교체 |
 | A5 | DEFERRED | 공식 endpoint 재확인, NTP client, timeout/retry/resync, drift/correction/slew, offline cache, monotonic 구현, test injection, suspend/resume 처리 |
 | A5 | DEFERRED | Settings/tooltip/status detail 중 sync 상세 표시 위치 |
 
@@ -572,8 +611,8 @@ I15–I20은 A4/A5의 새 APPROVED invariant다. 구현 acceptance 기준이며 
 | --- | --- |
 | P1–P10 미승인 blocker | 0 — 모두 APPROVED |
 | Golden Reference remaining MUST | 0 — COMPLETE AS GOLDEN REFERENCE |
-| Product-level approval blocker | 0 — A1–A8 및 연결된 계약 확정 |
-| 저장소 상태 | Phase 0.6 Desktop presentation formatter foundation; 전체 제품/UI 완료 아님 |
+| Product-level approval blocker | 0 — A1–A9 및 연결된 계약 확정 |
+| 저장소 상태 | Phase 0.7 Header ViewModel + live refresh loop foundation; 실제 Header XAML/App activation과 전체 제품/UI 완료 아님 |
 | 남은 결정 | DEFERRED implementation decisions; 해당 기능 구현 전 ADR/spike/UX 검토 |
 
 이 baseline은 release-ready나 모든 구현 상세 확정을 뜻하지 않는다.
