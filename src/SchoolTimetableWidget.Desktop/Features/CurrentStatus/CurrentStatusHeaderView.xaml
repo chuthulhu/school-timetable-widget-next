@@ -1,0 +1,26 @@
+<UserControl x:Class="SchoolTimetableWidget.Desktop.Features.CurrentStatus.CurrentStatusHeaderView"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             Height="56" FontSize="16">
+    <!-- Phase 0.8 native-review candidates, not permanent product dimensions. -->
+    <Border Padding="16,0"
+            BorderBrush="{DynamicResource {x:Static SystemColors.ControlLightBrushKey}}"
+            BorderThickness="0,0,0,1">
+        <Grid>
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="112" />
+                <ColumnDefinition Width="*" />
+            </Grid.ColumnDefinitions>
+            <TextBlock x:Name="CurrentTimeTextBlock"
+                       Text="{Binding CurrentTimeText, Mode=OneWay}"
+                       VerticalAlignment="Center"
+                       TextWrapping="NoWrap"
+                       Typography.NumeralAlignment="Tabular" />
+            <TextBlock x:Name="StatusTextBlock" Grid.Column="1" Margin="16,0,0,0"
+                       Text="{Binding StatusText, Mode=OneWay}"
+                       VerticalAlignment="Center"
+                       TextWrapping="NoWrap"
+                       TextTrimming="CharacterEllipsis" />
+        </Grid>
+    </Border>
+</UserControl>

@@ -23,6 +23,8 @@
 
 ## Windows verification
 
+- 사용자 화면 확인/native smoke용 앱은 실제 사용자 로그인 세션의 로컬 대화형 데스크톱에서 정상 창으로 실행한다. Background/sandbox 실행을 사용자 확인용 실행으로 대신하지 않는다. 도구가 사용자 데스크톱 실행을 보장할 수 없으면 보이지 않는 background 실행을 먼저 시도하지 말고, 일반 host PowerShell에서 실행할 정확한 명령을 안내한다. 사용자 확인은 먼저 실제 창이 보이는지부터 한 단계씩 진행한다.
+
 - 사용자가 다른 앱에서 작업할 수 있도록 source inspection, isolated TEMP profiles, contract tests, process-local time injection, application-object/event tests를 우선한다.
 - Background 검증 중에는 창 활성화, 포인터 이동, 키 입력, clipboard 변경, foreground dialog를 사용하지 않는다. 최소화나 다른 Windows virtual desktop을 input 격리로 간주하지 않는다.
 - Native input이 필요하면 필요한 foreground 구간을 설명하고 사용자와 조율한다. 이미 승인된 구간에서는 일상적인 동작마다 반복 승인 요청을 하지 않는다.

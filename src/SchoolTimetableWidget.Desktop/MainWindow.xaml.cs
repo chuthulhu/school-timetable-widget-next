@@ -1,23 +1,15 @@
-using System.Text;
 using System.Windows;
-using System.Windows.Controls;
-using System.Windows.Data;
-using System.Windows.Documents;
-using System.Windows.Input;
-using System.Windows.Media;
-using System.Windows.Media.Imaging;
-using System.Windows.Navigation;
-using System.Windows.Shapes;
+using SchoolTimetableWidget.Desktop.Features.CurrentStatus;
 
 namespace SchoolTimetableWidget.Desktop;
 
-/// <summary>
-/// Interaction logic for MainWindow.xaml
-/// </summary>
+/// <summary>Composes feature views without owning their calculation or timer lifecycle.</summary>
 public partial class MainWindow : Window
 {
-    public MainWindow()
+    public MainWindow(CurrentStatusHeaderViewModel headerViewModel)
     {
+        ArgumentNullException.ThrowIfNull(headerViewModel);
         InitializeComponent();
+        StatusHeader.DataContext = headerViewModel;
     }
 }

@@ -1,6 +1,6 @@
 # Architecture
 
-현재는 Phase 0.7 Header ViewModel + live refresh loop foundation까지 구현했다. Desktop loop가 한 snapshot으로 Core 상태/countdown과 한국어 formatter를 조립하고 표시 전용 ViewModel을 갱신한다. 실제 Header XAML/rendering, App activation/wiring과 Highlight/UI 연결은 아직 구현하지 않았다. 다국어 infrastructure는 현재 범위 밖이다.
+현재 Phase 0.8 Header XAML + App startup/shutdown wiring은 IMPLEMENTED — USER NATIVE SMOKE PASSED다. 기존 A4–A9를 실제 View에 연결하고 사용자 host Windows에서 표시/live update/가로 resize와 종료를 확인했다. 검증 범위는 아래 native smoke 기록을 따른다. Timetable/Highlight UI는 미구현이며 다국어 infrastructure는 도입하지 않는다.
 이 문서는 확정된 baseline과 설계 방향을 구분한다. 상세 계약은
 [Product Contract](PRODUCT-CONTRACT.md), 진행 상태는 [Feature Map](FEATURE-MAP.md)을 따른다.
 
@@ -45,9 +45,9 @@ Tests   → Desktop  (Phase 0.6 presentation contract tests)
 
 | Project | 책임 / 현재 범위 |
 | --- | --- |
-| Desktop | View/ViewModel, Windows integration, infrastructure adapter. 현재 template MainWindow, App composition root, PC fallback clock adapter와 Features/CurrentStatus의 한국어 formatter, 표시 전용 ViewModel, DispatcherTimer refresh loop foundation이 있다. Loop의 실제 App activation은 아직 없다. CommunityToolkit.Mvvm은 이 project에만 직접 참조한다. |
+| Desktop | View/ViewModel, Windows integration, infrastructure adapter. 현재 MainWindow의 Header feature View, App startup/shutdown composition, PC fallback clock adapter와 Features/CurrentStatus의 한국어 formatter, 표시 전용 ViewModel, DispatcherTimer refresh loop가 있다. 실제 Header/live app refresh는 구현했고 사용자 host Windows의 제한된 native smoke를 통과했다. CommunityToolkit.Mvvm은 이 project에만 직접 참조한다. |
 | Core | 순수 계산, 상태 전이, product contract logic, 시간 abstraction, persistence/migration contract의 소유 경계. 현재 Time/의 clock interface, immutable snapshot, source enum과 Features/Periods/의 교시 정의·기본 profile·current-period 계산, Features/CurrentStatus/의 5상태 계산·countdown 의미 정규화가 있으며 WPF/Toolkit/Desktop 의존성이 없다. |
-| Tests | 기존 Core tests와 Desktop presentation/lifecycle tests의 진입점. xUnit v3로 Application Clock, current-period, Current Status, countdown, Header formatter 및 ViewModel/refresh loop contract tests를 실행한다. Fake clock과 dispatcher object test helper는 Tests 내부에만 둔다. |
+| Tests | 기존 Core tests와 Desktop presentation/lifecycle tests의 진입점. xUnit v3로 Application Clock, current-period, Current Status, countdown, Header formatter, ViewModel/refresh loop 및 Header XAML/binding contract tests를 실행한다. Fake clock과 dispatcher object test helper는 Tests 내부에만 둔다. |
 
 Core → Desktop 의존은 금지한다. Feature별 assembly를 추가하지 않고 project 내부 폴더/namespace로
 책임을 나눈다. Feature/Platform/Infrastructure 상세 폴더는 실제 첫 코드가 필요할 때 생성한다.
@@ -345,3 +345,78 @@ countdown rounding, notification, persistence, 네트워크 및 system clock mut
 - 증거는 contract/object/event tests, build/MSBuild 및 source inspection이다. 실제 timer cadence/delivery,
   Header rendering/font/layout, App activation, native keyboard/IME/focus 동작 검증이 아니다.
   창 활성화, native input, clipboard 변경, system clock 변경 및 KRISS/NTP 통신을 수행하지 않았다.
+
+## Phase 0.8 scope before implementation — 2026-09-09
+
+- 기존 A4–A9를 Header UserControl, binding 및 App startup/normal shutdown에 연결한다.
+  새 사용자-visible 제품 계약을 추가하지 않고 Core와 Phase 0.7 계산/loop 계약을 유지한다.
+- Header 높이 56 DIP, 가로 padding 16 DIP, font size 16 DIP, time column 112 DIP와
+  두 텍스트 사이 여백 16 DIP는 native 검토용 초기 구현 후보다. 승인된 영구 수치가 아니며
+  Product Contract에 고정하지 않는다. MainWindow의 기존 800 × 450 후보 크기는 유지한다.
+- Time은 fixed column + tabular numeral, status는 남은 폭 + NoWrap/CharacterEllipsis를 사용한다.
+  실제 font glyph와 폭/높이 안정성은 native 사용자 확인 전까지 검증 완료로 표시하지 않는다.
+  최소 창 크기와 overflow의 최종 UX는 P3 DEFERRED를 유지한다.
+- Weekday header/35셀, Highlight, final styling, Settings, KRISS/NTP, tray, suspend/resume,
+  single-instance, autostart, notification, persistence, installer/updater는 구현하지 않는다.
+- 자동 검증 뒤 실제 창을 준비하고 사용자 확인을 기다린다. 사용자 native 확인 전 staging,
+  commit/push를 하지 않는다. 창 visibility는 process 실행 여부와 별도로 확인한다.
+
+## Phase 0.8 Header View and App wiring — user native smoke passed
+
+- `CurrentStatusHeaderView : UserControl`의 XAML이 별도 CurrentTimeText/StatusText TextBlock을
+  OneWay로 binding한다. Code-behind는 InitializeComponent만 수행한다. 기존 ViewModel,
+  formatter, RefreshLoop와 Core 코드는 변경하지 않았다.
+- View가 고정 높이를 소유하며 time은 fixed column과 Typography.NumeralAlignment=Tabular,
+  status는 남은 star column과 NoWrap/CharacterEllipsis를 사용한다. WPF 기본 font family와
+  system separator brush를 사용한다. 위 DIP 수치는 조정 가능한 native 후보이며 최종 styling이 아니다.
+  설치된 WPF 10.0.12 reference XML에서 NumeralAlignment attached property와 Tabular enum을 확인하고
+  실제 XAML build/object test로 설정을 확인했다. Font의 실제 glyph 지원과 렌더링은 별도 native 확인 대상이다.
+- MainWindow는 Header를 Row 0 (Auto)에 배치하고 Row 1 (*)은 비워 둔다. 기존 800 × 450과
+  SizeToContent.Manual을 유지하며 새 minimum/resize 정책은 추가하지 않았다.
+  생성자에서 받은 기존 Header ViewModel을 feature View의 DataContext에 연결할 뿐 계산을 소유하지 않는다.
+- App의 StartupUri를 제거하고 OnStartup에서 App 소유 clock, DefaultPeriodSchedule.Periods와
+  새 Header ViewModel로 loop를 생성한다. MainWindow 생성 → loop.Start → MainWindow.Show 순서로
+  첫 표시 전에 두 문자열을 준비한다. Clock은 기존 App 소유 instance 하나이며 service locator가 없다.
+- App이 loop lifetime을 소유한다. OnExit에서 Dispose하고 초기 startup 실패도 Dispose 후 예외를 전파한다.
+  정상 종료는 기존 WPF 기본 shutdown 방식이며 tray/close-to-hide 정책은 도입하지 않는다.
+  Startup/normal shutdown 이외 OS lifecycle integration은 DEFERRED다.
+
+### Phase 0.8 automated verification — 2026-09-09
+
+- dotnet restore, dotnet build --no-restore, dotnet test --no-build --logger "console;verbosity=normal" 실행.
+  최종 결과 모두 exit 0, warning/error 0. 기존 191 + 신규 4 = 195 passed, failed/skipped 0.
+- 최초 신규 binding tests 2개는 queued WPF binding 작업을 처리하기 전 빈 target을 관찰하여 실패했다.
+  Test helper에서 dedicated STA dispatcher의 queued 작업을 ApplicationIdle까지 처리하도록 보완했다.
+  UpdateTarget 강제 호출이나 실제 1초 Sleep을 사용하지 않는다. 수정 후 전체 195개를 다시 실행해 통과했다.
+- 신규 tests는 실제 compiled XAML 생성, 초기 binding, RefreshNow를 통한 경계 전후 binding 갱신,
+  두 TextBlock/고정 높이/고정 시각 열/NoWrap/Tabular 설정, MainWindow의 feature View 주입과 빈 아래 영역을 검증한다.
+  숫자 후보를 고정 assertion으로 만들거나 font pixel/geometry를 검증한 것으로 주장하지 않는다.
+- Tests는 dedicated STA에서 UserControl과 표시하지 않는 MainWindow 객체를 생성하고 정리한다.
+  Binding queue를 처리하는 object test이며 timer cadence/delivery 또는 native window smoke 증거가 아니다.
+  WPF Application 생성/실행, Window.Show, native input, clipboard/system clock 변경을 테스트에 넣지 않았다.
+- Core, 기존 191 tests, Phase 0.7 loop/ViewModel/formatter와 package/project 설정은 변경하지 않았다.
+  Core 독립성과 직접 system clock 읽기 예외는 유지한다.
+- 자동 검증 완료 시점에는 IMPLEMENTED — PENDING NATIVE REVIEW로 기록했고 staging/commit/push를 하지 않았다.
+  이후 사용자 native 확인 결과는 아래에 별도로 기록한다.
+
+### Phase 0.8 user native smoke — 2026-09-09
+
+- Codex에서 dotnet run으로 실행한 PID 74136은 응답 및 window handle이 있었지만 사용자가 창이
+  보이지 않는다고 보고했다. Desktop isolation 가능성이 있으나 원인을 확정하지 않았고 앱 실패로
+  판정하지 않았다. 해당 실행의 경로를 확인한 뒤 소유 process만 중지했다. 이 중지는 정상 종료 증거가 아니다.
+- 사용자가 일반 host PowerShell에서 같은 Desktop project를 실행했다. 제공한 screenshot에
+  School Timetable Widget 창, 위쪽 독립 Header, 왼쪽 16:09:22, 오른쪽
+  '7교시 · 종료까지 40분' 및 아래 빈 영역이 보였다. 기본 schedule의 16:00–16:50와
+  countdown floor 의미에 맞으며 제공된 기본 폭 화면에서 clipping/겹침은 관찰되지 않았다.
+- 사용자가 약 5초 관찰 요청에 '정상'으로 답해 약 1초 시각 갱신, status 시작 위치 및 Header 높이의
+  눈에 띄는 흔들림 없음을 확인했다. 가로 폭을 조금 줄였다 늘리는 확인에도 '정상'으로 답해
+  두 줄 증가, 글자 겹침, window geometry의 갑작스러운 변화가 없음을 확인했다.
+- 사용자 실행의 executable 경로와 PID 78816을 먼저 읽었다. 사용자가 X로 창을 닫고 '닫음'으로
+  응답한 뒤 해당 PID의 종료와 동일 이름 앱 process가 남지 않음을 read-only process 조회로 확인했다.
+  OnExit → Dispose는 source 확인, 실제 창 닫기와 process 종료는 사용자 조작 및 process 관찰 증거다.
+  Dispose 내부 실행을 계측하거나 사용자 PowerShell의 exit code를 수집한 것은 아니다.
+- 이 결과로 Header XAML/wiring과 live app refresh는 IMPLEMENTED — USER NATIVE SMOKE PASSED다.
+  UI 수정 없이 사용자 검토를 통과했지만 DIP 후보값을 영구 Product Contract 수치로 승격하지 않는다.
+  Timer의 정확한 cadence 계측, font glyph의 OpenType 지원 입증, 실제 시각의 모든 상태 경계,
+  극단적으로 좁은 폭, DPI/multi-monitor, tray/suspend/resume 및 최종 visual design 검증으로 확대하지 않는다.
+- 사용자 native 확인 직후에는 검증 결과만 문서에 반영했고 staging/commit/push를 하지 않았다. 이후 milestone 종료 요청에 따라 최종 self-review와 자동 검증을 거쳐 commit/push한다.
