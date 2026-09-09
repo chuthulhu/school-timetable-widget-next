@@ -1,12 +1,13 @@
 # Architecture
 
-현재는 Phase 0.3 current-period Core calculation foundation까지 구현했다. Current Status Header, break/countdown과 UI 기능은 아직 구현하지 않았다.
+현재는 Phase 0.4 Current Status Core foundation까지 구현했다. Break를 포함한 5상태 사실 계산을 제공하며, Current Status Header, countdown과 Highlight/UI 연결은 아직 구현하지 않았다.
 이 문서는 확정된 baseline과 설계 방향을 구분한다. 상세 계약은
 [Product Contract](PRODUCT-CONTRACT.md), 진행 상태는 [Feature Map](FEATURE-MAP.md)을 따른다.
 
 ## Accepted baseline
 
 - WPF + .NET 10 LTS + CommunityToolkit.Mvvm, MVVM: P1 / [ADR 0002](adr/0002-windows-desktop-stack.md).
+- Current Status 5상태 사실 계약: A6 / Product Contract의 Current Status State Model.
 - 공통 Application Clock: A5, I16–I20 / [ADR 0004](adr/0004-application-time-source.md).
 - Settings의 Committed → Draft → Live Preview와 성공 Apply baseline: P2 / [ADR 0003](adr/0003-settings-transaction.md).
 - Golden Reference는 behavior/evidence source: [ADR 0001](adr/0001-golden-reference-policy.md). Python 구조는 재사용하지 않는다.
@@ -41,8 +42,8 @@ Tests   → Core
 | Project | 책임 / 현재 범위 |
 | --- | --- |
 | Desktop | View/ViewModel, Windows integration, infrastructure adapter. 현재 template MainWindow, App composition root와 PC fallback clock adapter가 있다. CommunityToolkit.Mvvm은 이 project에만 참조한다. |
-| Core | 순수 계산, 상태 전이, product contract logic, 시간 abstraction, persistence/migration contract의 소유 경계. 현재 Time/의 clock interface, immutable snapshot, source enum과 Features/Periods/의 교시 정의·기본 profile·current-period 계산이 있으며 WPF/Toolkit/Desktop 의존성이 없다. |
-| Tests | Core 중심 테스트의 진입점. xUnit v3로 Application Clock 및 current-period contract tests를 실행한다. Fake clock과 snapshot helper는 Tests 내부에만 둔다. |
+| Core | 순수 계산, 상태 전이, product contract logic, 시간 abstraction, persistence/migration contract의 소유 경계. 현재 Time/의 clock interface, immutable snapshot, source enum과 Features/Periods/의 교시 정의·기본 profile·current-period 계산, Features/CurrentStatus/의 5상태 계산이 있으며 WPF/Toolkit/Desktop 의존성이 없다. |
+| Tests | Core 중심 테스트의 진입점. xUnit v3로 Application Clock, current-period 및 Current Status contract tests를 실행한다. Fake clock과 snapshot helper는 Tests 내부에만 둔다. |
 
 Core → Desktop 의존은 금지한다. Feature별 assembly를 추가하지 않고 project 내부 폴더/namespace로
 책임을 나눈다. Feature/Platform/Infrastructure 상세 폴더는 실제 첫 코드가 필요할 때 생성한다.
@@ -121,7 +122,7 @@ countdown rounding, notification, persistence, 네트워크 및 system clock mut
   사용자 지정 sub-second 구간, 모든 평일·주말, 긴 gap, source/offset 독립성, local 날짜,
   캡처 뒤 clock 날짜/source 전환, 맞닿음·겹침·중복·잘못된 입력을 검증한다.
   기본 snapshot은 직접 생성하고, clock 전환 증거에만 기존 Tests fake를 사용한다.
-- 다음 교시, 쉬는시간 분류/countdown, Status Header/ViewModel, notification, KRISS/NTP,
+- Phase 0.3 당시 다음 교시, 쉬는시간 분류/countdown, Status Header/ViewModel, notification, KRISS/NTP,
   persistence, editor, 날짜별 예외는 미구현이다. Desktop composition/UI를 연결하지 않았다.
 ### Phase 0.3 verification — 2026-09-09
 
@@ -136,3 +137,60 @@ countdown rounding, notification, persistence, 네트워크 및 system clock mut
   계산/표시 분리 및 이번 범위의 과설계 여부를 확인했다. 제품 계약 변경이나 새 ADR은 없다.
 - 검증은 Core contract tests와 build/source inspection이다. WPF 창 실행·활성화, native input,
   system clock 변경 또는 KRISS/NTP 통신을 수행하지 않았다.
+
+## Phase 0.4 Current Status Core foundation
+
+- A6 승인 사실과 5상태의 current/next/transition 계약을 구현 전에 Product Contract에 기록했다.
+  기존 P4/A5/ADR 0004의 interval/clock 의미를 유지하며 별도 ADR을 추가하지 않았다.
+- Core `Features/CurrentStatus/`가 `CurrentStatusKind`, `CurrentStatusResult`, `CurrentStatusResolver`를 소유한다.
+  Kind는 BeforeFirstPeriod, InPeriod, Break, AfterLastPeriod, Weekend의 정확히 5개다.
+  긴 gap도 Break이며 점심/공휴일/휴업일/특별일정 상태를 추론하지 않는다.
+- Result는 sealed class, private constructor, get-only 필드와 5개 named factory로 구성한다.
+  BeforeFirstPeriod/Break factory는 유효한 PeriodDefinition의 번호와 Start를 next/transition에,
+  InPeriod factory는 번호와 End를 current/transition에 넣는다. null period는 거부하며
+  AfterLastPeriod/Weekend는 current/next/transition이 모두 null이다. 임의 필드 조합 생성이나 변경을 허용하지 않는다.
+- `CurrentStatusResolver.Resolve(ApplicationTimeSnapshot snapshot, IEnumerable<PeriodDefinition> definitions)`는
+  `CurrentStatusResult`를 반환한다. clock을 주입하거나 읽지 않고 snapshot의 local Date/TimeOfDay만 사용한다.
+  source/revision/offset 분기나 UTC/KST 재변환 없이 tick 정밀도를 유지한다.
+- `Features/Periods/PeriodScheduleValidator`는 두 resolver만 공유하는 internal 계산 검증 helper다.
+  Phase 0.3 검증을 추출하여 입력을 한 번 열거·복사하고 null entry/중복 번호/겹침을 거부한다.
+  번호 1–7과 Start < End는 기존 immutable PeriodDefinition의 생성자가 보장한다.
+  모든 검증은 주말 판정보다 먼저 실행한다. CurrentPeriod의 API, 빈 입력 → null 및 판정 동작은 유지한다.
+- CurrentStatus만 빈 입력을 ArgumentException으로 거부하고 복사본을 Start 기준 Array.Sort로 정렬한다.
+  caller collection은 변경하지 않는다. 유효한 부분 schedule도 제공된 정의 기준으로 계산한다.
+  첫/다음/마지막은 번호나 입력 순서가 아닌 시간 순서다. 이 허용이 persisted profile의 유효성 승인은 아니다.
+  Editor/import의 1–7 전체 존재 등 완전성 정책과 validation UX는 별도 단계다.
+- 두 resolver는 schedule validation만 공유하고 별도 순수 계산을 한다. CurrentPeriod를 내부에서 다시 호출해
+  입력 복사·검증을 반복하거나 API를 status용으로 확대하지 않는다. CurrentStatus는 정렬 후 한 번 순회하며
+  시작 전이면 BeforeFirstPeriod/Break, 종료 전이면 InPeriod, 모두 지났으면 AfterLastPeriod다.
+  [start,end) 의미상 정확한 End는 종료한 교시에서 벗어나며, 맞닿은 Start에서는 즉시 다음 InPeriod다.
+- TransitionTime은 날짜 없는 예정 local school time(TimeOnly?)이다. BeforeFirstPeriod는 first.Start,
+  InPeriod는 current.End, Break는 next.Start, AfterLastPeriod/Weekend는 null이다. Countdown duration이 아니다.
+- Tests/CurrentStatus는 기본 예시와 7교시 모든 경계의 1 tick, 긴 gap, 평일/주말, 맞닿음,
+  순서 뒤섞임과 caller 불변성, 번호와 시간 순서가 다른 부분 schedule, 단일 subsecond 교시,
+  source/offset/revision 독립성, local/UTC 날짜 차이, 캡처 뒤 clock 전환, 두 resolver 일관성,
+  빈/잘못된 schedule의 주말 이전 거부, 단일 열거와 Result invariant를 검증한다.
+  기존 Clock/CurrentPeriod 테스트는 수정·삭제하지 않았다.
+- Core는 WPF/Toolkit/Desktop에 독립적이다. 사용자 문자열, countdown 계산/formatting, Header ViewModel/XAML,
+  Highlight integration, notification, KRISS/NTP, persistence, editor는 추가하지 않았다.
+
+### Phase 0.4 verification — 2026-09-09
+
+- SDK 10.0.401에서 dotnet restore, dotnet build --no-restore,
+  dotnet test --no-build --logger "console;verbosity=normal" 모두 exit 0.
+  Build warning 0 / error 0. 기존 clock 13 + period 45 + 신규 Current Status 40 = 98 passed,
+  failed/skipped 0. 기존 58개 테스트 파일은 변경하지 않았다.
+- 최초 sandbox restore는 .dotnet/10.0.401.toolpath.sentinel 접근 제한으로 실패했다.
+  승인된 실행 권한으로 restore를 재실행해 성공했다. 새 SDK 첫 실행 출력에는
+  CLI 초기화와 ASP.NET Core HTTPS 개발 인증서 자동 설치가 포함됐다. 인증서 trust 명령은 실행하지 않았다.
+- Core MSBuild 평가: net10.0, UseWPF 없음, ProjectReference/PackageReference 없음,
+  FrameworkReference는 Microsoft.NETCore.App만 존재. Source에서도 WPF/Toolkit/Desktop 의존 없음.
+- bin/obj 제외 production .cs의 DateTime.Now / DateTimeOffset.Now / DateTime.UtcNow /
+  DateTimeOffset.UtcNow 검색은 기존 Desktop PcFallbackApplicationClock의 DateTimeOffset.Now 1건뿐이다.
+  CurrentStatus 및 Periods feature의 직접 시간 읽기/clock 조회는 0건이다.
+- 자체 검토: 정확히 5상태, 점심 추론 없음, end exclusive와 맞닿은 즉시 다음 InPeriod,
+  상태별 transition/필드 invariant, 시간 정렬과 caller 불변성, source/revision 독립성과 snapshot 재사용,
+  Core/표시 분리, empty/partial 계산과 persisted validity의 구분 및 Phase 0.3 동작 보존을 확인했다.
+- 증거는 Core contract tests, build와 source inspection이다. WPF 창 실행·활성화, native input,
+  clipboard 변경, system clock 변경 또는 KRISS/NTP 통신을 수행하지 않았다.
+  Header/Highlight UI나 Desktop adapter의 실제 native 동작 검증으로 해석하지 않는다.

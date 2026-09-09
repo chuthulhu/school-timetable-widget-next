@@ -18,31 +18,7 @@ public static class CurrentPeriodResolver
     public static int? Resolve(ApplicationTimeSnapshot snapshot, IEnumerable<PeriodDefinition> definitions)
     {
         ArgumentNullException.ThrowIfNull(snapshot);
-        ArgumentNullException.ThrowIfNull(definitions);
-
-        var periods = definitions.ToArray();
-        for (var i = 0; i < periods.Length; i++)
-        {
-            var period = periods[i];
-            if (period is null)
-            {
-                throw new ArgumentException("Period definitions must not contain null entries.", nameof(definitions));
-            }
-
-            for (var j = 0; j < i; j++)
-            {
-                var other = periods[j];
-                if (period.PeriodNumber == other.PeriodNumber)
-                {
-                    throw new ArgumentException("Period numbers must be unique.", nameof(definitions));
-                }
-
-                if (period.Start < other.End && other.Start < period.End)
-                {
-                    throw new ArgumentException("Current-period resolution requires non-overlapping intervals.", nameof(definitions));
-                }
-            }
-        }
+        var periods = PeriodScheduleValidator.CopyAndValidate(definitions);
 
         if (snapshot.Date.DayOfWeek is DayOfWeek.Saturday or DayOfWeek.Sunday)
         {

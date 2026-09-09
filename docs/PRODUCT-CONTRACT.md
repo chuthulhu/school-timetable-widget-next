@@ -5,6 +5,7 @@
 **Approved baseline v0.1 (2026-09-08).**
 이 문서는 `school-timetable-widget-next`의 authoritative Product Contract v0.1이다.
 사용자가 P1–P10을 승인하고 A4/A5를 추가 승인하여 제품 계약 baseline을 확정했다.
+2026-09-09 사용자가 A6 Current Status State Model을 추가 승인했다.
 승인된 planning handoff에서 이관했으며 제품 결정의 의미는 유지한다.
 DEFERRED 구현 상세는 남아 있으며 모든 설계 완료, release-ready 또는 모든 상세의
 implementation-ready를 뜻하지 않는다.
@@ -70,7 +71,7 @@ Windows 바탕화면에서 주간 시간표와 현재 수업을 빠르게 확인
 | LEGACY EVIDENCE | 과거 동작의 근거이며 새 제품 요구가 아님 |
 
 **MATCH / COMPATIBLE / REDESIGN은 이식 분류이며 승인 상태가 아니다.**
-A1–A5, P1–P10 및 연결된 MATCH/COMPATIBLE/REDESIGN의 제품 수준 계약과 invariants는 APPROVED다.
+A1–A6, P1–P10 및 연결된 MATCH/COMPATIBLE/REDESIGN의 제품 수준 계약과 invariants는 APPROVED다.
 명시적 DEFERRED 항목은 구현 단계에서 결정하며 승인 상태를 전파하지 않는다.
 이 baseline의 승인 근거는 사용자 승인 결과다. 기존 RECOMMENDED, updater/build B 판정이나 테스트 존재만으로 승인한 것이 아니다.
 
@@ -83,6 +84,7 @@ A1–A5, P1–P10 및 연결된 MATCH/COMPATIBLE/REDESIGN의 제품 수준 계�
 | A3 | APPROVED | QR 기능 제외. 공유는 PC ↔ PC 파일 기반을 기본으로 함 | timetable/time 선택 공유 상세는 P10, 파일 format은 DEFERRED |
 | A4 | APPROVED | Current Status Header: 요일 헤더 위의 독립된 고정 높이 영역에 현재 시각 `HH:mm:ss`(24시간제)와 학교 시간 상태를 항상 함께 표시 | countdown formatting, font/layout 구현, Upcoming 보조 강조는 DEFERRED |
 | A5 | APPROVED | Application Clock / Standard Time Source: 공통 앱 시간원, KRISS 대한민국 표준시(KST) 우선, PC local time으로 즉시 시작 및 동기화 불가 시 fallback, Windows system clock 변경 금지 | endpoint/NTP/timeout/retry/resync/correction/monotonic 구현 및 test injection은 DEFERRED; [ADR 0004](adr/0004-application-time-source.md) |
+| A6 | APPROVED | Current Status State Model: BeforeFirstPeriod, InPeriod, Break, AfterLastPeriod, Weekend의 정확히 5상태와 아래 current/next/transition 사실 계약 | Core는 display string을 제공하지 않음; countdown 계산/formatting 및 UI는 별도 단계 |
 
 ## Approved Decisions — P1–P10
 
@@ -102,7 +104,7 @@ A1–A5, P1–P10 및 연결된 MATCH/COMPATIBLE/REDESIGN의 제품 수준 계�
 ## MATCH Product Contracts
 
 아래는 Golden Reference의 정상 사용자 의미를 추출한 APPROVED 제품 계약이다.
-A4 Status Header와 A5 Application Clock은 새 제품 결정이며 legacy MATCH 증거로 분류하지 않는다.
+A4 Status Header, A5 Application Clock 및 A6 Current Status State Model은 새 제품 결정이며 legacy MATCH 증거로 분류하지 않는다.
 각 성공 조건은 persistence 성공을 전제로 하며 실패를 성공처럼 처리하는 legacy quirk는 제외한다.
 
 | ID | 영역 | 새 제품에서 유지할 사용자 의미 | Reference / 관련 결정 |
@@ -130,6 +132,39 @@ P4 예: 09:00:00 및 09:49:59는 1교시, 09:50:00은 쉬는 시간 또는 그 �
 새 제품은 **APPROVED P4 `[start,end)`**를 A5 Application Clock이 제공하는 날짜·시각에 적용한다.
 Current-period, break, countdown, notification scheduling은 같은 clock과 같은 interval semantics를 따른다.
 UI 갱신 지연 허용치와 clock/resume 처리 세부는 DEFERRED다.
+
+## Current Status State Model
+
+**APPROVED — A6 (2026-09-09 사용자 명시적 승인).** Core 결과는 immutable 상태 사실이며
+`Kind`, `CurrentPeriodNumber` (`int?`), `NextPeriodNumber` (`int?`), `TransitionTime` (`TimeOnly?`)을 제공한다.
+상태는 아래 5개뿐이며 current/next/transition의 잘못된 조합을 생성하지 못하도록 제한한다.
+
+| Kind | 의미 | CurrentPeriodNumber | NextPeriodNumber | TransitionTime |
+| --- | --- | --- | --- | --- |
+| BeforeFirstPeriod | 평일 첫 교시 시작 전 | null | 첫 교시 번호 | 첫 Start |
+| InPeriod | 평일 현재 교시의 [Start, End) 안 | 현재 교시 번호 | null | 현재 End |
+| Break | 평일 두 교시 사이 공백 | null | 시간상 다음 교시 번호 | 다음 Start |
+| AfterLastPeriod | 평일 마지막 교시 종료 이후 | null | null | null |
+| Weekend | 토요일/일요일 | null | null | null |
+
+TransitionTime은 현재 상태가 다음 상태로 바뀌는 예정 local school time이며 날짜가 없다.
+이는 countdown duration이 아니다. Core는 display/localized string, countdown 계산·formatting,
+반올림/버림, 색상, WPF type 또는 notification 정보를 제공하지 않는다.
+점심시간을 별도 상태로 만들거나 gap 길이로 추론하지 않는다. 기본 profile의 13:00은
+Break, Next=5, TransitionTime=14:00이다. 공휴일/휴업일/특별일정 상태는 이번 범위에 추가하지 않는다.
+
+하나의 `ApplicationTimeSnapshot`과 교시 정의만으로 계산하며 snapshot의 local Date/TimeOfDay만 사용한다.
+Clock을 다시 읽거나 source/revision/offset 자체로 분기하지 않는다. P4의 tick 정밀도 `[start,end)`를
+유지한다. 정확한 End에는 종료한 교시가 current가 아니며, End와 다음 Start가 맞닿으면
+즉시 다음 InPeriod가 되어 Break가 생기지 않는다.
+
+입력 순서나 번호 크기가 아니라 Start 기준 시간 순서로 첫/다음/마지막 교시를 결정한다.
+전체 schedule 검증은 주말 판정보다 먼저 수행하여 null entry, 중복 번호 및 겹침을 거부한다.
+번호/구간 자체는 PeriodDefinition 생성 시 검증한다. Current Status 계산은 최소 한 교시가 필요하여
+빈 definitions를 `ArgumentException`으로 거부한다. 유효한 부분 정의(예: 2, 4교시)는 제공한
+schedule 기준으로 계산한다. 이 계산 API의 허용이 persisted profile의 유효성 승인을 뜻하지 않는다.
+Editor/import의 전체 1–7교시 존재 여부 등 완전성 정책은 별도 validation 단계다.
+기존 CurrentPeriodResolver의 빈 입력 → null 계약은 유지한다.
 
 ## Current Status Header
 
@@ -450,8 +485,8 @@ I15–I20은 A4/A5의 새 APPROVED invariant다. 구현 acceptance 기준이며 
 | --- | --- |
 | P1–P10 미승인 blocker | 0 — 모두 APPROVED |
 | Golden Reference remaining MUST | 0 — COMPLETE AS GOLDEN REFERENCE |
-| Product-level approval blocker | 0 — A1–A5 및 연결된 계약 확정 |
-| 저장소 상태 | Phase 0 solution skeleton + dev bootstrap; 제품 기능 구현 전 |
+| Product-level approval blocker | 0 — A1–A6 및 연결된 계약 확정 |
+| 저장소 상태 | Phase 0.4 Current Status Core foundation까지 구현; 전체 제품/UI 완료 아님 |
 | 남은 결정 | DEFERRED implementation decisions; 해당 기능 구현 전 ADR/spike/UX 검토 |
 
 이 baseline은 release-ready나 모든 구현 상세 확정을 뜻하지 않는다.
