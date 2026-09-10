@@ -1083,3 +1083,36 @@ School/Canonical previews and restart-default checks. Exact responses and limita
 are in [Period Schedule Editing](PERIOD-SCHEDULE-EDITING.md). This does not establish
 all OS input, import clipboard/Apply, all boundaries, DPI or pixel geometry coverage.
 Owned native processes were normally closed by Codex without force termination.
+
+## Optional lunch Break presentation — next Effective Day design
+
+**PLANNED — NOT IMPLEMENTED**, user-approved future requirement, 2026-09-10.
+[ADR 0010](adr/0010-optional-lunch-break-presentation.md) defines the minimal boundary.
+
+The next Effective Day / Date Override design must pass its captured effective
+period schedule to Desktop presentation alongside the same ApplicationTimeSnapshot,
+resolved status and calculated countdown already used by Header/Highlight. The
+formatter will additionally accept a default-false boolean option (conceptual
+`showLunchBetweenPeriods4And5`). A pure label branch for Break uses PeriodNumber 4
+End and PeriodNumber 5 Start from that immutable schedule; no source lookup or
+hard-coded wall-clock times, duration heuristic or independent lunch timer.
+
+| Option / captured facts | Presentation |
+| --- | --- |
+| OFF, any Break | Existing 쉬는시간 · {Next}교시까지 {Countdown} |
+| ON, Break, Period 4 End <= local time < Period 5 Start | 점심시간 · 5교시까지 {Countdown} |
+| ON, other Break | Existing ordinary Break text |
+| Any option, non-Break | Existing status text; no lunch effect |
+| Period 4 End == Period 5 Start | Empty lunch interval; normal InPeriod transition |
+
+This is a Desktop presentation variant; Core retains exactly five states, unchanged
+countdown semantics and highlight behavior. Base schedule edits and future date
+schedule overrides affect the same effective endpoints automatically. No additional
+CurrentStatusResult field or Lunch kind is needed. The composition layer supplies
+the option, and a later Settings checkbox can expose it. Full Settings, preference
+persistence, effective-day resolver and runtime lunch formatting are not implemented
+by this documentation change. Existing runtime behavior remains OFF/ordinary Break.
+
+Boundary cases and one-clock/one-schedule regression checks are future verification
+criteria in ADR 0010, not tests claimed as executed. The prior milestone records
+of ordinary Break describe the default and remain valid.

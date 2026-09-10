@@ -61,7 +61,7 @@ Windows 바탕화면에서 주간 시간표와 현재 수업을 빠르게 확인
 | System clock synchronization utility / Windows 시간 설정 변경 | OUT OF SCOPE — A5 APPROVED | 앱 내부 기준시각만 동기화. Windows system clock mutation 금지 |
 | Time server 관리 UI / 임의 timezone·world clock | OUT OF SCOPE | 학교 시간표 위젯의 현재 제품 범위가 아님 |
 | 모바일 sync | OUT OF SCOPE | 실제 제품 범위에 들어올 때 별도 검토; QR 재도입 근거가 아님 |
-| Gap 이름 지정(점심시간 등) | OUT OF SCOPE | 긴 gap도 쉬는시간. 이름 지정은 향후 별도 feature |
+| 임의 Gap 이름 지정 | OUT OF SCOPE | 기본값은 긴 gap도 쉬는시간. 사용자 승인된 4→5교시 점심 표시 옵션은 아래 future presentation variant로 별도 계획 |
 
 ## Decision Status Legend
 
@@ -190,7 +190,7 @@ Editor/import의 전체 1–7교시 존재 여부 등 완전성 정책은 별도
 | --- | --- |
 | BeforeFirstPeriod | 첫 교시 Start까지 |
 | InPeriod | 현재 교시 End까지 |
-| Break | 다음 교시 Start까지; 긴 gap도 동일하며 별도 점심 정책 없음 |
+| Break | 다음 교시 Start까지; 긴 gap과 선택적 점심 표시에도 동일한 countdown 의미 적용 |
 | AfterLastPeriod / Weekend | countdown 없음 (`null`) |
 
 Core는 작은 immutable semantic value만 제공한다. `LessThanMinute = true`이면 Hours/Minutes는 0/0,
@@ -311,7 +311,7 @@ Phase 0.7은 ViewModel + live refresh loop foundation이다. Header XAML/renderi
 수업 중 countdown은 현재 교시 종료까지, 수업 전/쉬는시간은 다음 교시 시작까지의 남은 시간을 뜻한다.
 P4 `[start,end)`에 따라 정확한 종료 시각에는 종료한 교시를 current로 강조하지 않는다.
 주말에는 시각상 수업 구간과 겹쳐도 주말 상태를 표시하며 current 강조가 없다.
-Gap 길이로 점심시간을 추론하지 않는다. 4→5교시 공백도 일반적인 쉬는시간이다.
+Gap 길이로 점심시간을 추론하지 않는다. 기본값에서는 4→5교시 공백도 일반적인 쉬는시간이다. 후속 승인된 점심 표시 옵션을 켜도 Core 상태는 Break다.
 사용자가 gap 이름을 붙이는 기능은 현재 계약 밖의 별도 feature다.
 
 **APPROVED layout invariants:** 상태/시각 변경으로 Header 높이가 흔들리지 않는다.
@@ -734,3 +734,26 @@ using one clock and one schedule snapshot. Timetable SubjectText/ClassText are u
 
 This milestone has no persistence: restarting uses defaults. It does not implement
 Settings P2, date override, font management or the other excluded future features.
+
+## Optional Lunch Break Presentation — approved future requirement 2026-09-10
+
+**PLANNED — NOT IMPLEMENTED.** 사용자 추가 요구와
+[ADR 0010](adr/0010-optional-lunch-break-presentation.md)을 따른다.
+
+- 옵션 기본값은 **OFF**다. OFF이면 모든 Break에 기존
+  `쉬는시간 · {Next}교시까지 {Countdown}`을 표시한다. 긴 gap은 기본적으로 ordinary Break다.
+- ON이고 CurrentStatusKind가 Break이며, 해당 날짜의 effective period schedule에서
+  `Period 4 End <= snapshot.TimeOfDay < Period 5 Start`일 때만
+  `점심시간 · 5교시까지 {Countdown}`을 표시한다.
+- 4교시 End == 5교시 Start이면 lunch interval은 없다. 시작/종료 시각이나 gap 길이를
+  hard-code하지 않고 PeriodNumber 4/5 identity와 그 effective interval을 사용한다.
+- 기본 일과 변경 및 향후 날짜별 override 모두 해당 날짜의 effective schedule을 따른다.
+  Header/Countdown/Highlight가 사용한 바로 그 clock snapshot + effective schedule snapshot을
+  재사용하며, 표시 판단을 위해 clock이나 schedule source를 다시 읽지 않는다.
+- 기존 5-state model(BeforeFirstPeriod, InPeriod, Break, AfterLastPeriod, Weekend)은 유지한다.
+  `CurrentStatusKind.Lunch`는 추가하지 않는다. Lunch는 Break의 Desktop presentation variant다.
+- Countdown은 기존 방식으로 다음 5교시 시작까지 계산한다. Floor/LessThanMinute/시간·분
+  의미와 highlight 동작을 바꾸지 않는다. Weekend/BeforeFirst/InPeriod/AfterLast에는 영향 없다.
+- 향후 Settings의 `[ ] 4교시와 5교시 사이를 '점심시간'으로 표시` 후보로 제공한다.
+  다음 Effective Day / Date Override 설계에 최소 표시 옵션 경계를 포함하되,
+  지금 Settings UI/schema/persistence나 실제 점심 표시 기능을 선제 구현하지 않는다.

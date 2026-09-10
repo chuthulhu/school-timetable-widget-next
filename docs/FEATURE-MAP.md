@@ -163,3 +163,15 @@ license 검증이 필요하며 불명확한 font의 자동 다운로드/재배�
 
 [ADR 0009](adr/0009-editable-base-period-schedule.md) and
 [Period Schedule Editing verification](PERIOD-SCHEDULE-EDITING.md) are the current authority.
+
+## Optional lunch Break label — approved future requirement
+
+| Feature | Status | Rule / boundary |
+| --- | --- | --- |
+| 4→5교시 점심시간 표시 옵션 | PLANNED — default OFF | ON + Break + effective Period4.End <= time < Period5.Start이면 점심시간 · 5교시까지 기존 Countdown; touching에는 interval 없음 |
+| Effective Day presentation integration | PLANNED — next Effective Day / Date Override design | Header/Countdown/Highlight와 같은 clock/effective schedule snapshot; 변경된 base/날짜 override의 4/5교시 identity 사용, 재조회/시간 hard-code 금지 |
+| Lunch display Settings checkbox | PLANNED | Desktop 표시 옵션만; 현재 UI/schema/persistence 미구현 |
+
+[ADR 0010](adr/0010-optional-lunch-break-presentation.md): Core의 5상태를 유지하고 Lunch
+kind는 추가하지 않는다. 다른 gap/상태와 countdown/highlight 의미는 그대로다.
+현재 런타임에는 적용하지 않았으며 모든 Break가 기존 기본 문구를 표시한다.
