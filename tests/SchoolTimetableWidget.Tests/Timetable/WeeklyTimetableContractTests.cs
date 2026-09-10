@@ -12,7 +12,7 @@ public class WeeklyTimetableContractTests
         Assert.Equal(5, week.Cells.Select(cell => cell.Day).Distinct().Count());
         Assert.Equal(7, week.Cells.Select(cell => cell.PeriodNumber).Distinct().Count());
         Assert.Equal(35, week.Cells.Distinct(ReferenceEqualityComparer.Instance).Count());
-        Assert.All(week.Cells, cell => Assert.Equal(string.Empty, cell.Content));
+        Assert.All(week.Cells, cell => Assert.Equal(string.Empty, cell.Value.SubjectText));
         foreach (var day in Enum.GetValues<SchoolDay>())
         foreach (var period in Enumerable.Range(1, 7))
         {
@@ -30,8 +30,8 @@ public class WeeklyTimetableContractTests
         var original = input.ToArray();
         var week = new WeeklyTimetable(input);
         Assert.Equal(original, input);
-        input[0] = new TimetableCell(SchoolDay.Friday, 7, "changed");
-        Assert.Equal(string.Empty, week[SchoolDay.Friday, 7].Content);
+        input[0] = new TimetableCell(SchoolDay.Friday, 7, new TimetableCellValue("changed", ""));
+        Assert.Equal(string.Empty, week[SchoolDay.Friday, 7].Value.SubjectText);
         Assert.Equal(SchoolDay.Monday, week.Cells[0].Day);
         Assert.Equal(1, week.Cells[0].PeriodNumber);
         Assert.Equal(SchoolDay.Friday, week.Cells[34].Day);
@@ -51,8 +51,8 @@ public class WeeklyTimetableContractTests
     public void TextIsPreservedExactlyAndRepeatedValuesRemainSeparate(string content)
     {
         var week = new WeeklyTimetable(WeeklyTimetable.Empty().Cells.Select(
-            cell => new TimetableCell(cell.Day, cell.PeriodNumber, content)));
-        Assert.All(week.Cells, cell => Assert.Equal(content, cell.Content));
+            cell => new TimetableCell(cell.Day, cell.PeriodNumber, new TimetableCellValue(content, ""))));
+        Assert.All(week.Cells, cell => Assert.Equal(content, cell.Value.SubjectText));
         Assert.NotSame(week[SchoolDay.Monday, 1], week[SchoolDay.Tuesday, 1]);
         Assert.NotSame(week[SchoolDay.Monday, 1], week[SchoolDay.Monday, 2]);
     }
@@ -66,7 +66,7 @@ public class WeeklyTimetableContractTests
     [InlineData(0, int.MinValue)]
     public void InvalidSlotsCannotBeConstructedOrAccessed(int day, int period)
     {
-        Assert.Throws<ArgumentOutOfRangeException>(() => new TimetableCell((SchoolDay)day, period, ""));
+        Assert.Throws<ArgumentOutOfRangeException>(() => new TimetableCell((SchoolDay)day, period, new TimetableCellValue("", "")));
         var week = WeeklyTimetable.Empty();
         Assert.Throws<ArgumentOutOfRangeException>(() => week[(SchoolDay)day, period]);
     }

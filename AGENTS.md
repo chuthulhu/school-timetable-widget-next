@@ -23,7 +23,12 @@
 
 ## Windows verification
 
-- 사용자 화면 확인/native smoke용 앱은 실제 사용자 로그인 세션의 로컬 대화형 데스크톱에서 정상 창으로 실행한다. Background/sandbox 실행을 사용자 확인용 실행으로 대신하지 않는다. 도구가 사용자 데스크톱 실행을 보장할 수 없으면 보이지 않는 background 실행을 먼저 시도하지 말고, 일반 host PowerShell에서 실행할 정확한 명령을 안내한다. 사용자 확인은 먼저 실제 창이 보이는지부터 한 단계씩 진행한다.
+- Native smoke가 필요하면 Codex가 먼저 직접 앱 실행을 시도하고 실행 가능 여부를 확인한다. 사용자 desktop 표시를 사전에 보장하지 못하거나 과거 desktop isolation 사례가 있었다는 이유만으로 처음부터 사용자 수동 실행을 요구하지 않는다.
+- 같은 환경에서 실제 사용자 화면 표시가 확인된 직접 실행 경로가 있으면 우선 재사용한다. 2026-09-10 이 환경에서는 sandbox 실행 창은 사용자에게 보이지 않았고, sandbox 밖 직접 실행은 실제 화면 표시와 편집 UX가 확인되었다. 이 관찰을 모든 환경의 보장이나 사용자 수동 실행 요구 근거로 일반화하지 않는다.
+- Codex가 실행한 정상 앱 창이 사용자의 실제 Windows desktop에 보이면 그대로 사용한다. 프로세스 존재, window handle 또는 같은 SessionId만으로 사용자가 창을 볼 수 있다고 단정하지 않는다. 실제 화면 표시와 필요한 편집 UX/가독성 등 시각적 판단만 사용자에게 확인한다.
+- 프로세스 시작/정상 종료, PID 소멸, crash 여부 등은 가능한 한 Codex가 직접 확인한다. 소유한 진단 process만 대상으로 하고, 강제 종료를 정상 종료/native X 성공 증거로 취급하지 않는다.
+- 사용자 host PowerShell 수동 실행은 직접 실행 가능 여부를 먼저 확인한 후에만 요청한다. 허용 사유는 실제로 확인된 사용자 desktop과의 분리/창 비표시, sandbox/session isolation으로 native interaction 불가, 사용자 입력이 반드시 필요한 OS dialog, 또는 Codex의 실행 권한 부재다. 현재 관찰한 실패 종류와 근거를 구분해 설명한다.
+- 직접 실행한 창이 보이지 않으면 관찰 근거에 따라 현재 권한/실행 경계를 점검한다. 같은 조건으로 무작정 재실행하지 않으며, 보이지 않는 background 창을 사용자 native 확인 결과로 대신하지 않는다.
 
 - 사용자가 다른 앱에서 작업할 수 있도록 source inspection, isolated TEMP profiles, contract tests, process-local time injection, application-object/event tests를 우선한다.
 - Background 검증 중에는 창 활성화, 포인터 이동, 키 입력, clipboard 변경, foreground dialog를 사용하지 않는다. 최소화나 다른 Windows virtual desktop을 input 격리로 간주하지 않는다.

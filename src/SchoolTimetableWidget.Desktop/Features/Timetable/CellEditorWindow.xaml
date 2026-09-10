@@ -1,0 +1,41 @@
+<Window x:Class="SchoolTimetableWidget.Desktop.Features.Timetable.CellEditorWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        Title="시간표 셀 편집" Width="460" Height="480" MinWidth="360" MinHeight="380"
+        WindowStartupLocation="CenterOwner" ShowInTaskbar="False" FontSize="16">
+    <Grid Margin="20">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="*" />
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="*" />
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="Auto" />
+        </Grid.RowDefinitions>
+        <TextBlock Text="{Binding TargetLabel}" FontWeight="SemiBold" Margin="0,0,0,8" />
+        <TextBlock Grid.Row="1" Text="변경 내용은 앱을 종료할 때까지 유지됩니다."
+                   TextWrapping="Wrap" FontSize="13" Margin="0,0,0,12" />
+        <Label Grid.Row="2" Content="교과" Target="{Binding ElementName=SubjectInput}" Padding="0,0,0,4" />
+        <TextBox x:Name="SubjectInput" Grid.Row="3"
+                 Text="{Binding SubjectText, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                 AcceptsReturn="True" AcceptsTab="False" TextWrapping="Wrap"
+                 VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled"
+                 Padding="8" AutomationProperties.Name="교과" />
+        <Label Grid.Row="4" Content="반" Target="{Binding ElementName=ClassInput}" Padding="0,12,0,4" />
+        <TextBox x:Name="ClassInput" Grid.Row="5"
+                 Text="{Binding ClassText, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                 AcceptsReturn="True" AcceptsTab="False" TextWrapping="Wrap"
+                 VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled"
+                 Padding="8" AutomationProperties.Name="반" />
+        <TextBlock Grid.Row="6" Text="{Binding ErrorText}" TextWrapping="Wrap" Foreground="DarkRed"
+                   FontSize="13" Margin="0,8,0,0" />
+        <StackPanel Grid.Row="7" Orientation="Horizontal" HorizontalAlignment="Right" Margin="0,12,0,0">
+            <Button x:Name="ApplyButton" Content="적용" MinWidth="80" Padding="12,6"
+                    IsDefault="False" Click="Apply_Click" />
+            <Button x:Name="CancelButton" Content="취소" MinWidth="80" Padding="12,6" Margin="8,0,0,0"
+                    IsCancel="True" Click="Cancel_Click" />
+        </StackPanel>
+    </Grid>
+</Window>

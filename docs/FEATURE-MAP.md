@@ -9,7 +9,7 @@ PLANNED 기능에도 계약에 명시된 DEFERRED 상세는 그대로 남아 있
 | Feature | 상태 | Product Contract ID / section | 관련 ADR / 남은 상세 |
 | --- | --- | --- | --- |
 | Repository / Skeleton | IMPLEMENTED — Phase 0 skeleton + dev bootstrap | Architecture / Development Setup | [0005](adr/0005-phase-zero-project-structure.md); 3 projects, CLI runner 구성. 제품 기능/native 검증 완료를 뜻하지 않음 |
-| Timetable Core/read-only model | IMPLEMENTED — FOUNDATION | A2, M1, I6–I7, R1–R3 | Immutable 35슬롯, 완전성/중복/null 검증, period/day 정렬, text 그대로 보존; 저장 schema 아님 |
+| Timetable Core/read-only model | IMPLEMENTED — FOUNDATION | A2, M1, I6–I7, R1–R3 | Immutable 35슬롯과 SubjectText/ClassText value, 완전성/중복/null 검증, period/day 정렬, 한 cell pair 교체와 문자열 보존; 저장 schema 아님 |
 | Weekly Timetable read-only View | IMPLEMENTED — USER NATIVE SMOKE PASSED | A2, M1, I6–I7, A4, P3 | 별도 feature VM/View, 7×5 body ItemsControl, 숫자 1–7 교시 열, plain text/Wrap/Center, 측정 기반 minimum; 대표 표시/live update/가로 resize/X 종료 사용자 확인 |
 | Weekday Header | IMPLEMENTED — USER NATIVE SMOKE PASSED | M1, A4; Golden Reference visual evidence | 월/화/수/목/금, 빈 corner + 왼쪽 숫자 교시 header와 함께 총 13 headers; Status Header 아래 |
 | Period current-resolution foundation | IMPLEMENTED — FOUNDATION / Phase 0.3 | M3, P4, R4, R6–R7, I16 | Core immutable 정의·기본 profile·snapshot 기반 int? 계산, 평일 [start,end), 입력 중복/겹침 거부, contract tests. 전체 editor validation은 DEFERRED |
@@ -29,7 +29,7 @@ PLANNED 기능에도 계약에 명시된 DEFERRED 상세는 그대로 남아 있
 | Tray visibility refresh lifecycle | DEFERRED | A9, P6 | hide/show에 따른 loop Start/Stop 정책 미결정 |
 | Suspend/resume integration | DEFERRED | A9, A5 | OS detection/event 연결 미구현; RefreshNow로 현재 상태 재평가 가능한 기반만 제공 |
 | Application Clock / KRISS | PARTIAL — Phase 0.2 foundation | A5, I16–I20 | [0004](adr/0004-application-time-source.md); Core snapshot/interface, Desktop PC fallback, App 소유 경계, Tests fake/contract tests 구현. KRISS 동기화는 미구현; endpoint/client/보정/동시 전환 DEFERRED |
-| Timetable Editing | PLANNED | M1–M2, A2, R16, I3, I6–I7 | [0001](adr/0001-golden-reference-policy.md); 무손실 편집과 Save 실패 경계 |
+| Timetable Editing | PARTIAL — EDITING FOUNDATION COMPLETE / USER NATIVE SMOKE PASSED | M1–M2, A2, R16, I3, I6–I7; approved Editing Foundation | [0006](adr/0006-single-cell-in-memory-editing.md); 교과/반 별도 Draft, atomic one-cell in-memory Apply/Cancel; persistence 미구현 |
 | Period Editing | PLANNED | M2–M3, P4, R6, R16 | [0004](adr/0004-application-time-source.md); time validation 상세 DEFERRED |
 | Settings | PLANNED | P2–P3, M5, R8–R14, I2, I10, I13–I14 | [0003](adr/0003-settings-transaction.md); overflow/Reset UI 상세 DEFERRED |
 | Persistence | PLANNED | R15–R21, I1, I3–I4; Data Safety Principles | [0003](adr/0003-settings-transaction.md); technology/schema/durability DEFERRED |
@@ -46,3 +46,52 @@ PLANNED 기능에도 계약에 명시된 DEFERRED 상세는 그대로 남아 있
 
 이 파일은 Legacy evidence 문서의 복사본이 아니다. 과거 기능의 증거가 필요하면
 [Legacy Reference](LEGACY-REFERENCE.md)의 고정 commit 문서를 읽는다.
+
+## Future requirements — 2026-09-10
+
+사용자가 승인한 future constraint이며 이번 Editing Foundation 구현에는 포함하지 않는다.
+
+| Feature | 상태 | 요구 / 경계 |
+| --- | --- | --- |
+| Date-specific timetable override | FUTURE REQUIREMENT — NOT IMPLEMENTED | DateOnly 날짜의 예외; 기본 weekly 불변 |
+| Date-specific period schedule override | FUTURE REQUIREMENT — NOT IMPLEMENTED | DateOnly 날짜의 예외; 기본 schedule 불변; timetable override와 독립 |
+| Effective day configuration | FUTURE REQUIREMENT — NOT IMPLEMENTED | timetable only / schedule only / both / neither; 같은 snapshot 날짜로 resolve한 구성을 Status/Highlight/Notification이 공유 |
+| CurrentDateText | FUTURE REQUIREMENT — NOT IMPLEMENTED | yyyy년 MM월 dd일; 기존 CurrentTimeText(HH:mm:ss) 별도 유지; date/time/status 동일 IApplicationClock snapshot |
+
+모델/override UI/schema/calendar/date selector는 후속 milestone에서 설계한다.
+소유권과 coupling 제약은 [Architecture](ARCHITECTURE.md#future-date-configuration-constraints--2026-09-10)에 기록한다.
+
+## Bulk Timetable Input — consolidated future scope
+
+현재 Editing Foundation은 SubjectText/ClassText 직접 한 셀 편집이다.
+아래 기능은 **구현하지 않았으며** 상세 요구는
+[Architecture future bulk scope](ARCHITECTURE.md#future-bulk-timetable-input--consolidated-2026-09-10)에 통합한다.
+
+| Feature | 상태 | 방향 / 경계 |
+| --- | --- | --- |
+| Bulk Timetable Input | FUTURE / PLANNED | 명시적 A/B/C modes; format recognition 분리; 공통 parse/validate/preview/atomic Apply pipeline 가능 |
+| School Timetable Import (A) | PLANNED — preferred bulk import UX | Metadata 앞뒤 허용; 1–7 × 5/35-slot structural signature와 optional weekday header; absolute column/semantic guessing 금지; 교과/반 row pairs; multiple teacher 후보 사용자 선택 |
+| Canonical Template Import (B) | PLANNED — deterministic fallback | 정확한 8×11 표; 교시 + 월~금 교과/반 10열 exact headers와 1–7 validation; 시간표 양식 복사 TSV → spreadsheet A1 → 전체 복사 → Preview/Apply; .xlsx export는 별도 편의 기능 |
+| Small Rectangular Paste (C) | OPTIONAL / PLANNED | Selected cell anchor, explicit Ctrl+V mode, 5-column subject / 10-column pair 후보; A/B와 heuristic 혼합 금지; range overflow reject |
+| Date-specific import target | FUTURE / depends on Date Override milestone | Format/parser와 기본 weekly 또는 DateOnly 예외 target 선택 분리; parsed values/preview/atomic pipeline 재사용 |
+
+모든 mode는 가능한 clipboard semantics 범위의 empty/Unicode/newline/whitespace 보존,
+quoted/embedded newline 조사, Preview와 명시적 atomic Apply를 따른다. Parse/validation/
+ambiguity/range 실패는 no modification이며 silent clipping/guessing/partial update 금지다.
+현재 parser/template/clipboard/Bulk UI/DateOverride/calendar/provider hierarchy는 추가하지 않는다.
+
+## Future teacher profiles and groups — 2026-09-10
+
+현재 Editing Foundation 구현 범위를 확대하지 않는다. 모두 **FUTURE / NOT IMPLEMENTED**다.
+
+| Feature | 요구 / 경계 |
+| --- | --- |
+| Teacher timetable profiles | Stable ProfileId + DisplayName + WeeklyTimetable 상위 소유 개념; 이름을 key로 사용하지 않음; WeeklyTimetable 자체에 teacher/group 추가 금지 |
+| Groups and teacher tabs | 3학년 담임/과학교사/자주 확인하는 교사 등; group은 profile references만 보유, data 복제 없음; 동일 profile의 여러 group 소속 허용 |
+| Multi-teacher school import | 여러 detected row-pairs에서 한 번에 여러 profile 선택 생성/갱신 가능성을 고려; 구현/target mapping UX는 후속 milestone |
+| Profile-specific date overrides | 교사별 특정일 수업 변경과 학교 특정일 effective PeriodSchedule은 독립 concern |
+| Effective selected-profile configuration | 동일 clock snapshot/date의 selected profile effective timetable + effective schedule을 Header/Highlight 등에서 공유 |
+| Multi-profile persistence | 앱에 weekly 하나만 존재한다는 schema/coupling 금지; 현재 persistence 없음 |
+
+TeacherTimetableProfile/TimetableGroup 모델, multi-tab UI, multi-teacher persistence/import,
+group comparison UI는 구현하지 않는다. 상세 제약은 ARCHITECTURE의 future profiles 절을 따른다.

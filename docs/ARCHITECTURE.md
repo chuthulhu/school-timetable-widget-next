@@ -1,6 +1,6 @@
 # Architecture
 
-현재 Phase 0.8 Header XAML + App startup/shutdown wiring은 IMPLEMENTED — USER NATIVE SMOKE PASSED다. 기존 A4–A9를 실제 View에 연결하고 사용자 host Windows에서 표시/live update/가로 resize와 종료를 확인했다. 검증 범위는 아래 native smoke 기록을 따른다. Weekly Timetable Core/read-only View도 구현했고 사용자 native smoke를 통과했다. Current Highlight integration도 구현했고 아래 범위의 사용자 native smoke를 통과했다. 다국어 infrastructure는 도입하지 않는다.
+현재 Phase 0.8 Header XAML + App startup/shutdown wiring은 IMPLEMENTED — USER NATIVE SMOKE PASSED다. 기존 A4–A9를 실제 View에 연결하고 사용자 host Windows에서 표시/live update/가로 resize와 종료를 확인했다. 검증 범위는 아래 native smoke 기록을 따른다. Weekly Timetable Core/read-only View도 구현했고 사용자 native smoke를 통과했다. Current Highlight integration도 구현했고 아래 범위의 사용자 native smoke를 통과했다. 교과/반 한 셀 Editing Foundation도 in-memory 범위의 자동 검증과 사용자 native smoke를 통과했다. 다국어 infrastructure는 도입하지 않는다.
 이 문서는 확정된 baseline과 설계 방향을 구분한다. 상세 계약은
 [Product Contract](PRODUCT-CONTRACT.md), 진행 상태는 [Feature Map](FEATURE-MAP.md)을 따른다.
 
@@ -733,3 +733,161 @@ on/off·이동 시 geometry 안정 및 Header 일치를 확인한다. 이후 가
   Settings/theme editor, Upcoming, persistence 등 후속 범위는 추가하지 않았다.
 - git diff --check 통과. 사용자 요청 22절의 명시적 승인에 따라 이 milestone을
   main에 commit하고 origin/main에 일반 fast-forward push한다.
+
+## Future date configuration constraints — 2026-09-10
+
+사용자 추가 요구이며 현재 Editing Foundation 구현 범위를 확대하지 않는다.
+
+- 향후 특정 `DateOnly` 날짜의 timetable override와 period schedule override를
+  서로 독립적으로 제공한다: timetable only / schedule only / both / neither.
+- 날짜별 예외는 기본 `WeeklyTimetable` 또는 기본 period schedule을 파괴적으로
+  수정하지 않는다. 현재 편집은 기본 weekly의 한 슬롯을 대상으로 하지만,
+  text Draft/accept/cancel 편집기는 weekly singleton 또는 global state를 전제하지 않는다.
+  대상 선택/반영은 소유자 경계에서 담당한다. 미래 모델을 미리 구현하지 않는다.
+- 향후 하나의 `IApplicationClock` snapshot에서 날짜를 얻어 effective timetable과
+  effective schedule을 resolve하고, Current Status / Highlight / Notification은
+  동일한 effective day configuration을 소비한다. 각각 독립 조회하여 서로 다른
+  날짜/설정 조합을 관찰하게 하지 않는다. 타입·resolver API·revision 상세는 후속 설계다.
+- 향후 Header에 별도 `CurrentDateText` presentation property를 추가한다.
+  표시 형식은 `yyyy년 MM월 dd일` (예: `2026년 09월 10일`)이다.
+  기존 `CurrentTimeText`의 invariant `HH:mm:ss` 의미는 유지한다.
+  날짜/시간/status는 같은 clock snapshot에서 생성하여 자정 경계의 불일치를 방지한다.
+- 이번 milestone에는 DateOverride 모델, override UI, persistence schema,
+  calendar/date selector, effective-day resolver, CurrentDateText/UI를 구현하지 않는다.
+
+## Timetable Editing Foundation — structured value implementation
+
+Status: **IMPLEMENTED — AUTOMATED VERIFIED / USER NATIVE SMOKE PASSED (limited scope in verification record)**.
+[ADR 0006](adr/0006-single-cell-in-memory-editing.md) 및 Product Contract의
+2026-09-10 사용자 승인/후속 scope adjustment를 구현한다.
+
+- Core: immutable `TimetableCellValue(SubjectText, ClassText)`, slot은 day/period와
+  Value 보유. `WeeklyTimetable.WithCellValue`는 한 slot의 두 field를 한 번에 교체한다.
+  초기 single Content API는 제거했다. Null 거부, 정확한 문자열 보존, unchanged no-op.
+- Desktop: `TimetableCellFormatter`의 one-way DisplayText projection; 정확히 empty인
+  필드만 구분 줄바꿈 생략. `CellEditSession`은 원본 value/두 Draft/typed callback만 보유한다.
+  `WeeklyTimetableEditor`가 현 weekly slot을 capture하고 세션 하나를 관리한다.
+  `WeeklyTimetableViewModel`은 accepted in-memory snapshot과 stable 35개 cell VM을 소유한다.
+- 편집기는 두 input, 적용/취소, X/Escape 취소를 제공한다. Tab/F2/더블클릭 entry와
+  표준 WPF focus 동작은 사용자 native smoke의 제한된 범위에서 확인했다. Enter multiline, no default Apply.
+- Highlight는 기존 단일 clock refresh pipeline을 유지한다. Draft/Apply는 대상 identity를
+  바꾸지 않으며 modal 편집 중에도 header/current slot을 같은 snapshot으로 갱신한다.
+- 값과 DisplayText는 PropertyChanged 전에 함께 교체한다. Focus outline은 opacity,
+  current highlight는 background만 변경한다. Content Apply 뒤 WindowContentMinimum.Refresh로
+  minimum을 다시 측정한다. 이는 큰 text를 저장 format이나 화면 overflow 정책으로 제한하지 않는다.
+- Persistence/Settings/override/date 표시/Bulk Input/앱 undo 시스템은 없다.
+  이전 절들의 read-only/Content 구현 설명은 당시 milestone의 기록이다.
+- 상세 자동 검증, self-audit 및 native 결과는
+  [Editing verification](TIMETABLE-EDITING-FOUNDATION.md)을 따른다.
+
+## Future Bulk Timetable Input — consolidated 2026-09-10
+
+**FUTURE / PLANNED — NOT IMPLEMENTED.** 사용자의 후속 상세 요구를 이 절에 통합한다.
+현재 Timetable Editing Foundation은 직접 한 셀 교과/반 편집까지다. Bulk Import,
+clipboard 조사/parser/template/preview UI는 이번 milestone에 구현하지 않는다.
+
+### Explicit modes and priority
+
+| Mode | Priority / intent | Recognition |
+| --- | --- | --- |
+| A. School Timetable Import | PLANNED — preferred bulk import UX; 학교가 제공한 양식을 재작성 없이 활용 | 학교 spreadsheet의 structural signature; metadata/여러 교사 후보/ambiguity 처리 |
+| B. Canonical Template Import | PLANNED — deterministic fallback / manual entry | 앱 정의 8×11 strict schema; exact header와 1–7 validation |
+| C. Small Rectangular Paste | OPTIONAL / PLANNED — 작은 범위 편의 기능 | 선택 셀 anchor와 explicit paste mode; whole-table importer와 자동 혼합 금지 |
+
+A/B/C를 한 거대한 heuristic parser로 합치지 않는다. Format recognition은 분리하고,
+공통 Clipboard Table → Parsed Candidate → Validation → Timetable Import Preview →
+Atomic Apply pipeline은 향후 재사용 가능하다. 이 문구는 hierarchy/API 구현 승인이 아니다.
+
+### A. School timetable import
+
+대표 입력은 Excel / 한셀 / Google Sheets 등의 학교 교사시간표다.
+번호/교사/시수/담임/비고 metadata column이 본문 앞뒤에 있을 수 있다.
+본문은 `[월 1–7][화 1–7][수 1–7][목 1–7][금 1–7]`의 35 logical slots이며,
+교사 한 명이 교과 행 + 바로 대응하는 반 행으로 표현되는 구조를 고려한다.
+사용자는 자신의 영역 또는 더 넓은 표를 복사하고 앱의 **학교 시간표 가져오기**에
+붙여넣어 candidate/Preview를 확인한 뒤 명시적으로 Apply한다.
+
+- Absolute 시작 column(예: 3열부터 월요일)을 hard-code하지 않는다.
+- 붙여넣은 rectangular table 안에서 weekday별 1–7 sequence, 5회 반복,
+  총 35 slots를 주요 structural evidence로 삼는다. 월/화/수/목/금 header는
+  가능할 때 추가 evidence로 사용한다. Metadata 앞뒤 column을 허용한다.
+- 학교명/교사명/과목명/반명의 의미로 위치나 slot을 추측하지 않는다.
+  Multiple candidates 또는 confidence 부족이면 자동 선택/Apply와 silent guessing을
+  하지 않고 사용자가 candidate를 고르거나 다른 importer mode를 사용하도록 한다.
+- 명확한 교과/반 row pair만 SubjectText ← 교과 cell, ClassText ← 반 cell로 mapping한다.
+  반 없는 `창체` + empty class도 허용한다. 반복된 교과/반도 각각 독립 slot이다.
+- 여러 교사가 포함되면 detected teacher/timetable row-pair 후보 목록을 제시한다.
+  교사명 column이 명확한 경우 label로 표시할 수 있지만 이름 자체는 구조 추론 근거가 아니다.
+- Parse → Validate → Preview → Apply 순서를 지킨다. Preview에는 감지한 범위,
+  선택한 teacher/row pair, 월~금 × 1–7 mapping, 각 SubjectText/ClassText 결과를 표시한다.
+- Parse/validation 실패, ambiguous detection, range 불일치는 기존 timetable을 바꾸지 않는다.
+  Explicit Apply만 atomic/all-or-nothing으로 반영하며 partial modification은 금지한다.
+
+### B. Canonical template import
+
+자동 감지가 어려운 학교 양식과 직접 입력을 위한 명시적 fallback이다.
+정확히 **header 포함 8 rows × 11 columns**이며 data rows의 첫 열은 순서대로 1–7이다.
+정확한 header signature:
+
+```text
+교시 | 월-교과 | 월-반 | 화-교과 | 화-반 | 수-교과 | 수-반 | 목-교과 | 목-반 | 금-교과 | 금-반
+```
+
+Strict header signature와 첫 column 1–7을 명시적으로 검증하고 정확한 canonical
+form만 structured timetable로 해석한다. Header 의미를 자동 guessing하지 않는다.
+
+향후 **시간표 양식 복사** → 빈 TSV template clipboard → Excel/Google Sheets A1에
+붙여넣기 → 교과/반 작성 → 전체 8×11 복사 → **표준 양식 가져오기** → Preview → Apply를
+제공할 수 있다. .xlsx 배포 없이 공통 TSV template을 우선 고려한다.
+.xlsx template export는 별도 optional convenience feature다. 현재 양식을 생성하지 않는다.
+
+### C. Small rectangular paste
+
+선택한 timetable cell을 destination anchor로 사용한다(예: 화3에서 2×3 영역).
+Ctrl+V와 clipboard TSV/table parser를 사용하는 별도 explicit paste mode 방향이다.
+기존 future 요구인 **5-column simple subject mode**와 **10-column subject/class pair mode**는
+이 명시적 직사각형 입력 범위의 후보로 유지한다. Canonical B의 11-column schema와 혼동하거나
+A/B를 자동 추론해 전환하지 않는다. Preview 후 Apply, overflow reject(no silent clipping),
+parse/validation no partial modification, all-or-nothing Apply를 지킨다.
+
+### Clipboard text and reusable targets
+
+- 실제 Excel/Google Sheets/유사 spreadsheet clipboard representation을 후속 조사한다.
+  단순 Split(newline)/Split(tab)만으로 고정하지 않고 quoted fields/embedded newline을 처리한다.
+- 가능한 clipboard semantics 범위에서 empty fields, Unicode/Korean, newline,
+  leading/trailing whitespace, whitespace-only를 보존한다. Trim/Normalize 및
+  IsNullOrWhiteSpace 기반 data collapse 금지. Markup-looking text는 literal plain text다.
+- Format/parser와 target 선택을 분리한다. 향후 기본 weekly 또는 특정 DateOnly 예외
+  timetable(예: 2026-09-17)에도 동일 parsed value/Preview/atomic Apply pipeline을 재사용한다.
+- **Date-specific import target: FUTURE / depends on Date Override milestone**.
+  DateOverride model, override importer UI, calendar UI는 현재 구현하지 않는다.
+- 직접 편집/A/B/date-specific importer는 현재 canonical SubjectText/ClassText value를 공유할
+  수 있어야 한다. Permanent Content compatibility architecture나 미래 importer/provider
+  hierarchy를 선제 도입하지 않는다. 현재 구현은 값과 대상 callback의 분리까지만 제공한다.
+
+## Future teacher profiles and groups — 2026-09-10
+
+**FUTURE REQUIREMENT — NOT IMPLEMENTED.** 현재 Editing Foundation scope는 확대하지 않는다.
+향후 여러 교사 timetable profile을 저장하고 `3학년 담임`, `과학교사`, `내가 자주 확인하는 교사`
+같은 그룹 안에서 교사별 탭으로 전환하여 볼 수 있어야 한다.
+
+- WeeklyTimetable 자체에는 teacher/group 개념을 넣지 않는다. 상위 소유 개념으로
+  `TeacherTimetableProfile`(예: stable ProfileId, DisplayName, WeeklyTimetable)을 둘 수 있다.
+  이 명칭/필드 예시는 future design 방향이며 이번에 타입을 생성하지 않는다.
+- DisplayName은 identity/key가 아니다. 동명이인과 이름 변경을 위해 stable profile identity를 사용한다.
+- TimetableGroup은 timetable data를 복제하지 않고 teacher profile reference를 보유한다.
+  동일 profile은 여러 group에 동시에 속할 수 있다(예: 3학년 담임 + 과학교사).
+- 학교 importer가 여러 teacher row-pair를 감지하면, 향후 한 번의 import에서 여러 profile을
+  선택적으로 생성/갱신하는 구조를 고려한다. 후보 label/이름 의미로 identity를 추정하지 않는다.
+  생성/기존 stable profile mapping 및 update 선택 UX는 후속 설계이며 multi-import 구현은 없다.
+- DateOnly timetable override는 향후 teacher profile별로 적용할 수 있어야 한다.
+  교사의 특정일 수업 변경과 학교의 특정일 PeriodSchedule/일과 변경은 별개 concern이다.
+  Timetable override와 schedule override를 같은 데이터로 합치지 않는다.
+- 선택된 teacher profile의 effective timetable + 해당 날짜의 effective period schedule을
+  같은 IApplicationClock snapshot/date에서 resolve하여 Header/Current Highlight 등에서
+  일관되게 소비한다. 기존 future effective-day configuration 원칙과 결합한다.
+- Persistence 설계는 앱에 WeeklyTimetable 하나만 존재한다는 schema/coupling을 만들지 않는다.
+  현재 canonical cell value와 edit session은 profile/group과 독립적이며, 명시적 weekly 소유자
+  adapter는 앱 전체 singleton을 뜻하지 않는다. 새 profile selection service는 구현하지 않는다.
+- 이번 milestone에 TeacherTimetableProfile, TimetableGroup, multi-tab UI,
+  multi-teacher persistence/import, group comparison UI를 추가하지 않는다.

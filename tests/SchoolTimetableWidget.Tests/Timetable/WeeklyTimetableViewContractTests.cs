@@ -64,12 +64,12 @@ public class WeeklyTimetableViewContractTests
         Assert.Equal(35, texts.Length);
         for (var i = 0; i < texts.Length; i++)
         {
-            Assert.Equal(model.Cells[i].Content, texts[i].Text);
-            if (model.Cells[i].Content.Length == 0)
+            Assert.Equal(model.Cells[i].DisplayText, texts[i].Text);
+            if (model.Cells[i].DisplayText.Length == 0)
                 Assert.Empty(texts[i].Inlines);
             else
-                Assert.Equal(model.Cells[i].Content, Assert.IsType<Run>(Assert.Single(texts[i].Inlines)).Text);
-            Assert.Equal(nameof(TimetableCellViewModel.Content),
+                Assert.Equal(model.Cells[i].DisplayText, Assert.IsType<Run>(Assert.Single(texts[i].Inlines)).Text);
+            Assert.Equal(nameof(TimetableCellViewModel.DisplayText),
                 BindingOperations.GetBinding(texts[i], TextBlock.TextProperty)!.Path.Path);
             Assert.Equal(TextWrapping.Wrap, texts[i].TextWrapping);
             Assert.Equal(TextTrimming.None, texts[i].TextTrimming);
@@ -121,9 +121,8 @@ public class WeeklyTimetableViewContractTests
         Layout(view, 620);
         var emptyHeight = view.DesiredSize.Height;
         var week = new WeeklyTimetable(WeeklyTimetable.Empty().Cells.Select(cell =>
-            new TimetableCell(cell.Day, cell.PeriodNumber,
-                cell.Day == SchoolDay.Monday && cell.PeriodNumber == 1
-                    ? string.Join("\n", Enumerable.Repeat("여러 줄 내용", 12)) : "")));
+            new TimetableCell(cell.Day, cell.PeriodNumber, new TimetableCellValue(cell.Day == SchoolDay.Monday && cell.PeriodNumber == 1
+                    ? string.Join("\n", Enumerable.Repeat("여러 줄 내용", 12)) : "", ""))));
         view.DataContext = new WeeklyTimetableViewModel(week);
         Layout(view, 620);
         Assert.True(view.DesiredSize.Height > emptyHeight);
@@ -206,7 +205,7 @@ public class WeeklyTimetableViewContractTests
             "<b>과목</b> &amp; {Binding Secret}", "", "국어", "  앞뒤 공백  ", "   ", "한글 Ω 🎵"];
         return new WeeklyTimetableViewModel(new WeeklyTimetable(
             WeeklyTimetable.Empty().Cells.Select((cell, i) =>
-                new TimetableCell(cell.Day, cell.PeriodNumber, i < samples.Length ? samples[i] : ""))));
+                new TimetableCell(cell.Day, cell.PeriodNumber, new TimetableCellValue(i < samples.Length ? samples[i] : "", "")))));
     }
 
     private static ApplicationTimeSnapshot Snapshot(int hour, int minute, int second) =>

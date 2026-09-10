@@ -222,3 +222,25 @@ PC fallback의 비-KST offset은 그대로 보존하며 추가 timezone 정책�
 WPF 창을 실행하거나 활성화하지 않았고 native input, system clock mutation, KRISS/NTP 통신은 수행하지 않았다.
 Desktop adapter/composition은 build와 source inspection으로 확인했다. Contract tests는 Core와 fake 증거이며
 실제 OS adapter 실행, native startup 또는 동시 sync 전환 검증으로 해석하지 않는다.
+
+## Editing Foundation native checkpoint — 2026-09-10
+
+한 셀의 교과/반 편집, in-memory Apply/Cancel foundation이다.
+Persistence, Bulk Import, Date Override, 날짜 표시는 구현하지 않았다.
+
+Codex가 먼저 정상 앱을 직접 실행하고 process 상태를 확인한다. 사용자에게는 실제 창 표시와
+시각적/native UX를 확인한다. 아래 host PowerShell 명령은 현재 실행 권한/desktop isolation
+등의 실패를 확인한 경우에만 사용하는 fallback이다. 과거 isolation만으로 수동 실행을 요구하지 않는다.
+
+```powershell
+& 'C:\Program Files\dotnet\dotnet.exe' run --no-build --project 'D:\Codex\school-timetable-widget-next\src\SchoolTimetableWidget.Desktop\SchoolTimetableWidget.Desktop.csproj' -- --highlight-preview
+```
+
+모의 시각 70초 순환은 기존 공통 application clock 주입이다. 시스템 시간은 바꾸지 않는다.
+대표 preview에는 월3 교과/반 pair 및 화3 class-only도 포함한다. 편집은 정상 실행에서도 가능하다.
+
+한 단계씩 실제 창 visibility → 한 셀 더블클릭 → 두 필드 한글/Enter/Tab 연속 입력과 적용 →
+재열기/F2 → 취소/X/Esc → 강조 이동과 공존/resize → X 종료 확인 순서로 진행한다.
+Focus/IME 확인 시 입력과 Tab/버튼 이동은 앱 안에서 연속 수행한 뒤 chat으로 돌아온다.
+자동 object/event tests를 native 동작 통과로 취급하지 않는다.
+결과와 범위는 [Editing verification](TIMETABLE-EDITING-FOUNDATION.md)에 기록한다.

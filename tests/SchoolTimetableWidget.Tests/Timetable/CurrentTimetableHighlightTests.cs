@@ -18,14 +18,14 @@ public class CurrentTimetableHighlightTests
         SchoolDay day, int period, string content)
     {
         var week = new WeeklyTimetable(WeeklyTimetable.Empty().Cells.Reverse().Select(
-            cell => new TimetableCell(cell.Day, cell.PeriodNumber, content)));
+            cell => new TimetableCell(cell.Day, cell.PeriodNumber, new TimetableCellValue(content, ""))));
         var model = new WeeklyTimetableViewModel(week);
         var original = model.Cells.ToArray();
         model.SetCurrentCell((day, period));
         Assert.Same(model.Cells[(period - 1) * 5 + (int)day],
             Assert.Single(model.Cells, cell => cell.IsCurrent));
         Assert.Equal(original, model.Cells);
-        Assert.All(model.Cells, cell => Assert.Equal(content, cell.Content));
+        Assert.All(model.Cells, cell => Assert.Equal(content, cell.DisplayText));
     }
 
     [Fact]

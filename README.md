@@ -6,10 +6,11 @@ Modern Windows rewrite of School Timetable Widget.
 
 - Product Contract v0.1 approved
 - Phase 0 solution skeleton + development bootstrap
-- Product feature implementation not started
+- Current Status Header, weekly timetable view and current-cell highlight implemented
+- Subject/Class single-cell editing foundation complete in memory; automated tests and limited user native smoke passed; persistence not implemented
 
 기술 baseline은 **WPF + .NET 10 LTS + CommunityToolkit.Mvvm**이다.
-현재는 Desktop/Core/Tests 3개 project와 CLI 개발 bootstrap을 구성한 Phase 0 단계다.
+Desktop/Core/Tests 3개 project에서 표시·시간 계산·한 셀 편집 기반을 구현 중이다. 전체 제품 완성 단계는 아니다.
 
 ## Development
 

@@ -75,7 +75,7 @@ public class HighlightViewContractTests
 
     private static WeeklyTimetableViewModel Model() => new(new WeeklyTimetable(
         WeeklyTimetable.Empty().Cells.Select((cell, index) =>
-            new TimetableCell(cell.Day, cell.PeriodNumber, index switch
+            new TimetableCell(cell.Day, cell.PeriodNumber, new TimetableCellValue(index switch
             {
                 0 or 5 => "반복",
                 1 => "물리학\n실험 A반!",
@@ -83,7 +83,7 @@ public class HighlightViewContractTests
                 3 => "<b>과목</b>",
                 7 => "   ",
                 _ => ""
-            }))));
+            }, "")))));
 
     private static Border[] BodyBorders(WeeklyTimetableView view) =>
         Descendants<Border>(Assert.IsType<ItemsControl>(view.FindName("BodyCells")))

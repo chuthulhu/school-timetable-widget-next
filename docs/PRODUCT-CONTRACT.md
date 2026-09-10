@@ -115,7 +115,7 @@ A4 Status Header, A5 Application Clock, A6 Current Status State Model, A7 Countd
 
 | ID | 영역 | 새 제품에서 유지할 사용자 의미 | Reference / 관련 결정 |
 | --- | --- | --- | --- |
-| M1 | Timetable | 월~금 × 7교시, 독립 35셀, 빈 셀 허용. 한글/Unicode, 앞뒤 공백, whitespace-only, newline 보존. 입력을 plain text로 표시 | Timetable spec; A2, R3. plain text는 기존 editor 의미를 유지하고 main AutoText를 변경 |
+| M1 | Timetable | 월~금 × 7교시, 독립 35셀, 빈 셀 허용. canonical SubjectText/ClassText 두 plain string에 한글/Unicode, 앞뒤 공백, whitespace-only, newline 보존. Desktop은 교과 다음 반 표시; 정확히 empty인 필드는 구분 줄바꿈 생략 | Timetable spec; A2, R3. plain text는 기존 editor 의미를 유지하고 main AutoText를 변경 |
 | M2 | Editing | Save 성공 즉시 화면에 반영하고 재시작 후 유지. Cancel/X는 미저장 편집만 폐기 | Timetable spec; R16 |
 | M3 | Period/time | 7교시 편집 및 아래 기본 profile 제공. 저장 성공 후 current-period 즉시 재계산 | Timetable spec; exact boundary는 APPROVED P4 `[start,end)` 및 A5 공통 clock 적용 |
 | M4 | Highlight | 평일 current weekday/current period의 body cell 하나만 강조. 빈 셀도 강조. 쉬는 시간/주말에는 강조 없음 | Timetable spec; 날짜 stale 제거 R4, layout 불변 R5 |
@@ -380,7 +380,7 @@ offline cache, monotonic 구현, test injection mechanism, suspend/resume 처리
 | --- | --- | --- |
 | C1 | `widget_settings.json` | position, size, is_position_locked, screen_info, auto_start_enabled. source DPI가 없으므로 정확한 design geometry 복원을 주장하지 않고 변환 가정·보정을 보고. autostart는 P7 |
 | C2 | `style_settings.json` | 6종 색상, header/cell/current-period/border opacity 0–255, theme, header/cell font. 개별 font 누락 시 구 font_family/font_size fallback 의미를 읽음. RGB/opacity 수치를 불필요하게 재양자화하지 않음 |
-| C3 | `timetable_data.json` | 한국어 요일 → 문자열 교시 key → 문자열. 누락 셀은 빈 셀로 변환하고 report에 표시. 반복 문자열·공백·newline 그대로 보존. merge/span 복원 안 함(A2) |
+| C3 | `timetable_data.json` | 한국어 요일 → 문자열 교시 key → 문자열. 누락 셀은 빈 셀로 변환하고 report에 표시. 원문 전체를 SubjectText에, ClassText는 empty로 변환; 임의 parsing 없음. 반복 문자열·공백·newline 그대로 보존. merge/span 복원 안 함(A2) |
 | C4 | `time_settings.json` | 문자열 교시 → start/end. 정상 legacy `9:00` 등 읽을 수 있는 시각은 명시적 정규화 보고. 누락 교시는 기본 profile로 보충하고 보고. invalid/reversed/overlap/extra period는 조용히 적용하지 않음 |
 | C5 | `notification_settings.json` | notification_enabled, next_period_warning, warning_minutes 선호 읽기. 신규 설치 OFF와 구 선호 변환을 구분하고 실제 delivery는 별도 사용자 설정/OS 상태에 따름 |
 | C6 | legacy backup folders | 위 5파일 및 선택적 description.txt를 입력으로 읽음. 일부 파일만 있는 folder는 누락을 보고하고 전체 변환 candidate를 검증. 기존 profile과 암묵적 부분 혼합 금지 |
@@ -618,3 +618,34 @@ I15–I20은 A4/A5의 새 APPROVED invariant다. 구현 acceptance 기준이며 
 이 baseline은 release-ready나 모든 구현 상세 확정을 뜻하지 않는다.
 QR compatibility 또는 legacy bug 수리를 새 blocker로 추가하지 않는다.
 Phase 0 이후에도 해당 기능 구현 전에 관련 DEFERRED 결정을 검토한다.
+
+## Timetable Editing Foundation — approved 2026-09-10
+
+사용자가 한 셀 편집 UX와 persistence 제외를 명시적으로 승인했다.
+[ADR 0006](adr/0006-single-cell-in-memory-editing.md)을 따른다.
+
+- 선택/대상 셀 더블클릭 또는 F2로 한 셀 전용 편집창을 연다.
+- 현재 SubjectText/ClassText를 각각의 교과/반 Draft에 복사한다. Apply 전 원본/본문은 불변이다.
+- Multiline, 한글/Unicode/newline/앞뒤 공백/whitespace-only를 보존하며
+  trim/자동 정규화/markup 해석을 하지 않는다. Enter는 줄바꿈, Tab은 다음 입력/버튼으로 이동한다.
+- 명시적 적용 버튼으로 해당 셀 하나의 두 field를 atomic하게 in-memory commit하고 성공 후 닫는다.
+  취소/X는 두 Draft를 모두 폐기한다. Esc 취소는 허용한다. Apply shortcut은 추가하지 않는다.
+- 이 단계의 committed는 실행 중 수용된 snapshot이다. M2의 저장/재시작 유지 계약을
+  구현한 것이 아니며 UI에 실행 중에만 유지됨을 표시한다. Persistence는 다음 milestone이다.
+- 여러 셀 일괄 편집, persistence, Date Override, 날짜 표시, undo/redo 시스템,
+  Settings는 현재 범위 밖이다. 편집 선택과 current highlight는 독립적이다.
+- 날짜별 timetable/schedule 독립 override와 동일 clock snapshot 기반 effective
+  configuration 및 별도 CurrentDateText는 ARCHITECTURE의 future constraint로 유지한다.
+
+### Structured cell value — approved scope adjustment 2026-09-10
+
+Core canonical value는 `SubjectText`와 `ClassText` 두 non-null plain string이다.
+두 필드 모두 empty/Unicode/newline/앞뒤 공백/whitespace-only를 그대로 보존한다.
+기존 단일 Content API는 제거하며, runtime compatibility shim을 영구 구조로 두지 않는다.
+향후 legacy import는 원문 전체 → SubjectText, ClassText = empty로 옮기며 임의 parsing하지 않는다.
+기본 Desktop 표시 후보를 이번 foundation에 적용한다: 두 필드가 모두 정확히 nonempty이면
+SubjectText + newline + ClassText, 한쪽이 정확히 empty이면 다른 필드만 표시한다.
+Whitespace-only는 empty로 취급하지 않고 원래 newline도 합치거나 정규화하지 않는다.
+이 display projection은 역변환/편집 원본이 아니다. Highlight identity는 계속 SchoolDay + PeriodNumber다.
+Date Override와 Bulk Input을 위한 값 재사용은 허용하되 미래 hierarchy를 선제 구현하지 않는다.
+Bulk Input의 별도 future 요구는 ARCHITECTURE/FEATURE-MAP에 기록한다.

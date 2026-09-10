@@ -42,7 +42,18 @@ public sealed class WeeklyTimetable
     public static WeeklyTimetable Empty() => new(
         from period in Enumerable.Range(1, PeriodCount)
         from day in Enum.GetValues<SchoolDay>()
-        select new TimetableCell(day, period, string.Empty));
+        select new TimetableCell(day, period, new TimetableCellValue("", "")));
+
+    /// <summary>Returns a complete new snapshot, preserving every other slot and the exact text.</summary>
+    public WeeklyTimetable WithCellValue(SchoolDay day, int periodNumber, TimetableCellValue value)
+    {
+        var replacement = new TimetableCell(day, periodNumber, value);
+        var index = IndexOf(day, periodNumber);
+        if (Cells[index].Value == value) return this;
+        var cells = Cells.ToArray();
+        cells[index] = replacement;
+        return new WeeklyTimetable(cells);
+    }
 
     private static int IndexOf(SchoolDay day, int periodNumber) =>
         (periodNumber - 1) * DayCount + (int)day;

@@ -3,18 +3,18 @@ namespace SchoolTimetableWidget.Core.Features.Timetable;
 /// <summary>One immutable slot. Empty text is valid; null is not text.</summary>
 public sealed class TimetableCell
 {
-    public TimetableCell(SchoolDay day, int periodNumber, string content)
+    public TimetableCell(SchoolDay day, int periodNumber, TimetableCellValue value)
     {
         ValidateSlot(day, periodNumber);
-        ArgumentNullException.ThrowIfNull(content);
+        ArgumentNullException.ThrowIfNull(value);
         Day = day;
         PeriodNumber = periodNumber;
-        Content = content;
+        Value = value;
     }
 
     public SchoolDay Day { get; }
     public int PeriodNumber { get; }
-    public string Content { get; }
+    public TimetableCellValue Value { get; }
 
     internal static void ValidateSlot(SchoolDay day, int periodNumber)
     {

@@ -3,7 +3,7 @@ using System.Windows;
 namespace SchoolTimetableWidget.Desktop.Infrastructure.Windows;
 
 /// <summary>
-/// Measures the immutable startup content at the available width. Window chrome stays
+/// Measures the current accepted content at the available width. Window chrome stays
 /// in the Desktop boundary. No persisted preferred size or OS settings are changed.
 /// </summary>
 public static class WindowContentMinimum
@@ -31,17 +31,19 @@ public static class WindowContentMinimum
         }
     }
 
-    private static void OnLoaded(object sender, RoutedEventArgs e) => Update((Window)sender);
+    private static void OnLoaded(object sender, RoutedEventArgs e) => Refresh((Window)sender);
 
     private static void OnSizeChanged(object sender, SizeChangedEventArgs e)
     {
         // Header text updates do not trigger this path. Height-only resizing is
         // already constrained by the most recently measured MinHeight.
-        if (e.WidthChanged && ((Window)sender).IsLoaded) Update((Window)sender);
+        if (e.WidthChanged && ((Window)sender).IsLoaded) Refresh((Window)sender);
     }
 
-    private static void Update(Window window)
+    public static void Refresh(Window window)
     {
+        ArgumentNullException.ThrowIfNull(window);
+        window.Dispatcher.VerifyAccess();
         if (window.Content is not FrameworkElement content || content.ActualWidth <= 0) return;
         var chromeWidth = Math.Max(0, window.ActualWidth - content.ActualWidth);
         var chromeHeight = Math.Max(0, window.ActualHeight - content.ActualHeight);
