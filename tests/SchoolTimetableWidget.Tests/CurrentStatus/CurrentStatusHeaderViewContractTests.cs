@@ -41,7 +41,7 @@ public class CurrentStatusHeaderViewContractTests
         var clock = new FakeApplicationClock(Snapshot(9, 49, 58));
         var model = new CurrentStatusHeaderViewModel();
         var view = new CurrentStatusHeaderView { DataContext = model };
-        using var loop = new CurrentStatusHeaderRefreshLoop(clock, DefaultPeriodSchedule.Periods, model);
+        using var loop = new CurrentStatusRefreshLoop(clock, DefaultPeriodSchedule.Periods, model, new WeeklyTimetableViewModel(WeeklyTimetable.Empty()));
         var time = TextBlockOf(view, "CurrentTimeTextBlock");
         var status = TextBlockOf(view, "StatusTextBlock");
 

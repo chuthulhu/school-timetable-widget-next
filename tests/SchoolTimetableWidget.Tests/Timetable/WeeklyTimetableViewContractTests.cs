@@ -157,9 +157,10 @@ public class WeeklyTimetableViewContractTests
     {
         var clock = new FakeApplicationClock(Snapshot(9, 49, 59));
         var model = new CurrentStatusHeaderViewModel();
-        using var loop = new CurrentStatusHeaderRefreshLoop(clock, DefaultPeriodSchedule.Periods, model);
+        var timetableModel = RepresentativeModel();
+        using var loop = new CurrentStatusRefreshLoop(clock, DefaultPeriodSchedule.Periods, model, timetableModel);
         var header = new CurrentStatusHeaderView { DataContext = model };
-        var timetable = new WeeklyTimetableView { DataContext = RepresentativeModel() };
+        var timetable = new WeeklyTimetableView { DataContext = timetableModel };
         var viewContent = Assert.IsAssignableFrom<UIElement>(timetable.Content);
         timetable.Content = null;
         var measurementProbe = new CountingDecorator { Child = viewContent };

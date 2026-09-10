@@ -1,52 +1,50 @@
 using System.Windows;
 using SchoolTimetableWidget.Core.Features.Periods;
-using SchoolTimetableWidget.Core.Time;
 using SchoolTimetableWidget.Core.Features.Timetable;
+using SchoolTimetableWidget.Core.Time;
 using SchoolTimetableWidget.Desktop.Development;
-using SchoolTimetableWidget.Desktop.Features.Timetable;
 using SchoolTimetableWidget.Desktop.Features.CurrentStatus;
+using SchoolTimetableWidget.Desktop.Features.Timetable;
 using SchoolTimetableWidget.Desktop.Infrastructure.Time;
 
 namespace SchoolTimetableWidget.Desktop;
 
-/// <summary>Owns the application clock and header refresh lifetime on the UI dispatcher.</summary>
+/// <summary>Owns the single application clock and shared status refresh lifetime.</summary>
 public partial class App : Application
 {
-    internal IApplicationClock ApplicationClock { get; } = new PcFallbackApplicationClock();
-    private CurrentStatusHeaderRefreshLoop? _headerRefreshLoop;
+    internal IApplicationClock ApplicationClock { get; private set; } = new PcFallbackApplicationClock();
+    private CurrentStatusRefreshLoop? _statusRefreshLoop;
 
     protected override void OnStartup(StartupEventArgs e)
     {
         base.OnStartup(e);
+        var highlightPreview = e.Args.Contains("--highlight-preview", StringComparer.Ordinal);
+        var preview = highlightPreview || e.Args.Contains("--timetable-preview", StringComparer.Ordinal);
+        if (highlightPreview) ApplicationClock = new HighlightPreviewClock();
         var headerViewModel = new CurrentStatusHeaderViewModel();
-        _headerRefreshLoop = new CurrentStatusHeaderRefreshLoop(
-            ApplicationClock, DefaultPeriodSchedule.Periods, headerViewModel);
+        var timetable = preview ? TimetablePreviewData.Create() : WeeklyTimetable.Empty();
+        var timetableViewModel = new WeeklyTimetableViewModel(timetable);
+        _statusRefreshLoop = new CurrentStatusRefreshLoop(
+            ApplicationClock, DefaultPeriodSchedule.Periods, headerViewModel, timetableViewModel);
         try
         {
-            var preview = e.Args.Contains("--timetable-preview", StringComparer.Ordinal);
-            var timetable = preview ? TimetablePreviewData.Create() : WeeklyTimetable.Empty();
-            MainWindow = new MainWindow(headerViewModel, new WeeklyTimetableViewModel(timetable));
-            if (preview) MainWindow.Title += " — 개발용 시간표 미리보기";
-            // Populate both texts before the first visible frame, then enable live refresh.
-            _headerRefreshLoop.Start();
+            MainWindow = new MainWindow(headerViewModel, timetableViewModel);
+            if (highlightPreview) MainWindow.Title += " — 강조 검증 · 모의 시각 (70초 순환)";
+            else if (preview) MainWindow.Title += " — 개발용 시간표 미리보기";
+            // Populate header and current slot before the first visible frame.
+            _statusRefreshLoop.Start();
             MainWindow.Show();
         }
         catch
         {
-            _headerRefreshLoop.Dispose();
+            _statusRefreshLoop.Dispose();
             throw;
         }
     }
 
     protected override void OnExit(ExitEventArgs e)
     {
-        try
-        {
-            _headerRefreshLoop?.Dispose();
-        }
-        finally
-        {
-            base.OnExit(e);
-        }
+        try { _statusRefreshLoop?.Dispose(); }
+        finally { base.OnExit(e); }
     }
 }

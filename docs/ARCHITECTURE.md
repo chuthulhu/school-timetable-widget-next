@@ -1,6 +1,6 @@
 # Architecture
 
-현재 Phase 0.8 Header XAML + App startup/shutdown wiring은 IMPLEMENTED — USER NATIVE SMOKE PASSED다. 기존 A4–A9를 실제 View에 연결하고 사용자 host Windows에서 표시/live update/가로 resize와 종료를 확인했다. 검증 범위는 아래 native smoke 기록을 따른다. Weekly Timetable Core/read-only View도 구현했고 사용자 native smoke를 통과했다. Highlight UI는 미구현이며 다국어 infrastructure는 도입하지 않는다.
+현재 Phase 0.8 Header XAML + App startup/shutdown wiring은 IMPLEMENTED — USER NATIVE SMOKE PASSED다. 기존 A4–A9를 실제 View에 연결하고 사용자 host Windows에서 표시/live update/가로 resize와 종료를 확인했다. 검증 범위는 아래 native smoke 기록을 따른다. Weekly Timetable Core/read-only View도 구현했고 사용자 native smoke를 통과했다. Current Highlight integration도 구현했고 아래 범위의 사용자 native smoke를 통과했다. 다국어 infrastructure는 도입하지 않는다.
 이 문서는 확정된 baseline과 설계 방향을 구분한다. 상세 계약은
 [Product Contract](PRODUCT-CONTRACT.md), 진행 상태는 [Feature Map](FEATURE-MAP.md)을 따른다.
 
@@ -45,7 +45,7 @@ Tests   → Desktop  (Phase 0.6 presentation contract tests)
 
 | Project | 책임 / 현재 범위 |
 | --- | --- |
-| Desktop | View/ViewModel, Windows integration, infrastructure adapter. 현재 MainWindow의 Header/Timetable feature View, App startup/shutdown composition, PC fallback clock adapter와 Features/CurrentStatus의 한국어 formatter, 표시 전용 ViewModel, DispatcherTimer refresh loop가 있다. 실제 Header/live app refresh는 구현했고 사용자 host Windows의 제한된 native smoke를 통과했다. CommunityToolkit.Mvvm은 이 project에만 직접 참조한다. |
+| Desktop | View/ViewModel, Windows integration, infrastructure adapter. 현재 MainWindow의 Header/Timetable feature View, App startup/shutdown composition, PC fallback clock adapter와 Features/CurrentStatus의 한국어 formatter, 표시 전용 ViewModel, Header와 current slot을 동일 snapshot으로 갱신하는 DispatcherTimer refresh loop가 있다. 실제 Header/live app refresh는 구현했고 사용자 host Windows의 제한된 native smoke를 통과했다. CommunityToolkit.Mvvm은 이 project에만 직접 참조한다. |
 | Core | 순수 계산, 상태 전이, product contract logic, 시간 abstraction, persistence/migration contract의 소유 경계. 현재 Time/의 clock interface, immutable snapshot, source enum과 Features/Periods/의 교시 정의·기본 profile·current-period 계산, Features/CurrentStatus/의 5상태 계산·countdown 의미 정규화, Features/Timetable/의 immutable 35셀 모델이 있으며 WPF/Toolkit/Desktop 의존성이 없다. |
 | Tests | 기존 Core tests와 Desktop presentation/lifecycle tests의 진입점. xUnit v3로 Application Clock, current-period, Current Status, countdown, Header formatter, ViewModel/refresh loop 및 Header XAML/binding 및 Timetable model/presentation/XAML/layout contract tests를 실행한다. Fake clock과 dispatcher object test helper는 Tests 내부에만 둔다. |
 
@@ -574,3 +574,162 @@ persistence를 확정하는 데이터가 아니다. `--timetable-preview`를 명
 - 최종 source/diff review에서 기존 Header 계산/refresh/lifecycle 및 Core 독립성을 재확인했다.
   Native 검토 뒤 production code 수정은 없으며 관찰 결과와 상태만 문서에 반영했다.
   P1/P2 finding 없음. Git diff check와 신규 파일 whitespace 검사도 통과했다.
+
+## Current Timetable Cell Highlight Integration — 2026-09-10
+
+Status: **IMPLEMENTED — USER NATIVE SMOKE PASSED (limited scope below)**. M4/R4–R5/I9/I16 및 A9를 구현하며
+Product Contract/Accepted ADR 변경은 없다. 과거 milestone 절의 미구현 표기는 당시 기록이다.
+
+### Refresh and identity ownership
+
+- 기존 CurrentStatusHeaderRefreshLoop를 **CurrentStatusRefreshLoop**로 rename했다.
+  같은 Features/CurrentStatus 안에서 두 presentation의 갱신을 조립한다.
+  단일 DispatcherTimer, 약 1초 interval, Start/Stop/Dispose/thread 경계 및 missed-tick replay 없음은 유지한다.
+  Generic event bus, global state, DI container, 별도 highlight timer/coordinator는 추가하지 않았다.
+- 생성자에 WeeklyTimetableViewModel을 필수로 주입한다. App은 같은 timetable VM을
+  MainWindow와 loop에 전달하며 MainWindow의 XAML/code-behind는 변경하지 않았다.
+- RefreshNow는 snapshot을 정확히 한 번 읽고 같은 snapshot으로 status → countdown → header text와
+  current slot을 계산한다. 계산 성공 후 같은 dispatcher 호출 안에서 Header와 timetable에 적용한다.
+  Await, dispatcher yield, 재조회나 별도 clock은 없다. 동일 UI cycle이 끝나면 두 view가 같은 사실을 표시한다.
+  임의 외부 PropertyChanged handler를 위한 여러 VM의 transaction API를 도입한 것은 아니다.
+- Desktop Timetable의 CurrentTimetableSlot.From은 이미 계산한 status/snapshot을
+  nullable tuple `(SchoolDay Day, int PeriodNumber)?`로 투영한다.
+  InPeriod일 때만 local Date.DayOfWeek를 명시적 Monday–Friday switch로 변환한다.
+  Saturday/Sunday와 나머지 네 status는 null이다. 날짜/status 재계산이나 clock 조회는 없다.
+  Null snapshot/status는 거부한다. Caller는 같은 snapshot에서 계산된 status를 제공한다.
+- Core의 기존 SchoolDay/PeriodNumber identity를 재사용하며 Core 파일/type/schema를 변경하지 않았다.
+  한국어 표시문구나 과목 문자열을 identity로 사용하지 않는다.
+- WeeklyTimetableViewModel의 SetCurrentCell(nullable tuple)은 null로 해제하며,
+  생성 시 구성한 slot→cell VM dictionary로 대상 하나를 찾는다.
+  Invalid day/period는 이전 상태를 바꾸기 전에 예외로 거부한다. Partial nullable day/period 조합은 API에 없다.
+  같은 cell 재적용은 no-op이고 이동 시 old false → new true만 알린다.
+  Old-cell PropertyChanged 중 다른 슬롯을 지정하는 경우에도 외부 선택을 덮어써 두 current를 남기지 않는다.
+- TimetableCellViewModel은 기존 Content와 externally get-only IsCurrent만 보유한다.
+  ObservableObject의 동일값 알림 억제를 사용하고 변경 메서드는 internal이다.
+  Brush/color/style/border/clock/resolver/editor 상태는 없다.
+  Empty/whitespace-only/반복 과목도 동일한 slot 규칙을 적용한다.
+
+### Visual and layout invariance
+
+BodySlotBorder style은 기존 SlotBorder를 그대로 상속하고 IsCurrent DataTrigger에서
+**Background만** 변경한다. 현재 후보는 연한 노란색 `#FFF3CD`이며 theme/settings의 최종 값이 아니다.
+BorderThickness/padding/font/weight/wrapping/MinHeight/template/order를 상태에 따라 바꾸지 않는다.
+기존 35개 셀과 TextBlock을 그대로 유지하고 weekday/period header에는 trigger를 적용하지 않는다.
+
+이는 Golden Reference에서 확인된 border 두께/HFW 변화 quirk를 복제하지 않고,
+승인된 R5/I9의 layout 불변 의미를 따르는 WPF 구현이다. Legacy 소스/API/스타일 구조를 복사하지 않았다.
+WindowContentMinimum, MainWindow dimensions 및 preferred-size/persistence 정책은 이번 diff에서 불변이다.
+Highlight final theme/settings와 Upcoming은 계속 DEFERRED다.
+
+### Deterministic native preview
+
+정상 실행과 기존 `--timetable-preview`는 실제 PC fallback Application Clock을 유지한다.
+명시적 **`--highlight-preview`**에서만 기존 representative timetable과 HighlightPreviewClock을 주입한다.
+창 제목은 '강조 검증 · 모의 시각 (70초 순환)'으로 바뀌며 실제 현재 시각으로 오인하지 않도록 구분한다.
+App이 선택한 clock 하나를 동일 production refresh pipeline에 전달한다.
+
+이 개발 clock은 TimeProvider timestamp의 elapsed time을 이용해 아래 10초 단계들을 70초 주기로 반복한다.
+Read 횟수로 시간을 증가시키거나 missed ticks를 재생하지 않는다. 테스트는 timestamp만 주입한다.
+Windows system clock, 실제 default period schedule, 사용자 데이터 또는 KRISS/NTP를 변경하지 않는다.
+Snapshot Source/Revision은 synthetic fixture metadata이며 실제 PC/KRISS 정확성 주장이 아니다.
+
+| 실행 후 구간 | 시작 mock time / 관찰 대상 |
+| --- | --- |
+| 0–10초 | 월요일 09:10:00, 월1 국어 |
+| 10–20초 | 월요일 09:49:55, 5초 뒤 exact End → Break/강조 해제 |
+| 20–30초 | 월요일 09:59:55, 5초 뒤 exact Start → 월2 국어 |
+| 30–40초 | 금요일 09:10:00, 금1 empty cell |
+| 40–50초 | 수요일 10:10:00, 수2 whitespace-only cell |
+| 50–60초 | 금요일 16:49:55, 금7 마지막 수업 → 5초 뒤 AfterLast/해제 |
+| 60–70초 | 토요일 09:10:00, Weekend/강조 없음 |
+
+단계 경계의 시간/날짜 jump는 의도한 개발 fixture다. 사용자 기능이나 영구 기본값이 아니다.
+Preview가 주입하는 날짜/과목은 이미 확인한 fixture이며 저장되지 않는다.
+
+### Automated verification and self-audit
+
+- `dotnet restore`, `dotnet build --no-restore`,
+  `dotnet test --no-build --logger "console;verbosity=normal"` 최종 exit 0.
+  Build warning/error 0. **기존 228 + 신규 48 = 276 passed**, failed/skipped 0.
+- Logic/VM 23 cases: 정확한 slot 선택, 모든 평일 mapping, 반복/empty/whitespace 내용,
+  no-current 4상태와 양 주말, invalid identity/null 거부, no-op 알림, old/new 이동 및 observer 재진입.
+- Refresh integration 9 cases: 09:49:59 → 09:50:00 → 10:00:00에서 snapshot당 1회 read와
+  두 view 일치, 큰 날짜/time jump와 no replay, weekday/date stale 제거, 맞닿은 custom periods,
+  local-date/source/revision 경계, 계산 실패 전 상태 유지와 새 필수 dependency.
+- WPF object 4 cases: 800/620/500 폭에서 여러 슬롯의 on/move/off 전후 전체 셀 DesiredSize,
+  RenderSize, 상대 위치, text/wrapping/font/border/padding 불변. Trigger 후 measure validity 유지 및
+  강제 재측정 결과도 동일함을 확인했다. Empty cell background 변경과 header 불변도 확인했다.
+  구체 color pixel 값을 고정한 assertion은 없다.
+- Development clock 12 cases: 70초 단계, exact start/end, empty/whitespace/주말 및
+  elapsed-time jump/반복 read 불변. 실제 system clock read 없이 fixture를 검증한다.
+- 기존 테스트의 loop type/constructor call을 rename/필수 timetable 주입에 맞춰 갱신했다.
+  Header와 기존 Timetable assertion은 유지했다. 기존 Header/grid geometry test도 실제 주입된
+  timetable VM의 highlight 전환을 포함해 통과했다.
+- 최초 신규 build의 xUnit assertion-style warning 4개는 권장 assertion overload로 수정했다.
+  첫 전체 test run은 272 passed / 4 failed였다. WPF test helper가 ItemsControl의 외곽 Border까지
+  셀로 세어 36개를 얻고 slot index도 한 칸 밀린 것이 원인이었다.
+  DataContext가 cell VM이고 TextBlock을 직접 포함하는 body Border만 검사하도록 수정한 뒤
+  전체 276개를 다시 실행해 통과했다. Production 셀 수나 layout 결함으로 기록하지 않는다.
+- Source audit: Core/Product Contract/ADR/MainWindow/WindowContentMinimum 불변,
+  refresh의 GetSnapshot 1곳, 별도 highlight clock read/timer 없음, 문자열 기반 선택 없음,
+  style setter는 Background 하나뿐이다. P1/P2 finding 없음.
+- 위 증거는 STA object/event/layout 및 fake timestamp tests다. 실제 Window.Show, native 입력,
+  clipboard/시스템 시각 변경은 수행하지 않았다. Native 가독성/강조 강도/OS resize 검증과 구분한다.
+
+### Native checkpoint preparation
+
+사용자 로그인 desktop에서 정상 창을 띄우는 host PowerShell 명령:
+
+```powershell
+& 'C:\Program Files\dotnet\dotnet.exe' run --no-build --project 'D:\Codex\school-timetable-widget-next\src\SchoolTimetableWidget.Desktop\SchoolTimetableWidget.Desktop.csproj' -- --highlight-preview
+```
+
+도구 실행이 사용자 desktop을 보장하지 못하므로 sandbox 앱을 먼저 띄우지 않는다.
+먼저 창 visibility를 확인하고 한 cycle 동안 강조 식별성/empty cell/가독성/강도,
+on/off·이동 시 geometry 안정 및 Header 일치를 확인한다. 이후 가로 resize와 정상 종료를 확인한다.
+이 준비 시점에는 Native/style 승인이 PENDING이었다. 실제 결과는 아래 기록한다.
+승인 후 native 결과 반영, restore/build/test, final self-audit/diff check를 수행하고
+사용자가 이번 milestone에 명시적으로 승인한 origin/main 일반 fast-forward push까지 진행한다.
+
+### User native smoke — 2026-09-10
+
+- 사용자가 위 명령을 일반 host PowerShell에서 실행했다. 실제 로그인 desktop의 정상 창을
+  사용자 screenshot으로 확인했다. 도구가 sandbox/background 창을 사용자 확인용으로 실행하지 않았다.
+- 첫 screenshot: 모의 시각 09:50:00, Header는 '쉬는시간 · 2교시까지 9분',
+  body 강조는 0개였다. 관찰한 Break 화면에서 Header와 강조 상태가 일치했다.
+- 두 번째 screenshot: 모의 시각 10:10:03, Header는 '2교시 · 종료까지 39분',
+  수요일 2교시 whitespace-only cell 하나에 연한 노란색 배경이 보였다.
+  빈 내용에서도 current slot이 식별되며 Header와 period가 일치하는 실제 화면 증거다.
+- Screenshot 파일은 각각 사용자 첨부
+  codex-clipboard-6d4b0c75-01d9-4e9b-a625-7db60862b058.png,
+  codex-clipboard-831a03be-d318-4af8-a84d-74fb198bb359.png다.
+  원본은 사용자 TEMP 첨부에 있으며 repository에 복사하지 않았다.
+- 강조 식별성/가독성/강도와 cycle 확인 요청에 사용자는
+  '나중에 커스텀 가능하면 괜찮음'이라고 답했다.
+  기존 Settings milestone에서 색/opacity 등을 다룬다는 전제로 현재 후보 style을 수용한 기록이다.
+  이번 milestone에 customization UI를 구현하거나 후보 색을 영구 계약으로 승격한 것은 아니다.
+- 강조가 이동하는 동안 가로 폭을 줄이고 늘리는 확인 요청에 사용자는 '정상'이라고 답했다.
+  사용자 resize smoke에서 눈에 띄는 layout 흔들림은 보고되지 않았다.
+- X 종료 요청 뒤 사용자의 '딛음'을 닫음 응답으로 이해했고 read-only process 조회로 확인했다.
+  앞서 관찰한 앱 PID 41160은 사라졌으며 남은 SchoolTimetableWidget.Desktop process는 0개였다.
+  강제 종료는 하지 않았다. 계측된 timer cadence/Dispose 호출/프로세스 exit code 증거는 아니다.
+- Native 결과는 위 두 화면, 사용자 style 수용, resize 확인 및 종료 관찰 범위다.
+  70초 fixture의 모든 stage를 각각 native로 확인했다거나 모든 DPI/모니터에서
+  pixel geometry를 계측했다고 주장하지 않는다. Exact End/Start, empty-string,
+  AfterLast/Weekend 및 큰 시간 jump의 포괄적 근거는 위 자동 tests다.
+- 이 범위의 native checkpoint를 통과했다. Final theme/settings와 Upcoming은 계속 DEFERRED이며
+  Product Contract/Accepted ADR 변경은 없다.
+
+### Final verification after native acceptance — 2026-09-10
+
+- Native 수용 및 정상 종료 확인 후 restore → build --no-restore →
+  test --no-build --logger "console;verbosity=normal"을 다시 실행했다. 모두 exit 0.
+- Build warning/error 0, 기존 228 + 신규 48 = **276 passed**, failed/skipped 0.
+  실행 log: 사용자 TEMP의 highlight-final-6346222053ad429c92dcb2a295edee67.log.
+- Final source/diff self-audit에서 P1/P2 finding 없음. Day/period identity, 1/0 current,
+  empty/whitespace 처리, exact End와 no-current 상태 해제, 동일 snapshot 1회 read,
+  Background-only trigger와 geometry 불변을 구현 및 tests에서 재확인했다.
+- Core, Product Contract/ADR, MainWindow 및 Windows content minimum 구현은 변경하지 않았다.
+  Settings/theme editor, Upcoming, persistence 등 후속 범위는 추가하지 않았다.
+- git diff --check 통과. 사용자 요청 22절의 명시적 승인에 따라 이 milestone을
+  main에 commit하고 origin/main에 일반 fast-forward push한다.

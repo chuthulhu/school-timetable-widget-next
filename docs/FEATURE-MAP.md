@@ -14,7 +14,10 @@ PLANNED 기능에도 계약에 명시된 DEFERRED 상세는 그대로 남아 있
 | Weekday Header | IMPLEMENTED — USER NATIVE SMOKE PASSED | M1, A4; Golden Reference visual evidence | 월/화/수/목/금, 빈 corner + 왼쪽 숫자 교시 header와 함께 총 13 headers; Status Header 아래 |
 | Period current-resolution foundation | IMPLEMENTED — FOUNDATION / Phase 0.3 | M3, P4, R4, R6–R7, I16 | Core immutable 정의·기본 profile·snapshot 기반 int? 계산, 평일 [start,end), 입력 중복/겹침 거부, contract tests. 전체 editor validation은 DEFERRED |
 | Current Status Core foundation | IMPLEMENTED — FOUNDATION / Phase 0.4 | A6, A5, P4; Current Status State Model | 5상태 immutable 사실 결과, snapshot 기반 계산, 공통 schedule 검증. Break와 다음 교시/transition 구현; 전체 UI 완료 아님 |
-| Highlight integration | PLANNED | M4, R4–R5, I9, I16 | [0004](adr/0004-application-time-source.md); UI 연결·갱신 상세 DEFERRED |
+| Current Highlight integration | IMPLEMENTED — USER NATIVE SMOKE PASSED | M4, R4–R5, I9, I16 | CurrentStatusRefreshLoop의 동일 snapshot/status → logical day/period slot → IsCurrent; empty/whitespace 포함 1 또는 0셀; native Break/수2 whitespace 화면과 조건부 style 수용 확인 |
+| Highlight layout invariance | AUTOMATED / OBJECT VERIFIED + USER RESIZE SMOKE PASSED | R5, I9, I15 | Background-only DataTrigger, 전체 셀 DesiredSize/배치/wrapping/border 불변; 사용자 가로 resize 정상 확인, 전 DPI native 계측 아님 |
+| Highlight final theme/settings | DEFERRED — Settings milestone | M5, P2 | 향후 커스텀 전제로 현재 후보 style 사용자 수용; 최종 색/opacity/설정 UI 미구현 |
+| Upcoming highlight | DEFERRED — 미구현 | A4 Current Status Header | optional 보조 강조; current와 구분 유지 |
 | Break status Core | IMPLEMENTED — FOUNDATION / Phase 0.4 | A6, P4; Current Status State Model | CurrentStatusResult의 Break, NextPeriodNumber, TransitionTime으로 구현; 긴 gap도 Break |
 | Countdown Core foundation | IMPLEMENTED — FOUNDATION / Phase 0.5 | A7, A5, P4, I16; Countdown Display Semantics | 동일 snapshot/status의 tick 차이, floor·LessThanMinute·hours/minutes 의미 값, stale input 거부; UI 미구현 |
 | Countdown presentation formatter | IMPLEMENTED — FOUNDATION / Phase 0.6 | A8, A7; Current Status Header Presentation Text | Desktop의 한국어 formatter 및 immutable 두 텍스트 결과, countdown 조합 검증, presentation contract tests. 다국어 infrastructure는 현재 범위 밖 |

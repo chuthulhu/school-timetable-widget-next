@@ -1,3 +1,5 @@
+using SchoolTimetableWidget.Desktop.Features.Timetable;
+using SchoolTimetableWidget.Core.Features.Timetable;
 using System.Reflection;
 using System.Runtime.ExceptionServices;
 using System.Windows.Threading;
@@ -62,7 +64,7 @@ public class CurrentStatusHeaderRefreshContractTests
     {
         var clock = new FakeApplicationClock(Snapshot(9, 49, 59));
         var model = new CurrentStatusHeaderViewModel();
-        using var loop = new CurrentStatusHeaderRefreshLoop(clock, DefaultPeriodSchedule.Periods, model);
+        using var loop = new CurrentStatusRefreshLoop(clock, DefaultPeriodSchedule.Periods, model, new WeeklyTimetableViewModel(WeeklyTimetable.Empty()));
         var timer = TimerOf(loop);
         Assert.Equal(TimeSpan.FromSeconds(1), timer.Interval);
         Assert.False(timer.IsEnabled);
@@ -84,7 +86,7 @@ public class CurrentStatusHeaderRefreshContractTests
     {
         var clock = new FakeApplicationClock(Snapshot(9, 49, 59));
         var model = new CurrentStatusHeaderViewModel();
-        using var loop = new CurrentStatusHeaderRefreshLoop(clock, DefaultPeriodSchedule.Periods, model);
+        using var loop = new CurrentStatusRefreshLoop(clock, DefaultPeriodSchedule.Periods, model, new WeeklyTimetableViewModel(WeeklyTimetable.Empty()));
         loop.Start();
         var changes = Changes(model);
         clock.CurrentSnapshot = Snapshot(9, 50, 0);
@@ -101,7 +103,7 @@ public class CurrentStatusHeaderRefreshContractTests
         // Any accidental second read would cross into the next period state.
         var clock = new SwitchingClock(Snapshot(9, 49, 59), Snapshot(9, 50, 0));
         var model = new CurrentStatusHeaderViewModel();
-        using var loop = new CurrentStatusHeaderRefreshLoop(clock, DefaultPeriodSchedule.Periods, model);
+        using var loop = new CurrentStatusRefreshLoop(clock, DefaultPeriodSchedule.Periods, model, new WeeklyTimetableViewModel(WeeklyTimetable.Empty()));
         loop.RefreshNow();
         Assert.Equal(1, clock.ReadCount);
         Assert.Equal("09:49:59", model.CurrentTimeText);
@@ -119,7 +121,7 @@ public class CurrentStatusHeaderRefreshContractTests
     {
         var clock = new FakeApplicationClock(Snapshot(9, 49, 58));
         var model = new CurrentStatusHeaderViewModel();
-        using var loop = new CurrentStatusHeaderRefreshLoop(clock, DefaultPeriodSchedule.Periods, model);
+        using var loop = new CurrentStatusRefreshLoop(clock, DefaultPeriodSchedule.Periods, model, new WeeklyTimetableViewModel(WeeklyTimetable.Empty()));
         loop.Start();
         var times = new List<string>();
         model.PropertyChanged += (_, e) =>
@@ -138,7 +140,7 @@ public class CurrentStatusHeaderRefreshContractTests
     {
         var clock = new FakeApplicationClock(Snapshot(9, 49, 58));
         var model = new CurrentStatusHeaderViewModel();
-        using var loop = new CurrentStatusHeaderRefreshLoop(clock, DefaultPeriodSchedule.Periods, model);
+        using var loop = new CurrentStatusRefreshLoop(clock, DefaultPeriodSchedule.Periods, model, new WeeklyTimetableViewModel(WeeklyTimetable.Empty()));
         loop.Stop();
         loop.Start();
         loop.Stop();
@@ -160,7 +162,7 @@ public class CurrentStatusHeaderRefreshContractTests
     {
         var clock = new FakeApplicationClock(Snapshot(9, 49, 58));
         var model = new CurrentStatusHeaderViewModel();
-        using var loop = new CurrentStatusHeaderRefreshLoop(clock, DefaultPeriodSchedule.Periods, model);
+        using var loop = new CurrentStatusRefreshLoop(clock, DefaultPeriodSchedule.Periods, model, new WeeklyTimetableViewModel(WeeklyTimetable.Empty()));
         loop.Start();
         loop.Stop();
         clock.CurrentSnapshot = Snapshot(17, 0, 0);
@@ -177,9 +179,9 @@ public class CurrentStatusHeaderRefreshContractTests
     {
         var clock = new FakeApplicationClock(Snapshot(9, 49, 58));
         var model = new CurrentStatusHeaderViewModel();
-        using var loop = new CurrentStatusHeaderRefreshLoop(clock, DefaultPeriodSchedule.Periods, model);
+        using var loop = new CurrentStatusRefreshLoop(clock, DefaultPeriodSchedule.Periods, model, new WeeklyTimetableViewModel(WeeklyTimetable.Empty()));
         // Invoke our handler directly: this is object/event evidence, not native timer delivery.
-        var tick = typeof(CurrentStatusHeaderRefreshLoop).GetMethod("OnTick",
+        var tick = typeof(CurrentStatusRefreshLoop).GetMethod("OnTick",
             BindingFlags.Instance | BindingFlags.NonPublic)!.CreateDelegate<EventHandler>(loop);
         tick(null, EventArgs.Empty);
         Assert.Equal(0, clock.ReadCount);
@@ -201,7 +203,7 @@ public class CurrentStatusHeaderRefreshContractTests
     {
         var clock = new FakeApplicationClock(Snapshot(9, 49, 58));
         var model = new CurrentStatusHeaderViewModel();
-        using var loop = new CurrentStatusHeaderRefreshLoop(clock, DefaultPeriodSchedule.Periods, model);
+        using var loop = new CurrentStatusRefreshLoop(clock, DefaultPeriodSchedule.Periods, model, new WeeklyTimetableViewModel(WeeklyTimetable.Empty()));
         loop.Start();
         loop.Dispose();
         loop.Dispose();
@@ -219,7 +221,7 @@ public class CurrentStatusHeaderRefreshContractTests
         PeriodDefinition[] periods = [new(4, new TimeOnly(8, 0), new TimeOnly(8, 50))];
         var clock = new FakeApplicationClock(Snapshot(8, 20, 0));
         var model = new CurrentStatusHeaderViewModel();
-        using var loop = new CurrentStatusHeaderRefreshLoop(clock, periods, model);
+        using var loop = new CurrentStatusRefreshLoop(clock, periods, model, new WeeklyTimetableViewModel(WeeklyTimetable.Empty()));
         periods[0] = new(2, new TimeOnly(10, 0), new TimeOnly(10, 50));
         loop.RefreshNow();
         Assert.Equal("4교시 · 종료까지 30분", model.StatusText);
@@ -234,7 +236,7 @@ public class CurrentStatusHeaderRefreshContractTests
     {
         var clock = new FakeApplicationClock(Snapshot(9, 49, 59, offsetHours: offsetHours));
         var model = new CurrentStatusHeaderViewModel();
-        using var loop = new CurrentStatusHeaderRefreshLoop(clock, DefaultPeriodSchedule.Periods, model);
+        using var loop = new CurrentStatusRefreshLoop(clock, DefaultPeriodSchedule.Periods, model, new WeeklyTimetableViewModel(WeeklyTimetable.Empty()));
         loop.RefreshNow();
         var changes = Changes(model);
         clock.CurrentSnapshot = Snapshot(9, 49, 59, source: ApplicationTimeSource.SynchronizedStandardTime, revision: 42);
@@ -253,7 +255,7 @@ public class CurrentStatusHeaderRefreshContractTests
         var clock = new FakeApplicationClock(Snapshot(9, 49, 59));
         var model = new CurrentStatusHeaderViewModel();
         model.Apply(TextAt(17, 0, 0));
-        using var loop = new CurrentStatusHeaderRefreshLoop(clock, [], model);
+        using var loop = new CurrentStatusRefreshLoop(clock, [], model, new WeeklyTimetableViewModel(WeeklyTimetable.Empty()));
         var changes = Changes(model);
         Assert.Throws<ArgumentException>(loop.Start);
         Assert.False(loop.IsRunning);
@@ -272,7 +274,7 @@ public class CurrentStatusHeaderRefreshContractTests
     {
         var clock = new FakeApplicationClock(Snapshot(9, 49, 59));
         var model = new CurrentStatusHeaderViewModel();
-        using var loop = new CurrentStatusHeaderRefreshLoop(clock, DefaultPeriodSchedule.Periods, model);
+        using var loop = new CurrentStatusRefreshLoop(clock, DefaultPeriodSchedule.Periods, model, new WeeklyTimetableViewModel(WeeklyTimetable.Empty()));
         model.PropertyChanged += (_, _) =>
         {
             if (action == "start") loop.Start();
@@ -289,7 +291,7 @@ public class CurrentStatusHeaderRefreshContractTests
     public void OtherThreadsCannotOperateLoopOrReadClock() => OnDispatcher(() =>
     {
         var clock = new FakeApplicationClock(Snapshot(9, 49, 59));
-        using var loop = new CurrentStatusHeaderRefreshLoop(clock, DefaultPeriodSchedule.Periods, new());
+        using var loop = new CurrentStatusRefreshLoop(clock, DefaultPeriodSchedule.Periods, new(), new WeeklyTimetableViewModel(WeeklyTimetable.Empty()));
         Exception?[] failures = new Exception?[4];
         var other = new Thread(() =>
         {
@@ -309,9 +311,9 @@ public class CurrentStatusHeaderRefreshContractTests
     public void NullDependenciesAreRejectedBeforeActivation() => OnDispatcher(() =>
     {
         var clock = new FakeApplicationClock(Snapshot(9, 49, 59));
-        Assert.Throws<ArgumentNullException>("clock", () => new CurrentStatusHeaderRefreshLoop(null!, [], new()));
-        Assert.Throws<ArgumentNullException>("periods", () => new CurrentStatusHeaderRefreshLoop(clock, null!, new()));
-        Assert.Throws<ArgumentNullException>("viewModel", () => new CurrentStatusHeaderRefreshLoop(clock, [], null!));
+        Assert.Throws<ArgumentNullException>("clock", () => new CurrentStatusRefreshLoop(null!, [], new(), new WeeklyTimetableViewModel(WeeklyTimetable.Empty())));
+        Assert.Throws<ArgumentNullException>("periods", () => new CurrentStatusRefreshLoop(clock, null!, new(), new WeeklyTimetableViewModel(WeeklyTimetable.Empty())));
+        Assert.Throws<ArgumentNullException>("viewModel", () => new CurrentStatusRefreshLoop(clock, [], null!, new WeeklyTimetableViewModel(WeeklyTimetable.Empty())));
         Assert.Equal(0, clock.ReadCount);
     });
 
@@ -323,8 +325,8 @@ public class CurrentStatusHeaderRefreshContractTests
     }
 
     // Inspect our owned timer without exposing a mutable timer as production public API.
-    private static DispatcherTimer TimerOf(CurrentStatusHeaderRefreshLoop loop) =>
-        (DispatcherTimer)typeof(CurrentStatusHeaderRefreshLoop)
+    private static DispatcherTimer TimerOf(CurrentStatusRefreshLoop loop) =>
+        (DispatcherTimer)typeof(CurrentStatusRefreshLoop)
             .GetField("_timer", BindingFlags.Instance | BindingFlags.NonPublic)!.GetValue(loop)!;
 
     private static CurrentStatusHeaderText TextAt(int hour, int minute, int second)

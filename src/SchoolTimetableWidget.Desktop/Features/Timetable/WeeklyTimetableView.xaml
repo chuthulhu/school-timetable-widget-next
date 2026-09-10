@@ -9,6 +9,14 @@
             <Setter Property="BorderThickness" Value="0,0,1,1" />
             <Setter Property="Padding" Value="8,6" />
         </Style>
+        <Style x:Key="BodySlotBorder" TargetType="Border" BasedOn="{StaticResource SlotBorder}">
+            <Style.Triggers>
+                <!-- Render-only candidate: no thickness, font, padding or template changes. -->
+                <DataTrigger Binding="{Binding IsCurrent, Mode=OneWay}" Value="True">
+                    <Setter Property="Background" Value="#FFF3CD" />
+                </DataTrigger>
+            </Style.Triggers>
+        </Style>
         <DataTemplate x:Key="HeaderTemplate">
             <Border Style="{StaticResource SlotBorder}"
                     Background="{DynamicResource {x:Static SystemColors.ControlBrushKey}}">
@@ -51,7 +59,7 @@
             </ItemsControl.ItemsPanel>
             <ItemsControl.ItemTemplate>
                 <DataTemplate>
-                    <Border Style="{StaticResource SlotBorder}" MinHeight="44">
+                    <Border Style="{StaticResource BodySlotBorder}" MinHeight="44">
                         <TextBlock Text="{Binding Content, Mode=OneWay}"
                                    TextAlignment="Center" VerticalAlignment="Center"
                                    TextWrapping="Wrap" TextTrimming="None" />
