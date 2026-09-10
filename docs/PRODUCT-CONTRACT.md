@@ -649,3 +649,26 @@ Whitespace-only는 empty로 취급하지 않고 원래 newline도 합치거나 �
 이 display projection은 역변환/편집 원본이 아니다. Highlight identity는 계속 SchoolDay + PeriodNumber다.
 Date Override와 Bulk Input을 위한 값 재사용은 허용하되 미래 hierarchy를 선제 구현하지 않는다.
 Bulk Input의 별도 future 요구는 ARCHITECTURE/FEATURE-MAP에 기록한다.
+
+## Bulk Timetable Input — approved 2026-09-10
+
+The user authorized explicit School and Canonical spreadsheet text import,
+canonical template copy, candidate selection, preview and whole-week atomic
+in-memory Apply. [ADR 0007](adr/0007-bulk-timetable-input.md) records the detection,
+validation, clipboard and ownership decisions within that request.
+
+- Both importers produce exactly 35 independent SchoolDay/PeriodNumber slots
+  containing unchanged SubjectText/ClassText strings.
+- School detects a unique contiguous 1–7 × 5 signature at any column, validates
+  available weekday evidence and offers structurally supported two-row candidates.
+  Ambiguity requires explicit selection/confirmation or a validation error.
+- Canonical validates exact 8×11 shape, exact headers and ordered 1–7 period rows.
+- Preview never changes the active week. Explicit Apply replaces the entire
+  validated week once; Cancel/X/Escape and invalid input leave it unchanged.
+- Clipboard copy occurs only through an explicit template-copy action. The editor
+  retains ordinary text paste; whole-table Ctrl+V belongs only to the timetable.
+- Values last until app exit. Durable M2 Save remains future work. No profiles,
+  semester history, date override or persistence are implemented in this milestone.
+
+Earlier Editing Foundation exclusions describe that completed milestone, not a
+prohibition on this subsequently authorized Bulk milestone.

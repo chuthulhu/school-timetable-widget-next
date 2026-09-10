@@ -1,0 +1,78 @@
+<Window x:Class="SchoolTimetableWidget.Desktop.Features.TimetableImport.TimetableImportWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        Title="{Binding ModeLabel}" Width="980" Height="760" MinWidth="760" MinHeight="580"
+        WindowStartupLocation="CenterOwner" ShowInTaskbar="False" FontSize="15">
+    <Window.Resources>
+        <BooleanToVisibilityConverter x:Key="BoolVisibility" />
+        <Style x:Key="PreviewBorder" TargetType="Border">
+            <Setter Property="BorderBrush" Value="{DynamicResource {x:Static SystemColors.ControlLightBrushKey}}" />
+            <Setter Property="BorderThickness" Value="0,0,1,1" />
+            <Setter Property="Padding" Value="8" />
+        </Style>
+        <DataTemplate x:Key="HeaderTemplate">
+            <Border Style="{StaticResource PreviewBorder}" Background="{DynamicResource {x:Static SystemColors.ControlBrushKey}}">
+                <TextBlock Text="{Binding}" TextAlignment="Center" VerticalAlignment="Center" />
+            </Border>
+        </DataTemplate>
+    </Window.Resources>
+    <Grid Margin="20">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto" /><RowDefinition Height="Auto" />
+            <RowDefinition Height="Auto" /><RowDefinition Height="Auto" />
+            <RowDefinition Height="Auto" /><RowDefinition Height="*" />
+            <RowDefinition Height="Auto" /><RowDefinition Height="Auto" />
+        </Grid.RowDefinitions>
+        <DockPanel Margin="0,0,0,12">
+            <Button x:Name="ReadClipboardButton" DockPanel.Dock="Right" Content="클립보드 다시 읽기" Padding="12,6" Click="ReadClipboard_Click" />
+            <TextBlock Text="{Binding ModeLabel}" FontSize="22" FontWeight="SemiBold" VerticalAlignment="Center" />
+        </DockPanel>
+        <TextBlock Grid.Row="1" Text="적용하면 현재 시간표 35셀 전체가 바뀝니다. 변경 내용은 앱을 종료할 때까지 유지됩니다."
+                   TextWrapping="Wrap" Margin="0,0,0,12" />
+        <DockPanel Grid.Row="2" Margin="0,0,0,8">
+            <Label Content="가져올 후보" Target="{Binding ElementName=CandidateSelector}" />
+            <ComboBox x:Name="CandidateSelector" ItemsSource="{Binding Candidates}"
+                      SelectedItem="{Binding SelectedCandidate, Mode=TwoWay}" DisplayMemberPath="Label"
+                      IsSynchronizedWithCurrentItem="False" MinHeight="32" AutomationProperties.Name="가져올 시간표 후보" />
+        </DockPanel>
+        <TextBlock Grid.Row="3" Text="{Binding Evidence}" TextWrapping="Wrap" Margin="0,0,0,8" />
+        <TextBlock Grid.Row="4" Text="미리보기 · 각 칸의 위쪽은 교과, 아래쪽은 반입니다. 빈 칸도 그대로 적용됩니다."
+                   TextWrapping="Wrap" Margin="0,0,0,8" />
+        <ScrollViewer Grid.Row="5" HorizontalScrollBarVisibility="Auto" VerticalScrollBarVisibility="Auto">
+            <Grid DataContext="{Binding Preview}" MinWidth="680" Margin="0,0,8,8">
+                <Grid.ColumnDefinitions><ColumnDefinition Width="48" /><ColumnDefinition Width="*" /></Grid.ColumnDefinitions>
+                <Grid.RowDefinitions><RowDefinition Height="Auto" /><RowDefinition Height="*" /></Grid.RowDefinitions>
+                <Border Style="{StaticResource PreviewBorder}"><TextBlock Text="교시" TextAlignment="Center" /></Border>
+                <ItemsControl Grid.Column="1" ItemsSource="{Binding WeekdayHeaders}" ItemTemplate="{StaticResource HeaderTemplate}">
+                    <ItemsControl.ItemsPanel><ItemsPanelTemplate><UniformGrid Rows="1" Columns="5" /></ItemsPanelTemplate></ItemsControl.ItemsPanel>
+                </ItemsControl>
+                <ItemsControl Grid.Row="1" ItemsSource="{Binding PeriodHeaders}" ItemTemplate="{StaticResource HeaderTemplate}">
+                    <ItemsControl.ItemsPanel><ItemsPanelTemplate><UniformGrid Rows="7" Columns="1" /></ItemsPanelTemplate></ItemsControl.ItemsPanel>
+                </ItemsControl>
+                <ItemsControl x:Name="PreviewCells" Grid.Row="1" Grid.Column="1" ItemsSource="{Binding Cells}">
+                    <ItemsControl.ItemsPanel><ItemsPanelTemplate><UniformGrid Rows="7" Columns="5" /></ItemsPanelTemplate></ItemsControl.ItemsPanel>
+                    <ItemsControl.ItemTemplate>
+                        <DataTemplate>
+                            <Border Style="{StaticResource PreviewBorder}" MinHeight="56" ToolTip="{Binding SlotLabel}">
+                                <StackPanel VerticalAlignment="Center">
+                                    <TextBlock Text="{Binding Value.SubjectText}" TextWrapping="Wrap" TextAlignment="Center" />
+                                    <TextBlock Text="{Binding Value.ClassText}" TextWrapping="Wrap" TextAlignment="Center"
+                                               Foreground="{DynamicResource {x:Static SystemColors.GrayTextBrushKey}}" />
+                                </StackPanel>
+                            </Border>
+                        </DataTemplate>
+                    </ItemsControl.ItemTemplate>
+                </ItemsControl>
+            </Grid>
+        </ScrollViewer>
+        <StackPanel Grid.Row="6">
+            <CheckBox x:Name="MappingConfirmation" Content="월~금 순서와 위 행=교과 / 아래 행=반 매핑을 확인했습니다."
+                      IsChecked="{Binding MappingConfirmed}" Visibility="{Binding IsSchool, Converter={StaticResource BoolVisibility}}" Margin="0,8,0,4" />
+            <TextBlock x:Name="ErrorMessage" Text="{Binding ErrorText}" TextWrapping="Wrap" Foreground="DarkRed" Margin="0,4,0,0" />
+        </StackPanel>
+        <StackPanel Grid.Row="7" Orientation="Horizontal" HorizontalAlignment="Right" Margin="0,12,0,0">
+            <Button x:Name="ApplyButton" Content="35셀 전체 적용" Command="{Binding ApplyCommand}" IsDefault="False" Padding="14,7" />
+            <Button x:Name="CancelButton" Content="취소" Command="{Binding CancelCommand}" IsCancel="True" Padding="14,7" Margin="8,0,0,0" />
+        </StackPanel>
+    </Grid>
+</Window>

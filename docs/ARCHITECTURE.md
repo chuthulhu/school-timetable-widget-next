@@ -891,3 +891,27 @@ parse/validation no partial modification, all-or-nothing Apply를 지킨다.
   adapter는 앱 전체 singleton을 뜻하지 않는다. 새 profile selection service는 구현하지 않는다.
 - 이번 milestone에 TeacherTimetableProfile, TimetableGroup, multi-tab UI,
   multi-teacher persistence/import, group comparison UI를 추가하지 않는다.
+
+## Bulk Timetable Input — implementation, 2026-09-10
+
+The A/B portions of the earlier future bulk section are now implemented under the
+user's explicit milestone authorization. Small rectangular paste (C), date targets,
+profiles/groups, semester sets and persistence remain future work.
+
+- Core Features/TimetableImport: lossless quoted TSV table parser/writer, separate
+  School structural recognizer and strict Canonical recognizer. The Timetable
+  domain has no spreadsheet/platform dependency. No new project/package/framework.
+- Common result: immutable complete WeeklyTimetable candidate with display-only
+  source label/evidence. School candidates always require explicit selection and
+  mapping confirmation; unsupported or repeated structures reject without changes.
+- Desktop Features/TimetableImport: isolated session/preview/commands, owned modal
+  WPF dialog, clipboard/target orchestration. Infrastructure/Windows contains the
+  small OS clipboard adapter. Existing Timetable VM owns atomic whole-week swap.
+- All values/projections update before notifications; stable cells preserve current
+  highlight. Shared clock/status pipeline is unchanged; no additional timer.
+- Context menu and view-scoped Ctrl+V; editor TextBox paste remains separate.
+  Explicit template copy produces 8×11 TSV. No permanent toolbar redesign.
+- Automated/object evidence and approved limited user native UX are documented in
+  [Bulk Timetable Input](TIMETABLE-BULK-INPUT.md), with [ADR 0007](adr/0007-bulk-timetable-input.md).
+  Earlier milestone descriptions are historical; their “not implemented” statements
+  do not override this current implementation status.

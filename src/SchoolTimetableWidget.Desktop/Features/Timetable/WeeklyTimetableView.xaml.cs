@@ -1,3 +1,6 @@
+using System.Windows.Input;
+using SchoolTimetableWidget.Core.Features.TimetableImport;
+using SchoolTimetableWidget.Desktop.Features.TimetableImport;
 using System.Windows;
 using System.Windows.Controls;
 using SchoolTimetableWidget.Desktop.Infrastructure.Windows;
@@ -7,6 +10,29 @@ namespace SchoolTimetableWidget.Desktop.Features.Timetable;
 public partial class WeeklyTimetableView : UserControl
 {
     public WeeklyTimetableView() => InitializeComponent();
+
+    public TimetableImportActions ImportActions { get; set; } = new(new WindowsSpreadsheetClipboard());
+
+    private void Import_CanExecute(object sender, CanExecuteRoutedEventArgs e)
+    {
+        e.CanExecute = DataContext is WeeklyTimetableViewModel { Editor.ActiveSession: null };
+        e.Handled = true;
+    }
+    private void SchoolImport_Executed(object sender, ExecutedRoutedEventArgs e) => OpenImport(TimetableImportMode.School, e);
+    private void CanonicalImport_Executed(object sender, ExecutedRoutedEventArgs e) => OpenImport(TimetableImportMode.Canonical, e);
+    private void OpenImport(TimetableImportMode mode, ExecutedRoutedEventArgs e)
+    {
+        e.Handled = true;
+        if (DataContext is WeeklyTimetableViewModel model && Window.GetWindow(this) is { IsVisible: true } owner)
+            ImportActions.ShowImport(owner, model, mode);
+    }
+    private void CopyTemplate_Executed(object sender, ExecutedRoutedEventArgs e)
+    {
+        e.Handled = true;
+        var message = ImportActions.CopyTemplate();
+        if (Window.GetWindow(this) is { IsVisible: true } owner)
+            MessageBox.Show(owner, message, "표준 양식 복사", MessageBoxButton.OK, MessageBoxImage.Information);
+    }
 
     private void Cell_EditRequested(object sender, RoutedEventArgs e)
     {

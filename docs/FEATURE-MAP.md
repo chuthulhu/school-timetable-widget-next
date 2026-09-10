@@ -95,3 +95,19 @@ ambiguity/range 실패는 no modification이며 silent clipping/guessing/partial
 
 TeacherTimetableProfile/TimetableGroup 모델, multi-tab UI, multi-teacher persistence/import,
 group comparison UI는 구현하지 않는다. 상세 제약은 ARCHITECTURE의 future profiles 절을 따른다.
+
+## Bulk Timetable Input — current implementation, 2026-09-10
+
+Supersedes the A/B “future” statuses above; C and other future features are unchanged.
+
+| Feature | Current status | Boundary |
+| --- | --- | --- |
+| Clipboard table parser | IMPLEMENTED / AUTOMATED VERIFIED | Pure quoted TSV, rectangular validation, exact content |
+| School Timetable Import (A) | IMPLEMENTED / USER NATIVE SMOKE PASSED | Unique 35-column signature, structural pairs, explicit candidate/mapping confirmation |
+| Canonical Template Import (B) | IMPLEMENTED / USER NATIVE SMOKE PASSED | Strict 8×11, exact headers and ordered periods |
+| Template copy | IMPLEMENTED / USER NATIVE SMOKE PASSED | Explicit clipboard command, no .xlsx file |
+| Common Preview / Apply | IMPLEMENTED / AUTOMATED VERIFIED / USER NATIVE SMOKE PASSED | Current single active week, all 35 values before notification, no persistence |
+| Small Rectangular Paste (C) | FUTURE / NOT IMPLEMENTED | Ctrl+V currently enters School mode only |
+| Multi-profile/date/semester/persistence | FUTURE / NOT IMPLEMENTED | No models, schema or additional target UI added |
+
+See [Bulk verification](TIMETABLE-BULK-INPUT.md) and [ADR 0007](adr/0007-bulk-timetable-input.md).

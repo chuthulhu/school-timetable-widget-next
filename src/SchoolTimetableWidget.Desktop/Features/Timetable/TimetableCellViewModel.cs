@@ -25,6 +25,17 @@ public sealed class TimetableCellViewModel : ObservableObject
 
     internal void SetIsCurrent(bool value) => SetProperty(ref _isCurrent, value, nameof(IsCurrent));
 
+    internal void SetValueWithoutNotification(TimetableCellValue value, string displayText)
+    {
+        _value = value;
+        _displayText = displayText;
+    }
+
+    internal void NotifyValueChanged(bool displayChanged)
+    {
+        OnPropertyChanged(nameof(Value));
+        if (displayChanged) OnPropertyChanged(nameof(DisplayText));
+    }
     internal void SetValue(TimetableCellValue value)
     {
         if (_value == value) return;
