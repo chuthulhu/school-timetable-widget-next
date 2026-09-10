@@ -1,0 +1,63 @@
+<UserControl x:Class="SchoolTimetableWidget.Desktop.Features.Timetable.WeeklyTimetableView"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             FontSize="16" MinWidth="500">
+    <UserControl.Resources>
+        <!-- Candidate spacing only; content participates in WPF measurement. -->
+        <Style x:Key="SlotBorder" TargetType="Border">
+            <Setter Property="BorderBrush" Value="{DynamicResource {x:Static SystemColors.ControlLightBrushKey}}" />
+            <Setter Property="BorderThickness" Value="0,0,1,1" />
+            <Setter Property="Padding" Value="8,6" />
+        </Style>
+        <DataTemplate x:Key="HeaderTemplate">
+            <Border Style="{StaticResource SlotBorder}"
+                    Background="{DynamicResource {x:Static SystemColors.ControlBrushKey}}">
+                <TextBlock Text="{Binding Mode=OneWay}" TextAlignment="Center"
+                           VerticalAlignment="Center" TextWrapping="NoWrap" />
+            </Border>
+        </DataTemplate>
+    </UserControl.Resources>
+    <Grid>
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="48" />
+            <ColumnDefinition Width="*" />
+        </Grid.ColumnDefinitions>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="*" />
+        </Grid.RowDefinitions>
+        <Border x:Name="CornerHeader" Style="{StaticResource SlotBorder}"
+                Background="{DynamicResource {x:Static SystemColors.ControlBrushKey}}">
+            <TextBlock Text="" TextAlignment="Center" VerticalAlignment="Center" />
+        </Border>
+        <ItemsControl x:Name="WeekdayHeaders" Grid.Column="1"
+                      ItemsSource="{Binding WeekdayHeaders, Mode=OneWay}"
+                      ItemTemplate="{StaticResource HeaderTemplate}">
+            <ItemsControl.ItemsPanel>
+                <ItemsPanelTemplate><UniformGrid Rows="1" Columns="5" /></ItemsPanelTemplate>
+            </ItemsControl.ItemsPanel>
+        </ItemsControl>
+        <ItemsControl x:Name="PeriodHeaders" Grid.Row="1"
+                      ItemsSource="{Binding PeriodHeaders, Mode=OneWay}"
+                      ItemTemplate="{StaticResource HeaderTemplate}">
+            <ItemsControl.ItemsPanel>
+                <ItemsPanelTemplate><UniformGrid Rows="7" Columns="1" /></ItemsPanelTemplate>
+            </ItemsControl.ItemsPanel>
+        </ItemsControl>
+        <ItemsControl x:Name="BodyCells" Grid.Row="1" Grid.Column="1"
+                      ItemsSource="{Binding Cells, Mode=OneWay}">
+            <ItemsControl.ItemsPanel>
+                <ItemsPanelTemplate><UniformGrid Rows="7" Columns="5" /></ItemsPanelTemplate>
+            </ItemsControl.ItemsPanel>
+            <ItemsControl.ItemTemplate>
+                <DataTemplate>
+                    <Border Style="{StaticResource SlotBorder}" MinHeight="44">
+                        <TextBlock Text="{Binding Content, Mode=OneWay}"
+                                   TextAlignment="Center" VerticalAlignment="Center"
+                                   TextWrapping="Wrap" TextTrimming="None" />
+                    </Border>
+                </DataTemplate>
+            </ItemsControl.ItemTemplate>
+        </ItemsControl>
+    </Grid>
+</UserControl>

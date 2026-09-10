@@ -1,6 +1,6 @@
 # Architecture
 
-현재 Phase 0.8 Header XAML + App startup/shutdown wiring은 IMPLEMENTED — USER NATIVE SMOKE PASSED다. 기존 A4–A9를 실제 View에 연결하고 사용자 host Windows에서 표시/live update/가로 resize와 종료를 확인했다. 검증 범위는 아래 native smoke 기록을 따른다. Timetable/Highlight UI는 미구현이며 다국어 infrastructure는 도입하지 않는다.
+현재 Phase 0.8 Header XAML + App startup/shutdown wiring은 IMPLEMENTED — USER NATIVE SMOKE PASSED다. 기존 A4–A9를 실제 View에 연결하고 사용자 host Windows에서 표시/live update/가로 resize와 종료를 확인했다. 검증 범위는 아래 native smoke 기록을 따른다. Weekly Timetable Core/read-only View도 구현했고 사용자 native smoke를 통과했다. Highlight UI는 미구현이며 다국어 infrastructure는 도입하지 않는다.
 이 문서는 확정된 baseline과 설계 방향을 구분한다. 상세 계약은
 [Product Contract](PRODUCT-CONTRACT.md), 진행 상태는 [Feature Map](FEATURE-MAP.md)을 따른다.
 
@@ -45,9 +45,9 @@ Tests   → Desktop  (Phase 0.6 presentation contract tests)
 
 | Project | 책임 / 현재 범위 |
 | --- | --- |
-| Desktop | View/ViewModel, Windows integration, infrastructure adapter. 현재 MainWindow의 Header feature View, App startup/shutdown composition, PC fallback clock adapter와 Features/CurrentStatus의 한국어 formatter, 표시 전용 ViewModel, DispatcherTimer refresh loop가 있다. 실제 Header/live app refresh는 구현했고 사용자 host Windows의 제한된 native smoke를 통과했다. CommunityToolkit.Mvvm은 이 project에만 직접 참조한다. |
-| Core | 순수 계산, 상태 전이, product contract logic, 시간 abstraction, persistence/migration contract의 소유 경계. 현재 Time/의 clock interface, immutable snapshot, source enum과 Features/Periods/의 교시 정의·기본 profile·current-period 계산, Features/CurrentStatus/의 5상태 계산·countdown 의미 정규화가 있으며 WPF/Toolkit/Desktop 의존성이 없다. |
-| Tests | 기존 Core tests와 Desktop presentation/lifecycle tests의 진입점. xUnit v3로 Application Clock, current-period, Current Status, countdown, Header formatter, ViewModel/refresh loop 및 Header XAML/binding contract tests를 실행한다. Fake clock과 dispatcher object test helper는 Tests 내부에만 둔다. |
+| Desktop | View/ViewModel, Windows integration, infrastructure adapter. 현재 MainWindow의 Header/Timetable feature View, App startup/shutdown composition, PC fallback clock adapter와 Features/CurrentStatus의 한국어 formatter, 표시 전용 ViewModel, DispatcherTimer refresh loop가 있다. 실제 Header/live app refresh는 구현했고 사용자 host Windows의 제한된 native smoke를 통과했다. CommunityToolkit.Mvvm은 이 project에만 직접 참조한다. |
+| Core | 순수 계산, 상태 전이, product contract logic, 시간 abstraction, persistence/migration contract의 소유 경계. 현재 Time/의 clock interface, immutable snapshot, source enum과 Features/Periods/의 교시 정의·기본 profile·current-period 계산, Features/CurrentStatus/의 5상태 계산·countdown 의미 정규화, Features/Timetable/의 immutable 35셀 모델이 있으며 WPF/Toolkit/Desktop 의존성이 없다. |
+| Tests | 기존 Core tests와 Desktop presentation/lifecycle tests의 진입점. xUnit v3로 Application Clock, current-period, Current Status, countdown, Header formatter, ViewModel/refresh loop 및 Header XAML/binding 및 Timetable model/presentation/XAML/layout contract tests를 실행한다. Fake clock과 dispatcher object test helper는 Tests 내부에만 둔다. |
 
 Core → Desktop 의존은 금지한다. Feature별 assembly를 추가하지 않고 project 내부 폴더/namespace로
 책임을 나눈다. Feature/Platform/Infrastructure 상세 폴더는 실제 첫 코드가 필요할 때 생성한다.
@@ -420,3 +420,157 @@ countdown rounding, notification, persistence, 네트워크 및 system clock mut
   Timer의 정확한 cadence 계측, font glyph의 OpenType 지원 입증, 실제 시각의 모든 상태 경계,
   극단적으로 좁은 폭, DPI/multi-monitor, tray/suspend/resume 및 최종 visual design 검증으로 확대하지 않는다.
 - 사용자 native 확인 직후에는 검증 결과만 문서에 반영했고 staging/commit/push를 하지 않았다. 이후 milestone 종료 요청에 따라 최종 self-review와 자동 검증을 거쳐 commit/push한다.
+
+## Weekly Timetable Read-Only View — 2026-09-10
+
+Status: Core **IMPLEMENTED — FOUNDATION**; Weekly View / Weekday Header
+**IMPLEMENTED — USER NATIVE SMOKE PASSED**. 기존 A2/M1/I6–I7 및 A4 Header 아래 배치를 구현한다.
+Product Contract/Accepted ADR 변경은 없다. Highlight, editing, persistence는 PLANNED다.
+
+### Fixed-reference visual evidence
+
+사용자가 2026-09-10 허용한 최소 source 확인으로 Golden Reference
+`84de32a555633120bd6363a609a19cbc0a15e8ea`의
+[Widget.init_ui](https://github.com/chuthulhu/school-timetable-widget/blob/84de32a555633120bd6363a609a19cbc0a15e8ea/src/gui/widget.py#L175)
+grid 생성 및 label 설정을 read-only로 확인했다. 이는 source-confirmed behavior evidence이며
+이번에 Legacy를 실행하거나 native 화면을 다시 확인한 증거가 아니다.
+
+- 전체 grid는 8행 × 6열이다. 첫 행은 빈 좌상단 + 월/화/수/목/금이다.
+- 첫 열의 2–8행은 숫자 문자열 `1`–`7`이다. `1교시` 같은 접미사는 없다.
+- 헤더 13개 = 빈 corner 1 + weekday 5 + period 7이다.
+- 본문은 나머지 7행 × 5열의 독립 35셀이다. 헤더는 본문 데이터가 아니다.
+- Header/body 모두 수평·수직 가운데 정렬이고 body는 word wrapping이 켜져 있다.
+  Header에는 wrapping을 켜지 않는다.
+- Legacy AutoText는 재현하지 않는다. 승인된 R3/I6대로 WPF plain text를 표시한다.
+  Python 구조, Qt grid API, 정확한 간격/색/크기는 구현 template으로 가져오지 않았다.
+
+요청의 5 columns는 본문 기준으로 유지한다. Legacy에서 확인된 왼쪽 교시 header column을
+별도로 표현하므로 새 row-label UX나 제품 결정을 추가한 것이 아니다.
+
+### Ownership and implementation
+
+- Core `Features/Timetable/`에는 SchoolDay, TimetableCell, WeeklyTimetable만 둔다.
+  SchoolDay는 Monday–Friday의 의미 값이며 한국어 표시나 legacy JSON key를 소유하지 않는다.
+- TimetableCell은 sealed/get-only Day, PeriodNumber, Content다. 잘못된 day/period와 null content를
+  생성 시 거부한다. 빈 문자열은 유효하며 공백/Unicode/newline/markup-looking 문자열을 변환하지 않는다.
+- WeeklyTimetable은 입력을 한 번 열거해 새 배열에 슬롯별로 배치하고 전체 35슬롯의 존재와 중복을 검증한다.
+  누락/null/중복을 암묵적으로 보충하지 않는다. read-only collection과 day/period indexer를 제공하며
+  순서는 period 1–7, 각 period 안에서 Monday–Friday다. 각 슬롯과 문자열은 immutable이다.
+  Empty()는 35개의 서로 다른 빈 슬롯을 명시적으로 생성하는 factory이며 저장 schema 결정이 아니다.
+- Desktop `Features/Timetable/`의 WeeklyTimetableViewModel은 weekday/period 표시 목록과
+  35개의 TimetableCellViewModel을 읽기 전용으로 소유한다. 셀 VM은 Content만 제공하고,
+  같은 문자열이라도 별도 객체다. clock/current/upcoming/style/editor 상태가 없다.
+- WeeklyTimetableView는 2×2 배치 안에 corner, weekday ItemsControl, period ItemsControl,
+  body ItemsControl을 둔다. 각 ItemsPanel은 각각 1×5, 7×1, 7×5 UniformGrid다.
+  별도 교시 열과 본문 열/행이 정렬되고 본문은 동일 폭·높이를 갖는다.
+  XAML TextBlock.Text OneWay binding, Wrap, Center, TextTrimming=None을 사용한다.
+  Code-behind는 InitializeComponent만 수행한다.
+- MainWindow는 Row 0 Header / Row 1 Timetable feature View와 주입받은 두 VM의 DataContext만 연결한다.
+  교시 계산, clock, timetable indexing이나 수동 35셀 생성은 없다.
+  App이 기존 clock/default period schedule/Header loop lifetime을 유지하고 timetable VM을 추가 주입한다.
+  Header의 Core/formatter/ViewModel/refresh loop/XAML은 변경하지 않았다.
+- WindowContentMinimum은 `Desktop/Infrastructure/Windows/`의 작은 WPF attached behavior다.
+  Loaded와 가로 크기 변경 시 현재 client 폭에서 content를 높이 무제한으로 측정하여
+  필요한 창 MinHeight를 갱신한다. content의 MinWidth와 실제 window/content 크기 차이를 합쳐
+  창 chrome을 포함한 minimum을 적용하고 정상 star-row 측정으로 돌아간다.
+  Header tick에는 연결하지 않는다. preferred geometry 저장/변경, OS 설정, timer는 없다.
+  일반 가로 resize의 사용자 native 결과는 아래에 기록한다. Chrome/minimum의 극단 경계와 DPI는 별도 검증 범위다.
+- 800×600 시작 창, 본문 최소 폭 500 DIP, 교시 열 48 DIP, 글자 16 DIP,
+  padding 8/6 DIP, 셀 minimum 44 DIP는 조정 가능한 구현 후보다.
+  고정된 Product Contract 수치나 최종 디자인으로 승격하지 않는다.
+  전체 Settings Preview/minimum, preferred/applied geometry persistence, DPI/monitor 및
+  화면보다 큰 content minimum의 overflow UX를 구현·검증했다고 주장하지 않는다.
+
+### Runtime fixture policy
+
+기본 실행은 App에서 명시적 빈 주간 데이터를 주입한다. 실제 신규 profile/default subject 정책이나
+persistence를 확정하는 데이터가 아니다. `--timetable-preview`를 명시한 경우에만
+`Development/TimetablePreviewData`를 사용하고 창 제목에 '개발용 시간표 미리보기'를 표시한다.
+이 fixture는 저장되지 않고 모든 실행에서 deterministic하다.
+
+대표 위치는 월1/월2 국어(별도 셀), 화1 두 줄 물리학/실험 A반!, 수1 긴 문장,
+목1 literal `<b>과목</b>`, 금1 빈칸, 화2 앞뒤 공백, 수2 whitespace-only,
+목2 Unicode, 금7 마지막 수업이다. Production Core에 dummy 기본값이나 DEBUG framework를 추가하지 않았다.
+
+### Automated verification and self-audit
+
+- `dotnet restore`, `dotnet build --no-restore`,
+  `dotnet test --no-build --logger "console;verbosity=normal"` 실행 완료, 최종 exit 0.
+  Build warning 0 / error 0. 기존 195 + 신규 33 = **228 passed**, failed/skipped 0.
+- 신규 Core 21 cases: 모든 35슬롯 접근, invalid day/period, 누락/중복/null 거부,
+  input 복사/단일 열거, read-only API, 빈 값·공백·Unicode·newline·literal markup·반복 값 보존.
+- 신규 Desktop presentation 4 cases: 월화수목금/숫자 1–7 순서, body ordering,
+  35개의 독립 VM, text/read-only/null 정책.
+- 신규 WPF 8 cases: STA compiled XAML, 5+7+1 header 및 35 body, binding/literal Run,
+  800/620/500 DIP에서 상대 geometry와 content fit, 긴 multiline의 minimum 증가,
+  synthetic Loaded의 minimum 적용, 주입 clock 경계 갱신 중 body subtree 재측정/위치 변화 없음.
+  Font pixel이나 candidate 수치를 영구 계약으로 고정하는 assertion은 없다.
+- 기존 195개 중 MainWindow composition test 하나는 '빈 아래 영역'을 'Timetable View 주입'으로 갱신했다.
+  Header에 대한 기존 assertion은 유지했고 나머지 기존 테스트와 time/current-status production 코드는 불변이다.
+- 최초 실행은 226 passed / 2 failed였다. Test assembly에서 compiled XAML UserControl을 상속한
+  계측 subclass는 resource assembly mismatch로 실패했고, 빈 text에 Run 하나를 기대한 assertion도 실패했다.
+  Test-only Decorator 계측과 빈 inline collection 검사로 수정한 뒤 전체 228개를 재실행했다.
+  Production XAML loading이나 문자열 표시의 실패로 기록하지 않는다.
+- 검증은 표시하지 않는 WPF 객체의 Measure/Arrange/binding queue 및 synthetic event다.
+  Application 실행/Window.Show, foreground input, clipboard 변경, system clock 변경은 없었다.
+  Test-only Decorator 계측은 native rendering/cadence/OS resize 증거가 아니다.
+- Core MSBuild: net10.0, UseWPF 없음, ProjectReference/PackageReference 없음,
+  FrameworkReference는 Microsoft.NETCore.App만 존재한다.
+  직접 system time read는 기존 PcFallbackApplicationClock의 DateTimeOffset.Now 1건뿐이다.
+- 자체 감사: 35 독립 슬롯과 순서, header/body 분리, literal text, no trim/merge,
+  MainWindow composition, Timetable/CurrentStatus 독립, fixture 분리 및 최소 styling을 확인했다.
+  P1/P2 finding 없음. 신규 persistence/migration/backup/editing/highlight는 없다.
+  숫자 후보·Legacy quirks를 새 계약으로 만들거나 Python implementation을 복제하지 않았다.
+
+### Native checkpoint preparation — historical
+
+사용자 승인 전 commit/push하지 않는다. 현재 도구 실행이 실제 사용자 로그인 desktop을 보장하지 못하므로
+보이지 않는 sandbox 앱을 먼저 실행하지 않는다. 이는 앱 실행 실패 판정이 아니다.
+사용자의 일반 host PowerShell에서 다음 명령으로 정상 창을 실행한다:
+
+```powershell
+& 'C:\Program Files\dotnet\dotnet.exe' run --no-build --project 'D:\Codex\school-timetable-widget-next\src\SchoolTimetableWidget.Desktop\SchoolTimetableWidget.Desktop.csproj' -- --timetable-preview
+```
+
+먼저 창이 실제로 보이는지 확인한다. 이후 다음을 순서대로 확인하고 기록한다:
+
+1. 기존 Status Header의 현재 시각/status 및 약 1초 갱신.
+2. 월화수목금, 왼쪽 1–7 숫자, 독립된 본문 7행×5열.
+3. 대표 한글/두 줄/긴 text/literal 태그/빈칸/반복 과목 표시, 기본 창의 clipping/겹침 없음.
+4. 가로 resize 시 열/행 정렬 및 text fit, Header 갱신 중 grid 흔들림 없음.
+5. X로 정상 종료 및 해당 사용자 실행 process 소멸.
+
+이 준비 시점에는 native 항목이 모두 PENDING이었다. 이후 실제 결과는 아래에 기록한다.
+사용자 승인 후 결과 반영 → restore/build/test/diff check/self-review → 승인된 commit/push 순서로 계속한다.
+
+### User native smoke — 2026-09-10
+
+- 사용자가 일반 host PowerShell에서 개발 preview 실행 명령을 사용하고 실제 창의 screenshot을 제공했다.
+  이번에는 Codex sandbox에서 먼저 앱을 실행하지 않았다.
+- Screenshot에는 '개발용 시간표 미리보기' 제목, 09:33:36과 '1교시 · 종료까지 16분',
+  월화수목금, 왼쪽 숫자 1–7 및 독립된 본문 7×5가 보인다. 기본 1교시 schedule과 countdown floor에 맞는다.
+- 월1/월2의 별도 국어 셀, 화1의 물리학/실험 A반! 두 줄, 수1 긴 문장의 자동 wrap,
+  목1의 태그를 포함한 literal `<b>과목</b>`, 빈 셀, Unicode와 금7 마지막 수업을 확인했다.
+  제공된 화면에서 명백한 clipping/겹침은 관찰되지 않았다.
+  공백 문자의 정확한 개수 보존은 screenshot만으로 입증하지 않으며 model/binding tests의 증거다.
+- 약 5초간 매초 시각 갱신과 Header/grid 위치 흔들림 여부를 묻는 확인에 사용자가
+  '정상적으로 작동'이라고 답했다. 이어 가로 폭을 조금 줄였다 늘리며 정렬/잘림/겹침을 확인하는
+  요청에 '정상'이라고 답했다. 이 결과로 제한된 live update/가로 resize native smoke를 통과했다.
+- 종료 전 해당 repo의 Debug executable 경로와 PID 30632를 read-only로 관찰했다.
+  사용자가 제목 표시줄 X로 닫고 '닫음'이라고 답한 뒤 PID 30632가 없고 같은 이름의 앱 process가
+  0개임을 확인했다. 강제 종료하지 않았다. OnExit/Dispose 연결은 source와 기존 lifecycle tests,
+  실제 X 종료/process 소멸은 사용자 조작 및 process 조회 증거다. 사용자 shell exit code나
+  Dispose 내부 실행, 정확한 timer cadence를 계측한 것은 아니다.
+- Weekly Timetable read-only View와 Weekday Header를 IMPLEMENTED — USER NATIVE SMOKE PASSED로 갱신한다.
+  최소 폭/높이의 모든 조합, DPI/multi-monitor, 최대 content, 화면보다 큰 minimum의 overflow,
+  모든 실제 시간 경계 및 최종 styling을 검증한 것으로 확대하지 않는다.
+- 사용자의 native 확인 결과와 최초 milestone 지시에 따라 별도 승인 요청 없이 최종
+  restore/build/test, diff check, self-review 후 commit/push를 진행한다.
+
+### Final verification after native acceptance — 2026-09-10
+
+- Native 확인 후 restore/build/test를 다시 실행했다. 모두 exit 0,
+  build warning/error 0, 전체 228 passed 및 failed/skipped 0이다.
+- 최종 source/diff review에서 기존 Header 계산/refresh/lifecycle 및 Core 독립성을 재확인했다.
+  Native 검토 뒤 production code 수정은 없으며 관찰 결과와 상태만 문서에 반영했다.
+  P1/P2 finding 없음. Git diff check와 신규 파일 whitespace 검사도 통과했다.

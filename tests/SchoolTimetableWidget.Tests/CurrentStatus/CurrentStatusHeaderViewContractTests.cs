@@ -7,6 +7,8 @@ using System.Windows.Threading;
 using SchoolTimetableWidget.Core.Features.CurrentStatus;
 using SchoolTimetableWidget.Core.Features.Periods;
 using SchoolTimetableWidget.Core.Time;
+using SchoolTimetableWidget.Core.Features.Timetable;
+using SchoolTimetableWidget.Desktop.Features.Timetable;
 using SchoolTimetableWidget.Desktop;
 using SchoolTimetableWidget.Desktop.Features.CurrentStatus;
 using SchoolTimetableWidget.Tests.Time;
@@ -86,14 +88,19 @@ public class CurrentStatusHeaderViewContractTests
     });
 
     [Fact]
-    public void MainWindowPlacesInjectedHeaderAboveAnEmptyRemainingArea() => OnDispatcher(() =>
+    public void MainWindowPlacesInjectedHeaderAboveTheTimetable() => OnDispatcher(() =>
     {
         var model = new CurrentStatusHeaderViewModel();
-        var window = new MainWindow(model);
+        var timetableModel = new WeeklyTimetableViewModel(WeeklyTimetable.Empty());
+        var window = new MainWindow(model, timetableModel);
         try
         {
             var grid = Assert.IsType<Grid>(window.Content);
-            var header = Assert.IsType<CurrentStatusHeaderView>(Assert.Single(grid.Children.Cast<UIElement>()));
+            Assert.Equal(2, grid.Children.Count);
+            var header = Assert.IsType<CurrentStatusHeaderView>(grid.Children[0]);
+            var timetable = Assert.IsType<WeeklyTimetableView>(grid.Children[1]);
+            Assert.Same(timetableModel, timetable.DataContext);
+            Assert.Equal(1, Grid.GetRow(timetable));
             Assert.Same(model, header.DataContext);
             Assert.Equal(0, Grid.GetRow(header));
             Assert.Equal(2, grid.RowDefinitions.Count);

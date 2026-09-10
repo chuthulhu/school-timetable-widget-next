@@ -9,7 +9,9 @@ PLANNED 기능에도 계약에 명시된 DEFERRED 상세는 그대로 남아 있
 | Feature | 상태 | Product Contract ID / section | 관련 ADR / 남은 상세 |
 | --- | --- | --- | --- |
 | Repository / Skeleton | IMPLEMENTED — Phase 0 skeleton + dev bootstrap | Architecture / Development Setup | [0005](adr/0005-phase-zero-project-structure.md); 3 projects, CLI runner 구성. 제품 기능/native 검증 완료를 뜻하지 않음 |
-| Timetable | PLANNED | A2, M1, I6–I7, R1–R3 | [0001](adr/0001-golden-reference-policy.md); 독립 35셀, plain text 보존 |
+| Timetable Core/read-only model | IMPLEMENTED — FOUNDATION | A2, M1, I6–I7, R1–R3 | Immutable 35슬롯, 완전성/중복/null 검증, period/day 정렬, text 그대로 보존; 저장 schema 아님 |
+| Weekly Timetable read-only View | IMPLEMENTED — USER NATIVE SMOKE PASSED | A2, M1, I6–I7, A4, P3 | 별도 feature VM/View, 7×5 body ItemsControl, 숫자 1–7 교시 열, plain text/Wrap/Center, 측정 기반 minimum; 대표 표시/live update/가로 resize/X 종료 사용자 확인 |
+| Weekday Header | IMPLEMENTED — USER NATIVE SMOKE PASSED | M1, A4; Golden Reference visual evidence | 월/화/수/목/금, 빈 corner + 왼쪽 숫자 교시 header와 함께 총 13 headers; Status Header 아래 |
 | Period current-resolution foundation | IMPLEMENTED — FOUNDATION / Phase 0.3 | M3, P4, R4, R6–R7, I16 | Core immutable 정의·기본 profile·snapshot 기반 int? 계산, 평일 [start,end), 입력 중복/겹침 거부, contract tests. 전체 editor validation은 DEFERRED |
 | Current Status Core foundation | IMPLEMENTED — FOUNDATION / Phase 0.4 | A6, A5, P4; Current Status State Model | 5상태 immutable 사실 결과, snapshot 기반 계산, 공통 schedule 검증. Break와 다음 교시/transition 구현; 전체 UI 완료 아님 |
 | Highlight integration | PLANNED | M4, R4–R5, I9, I16 | [0004](adr/0004-application-time-source.md); UI 연결·갱신 상세 DEFERRED |
