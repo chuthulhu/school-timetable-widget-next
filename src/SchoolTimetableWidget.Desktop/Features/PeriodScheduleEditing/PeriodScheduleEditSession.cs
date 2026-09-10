@@ -27,6 +27,18 @@ public sealed class PeriodScheduleEditSession : ObservableObject
     public bool TryApply()
     {
         if (IsClosed) return false;
+        if (!TryCreateCandidate(out var candidate)) return false;
+        if (!_tryCommit(candidate!))
+            return Reject("일과 시간이 다른 편집에서 변경되었습니다. 취소 후 다시 열어 주세요.");
+        IsApplied = true;
+        IsClosed = true;
+        ErrorText = string.Empty;
+        return true;
+    }
+
+    public bool TryCreateCandidate(out PeriodSchedule? candidate)
+    {
+        candidate = null;
         var starts = new TimeOnly[7];
         var ends = new TimeOnly[7];
         // Do not construct even a candidate interval until every field parses.
@@ -44,12 +56,8 @@ public sealed class PeriodScheduleEditSession : ObservableObject
             if (i > 0 && ends[i - 1] > starts[i])
                 return Reject($"{i}교시와 {i + 1}교시의 시간 순서가 올바르지 않거나 시간이 겹칩니다. {i + 1}교시는 {i}교시 종료 시각과 같거나 늦게 시작해야 합니다.");
         }
-        var candidate = new PeriodSchedule(Enumerable.Range(0, 7)
+        candidate = new PeriodSchedule(Enumerable.Range(0, 7)
             .Select(i => new PeriodDefinition(i + 1, starts[i], ends[i])));
-        if (!_tryCommit(candidate))
-            return Reject("일과 시간이 다른 편집에서 변경되었습니다. 취소 후 다시 열어 주세요.");
-        IsApplied = true;
-        IsClosed = true;
         ErrorText = string.Empty;
         return true;
     }

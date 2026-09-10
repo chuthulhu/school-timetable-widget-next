@@ -1,4 +1,5 @@
 using System.Globalization;
+using SchoolTimetableWidget.Core.Features.Periods;
 using SchoolTimetableWidget.Core.Features.CurrentStatus;
 using SchoolTimetableWidget.Core.Time;
 
@@ -16,7 +17,9 @@ public static class CurrentStatusHeaderFormatter
     public static CurrentStatusHeaderText Format(
         ApplicationTimeSnapshot snapshot,
         CurrentStatusResult status,
-        CountdownDisplayValue? countdown)
+        CountdownDisplayValue? countdown,
+        IReadOnlyList<PeriodDefinition>? effectiveSchedule = null,
+        bool showLunch = false)
     {
         ArgumentNullException.ThrowIfNull(snapshot);
         ArgumentNullException.ThrowIfNull(status);
@@ -32,6 +35,15 @@ public static class CurrentStatusHeaderFormatter
             throw new ArgumentException("Countdown presence must match the status kind.", nameof(countdown));
         }
 
+        var breakLabel = "쉬는시간";
+        if (showLunch && status.Kind == CurrentStatusKind.Break && effectiveSchedule is not null)
+        {
+            var fourth = effectiveSchedule.SingleOrDefault(p => p.PeriodNumber == 4);
+            var fifth = effectiveSchedule.SingleOrDefault(p => p.PeriodNumber == 5);
+            if (fourth is not null && fifth is not null &&
+                fourth.End <= snapshot.TimeOfDay && snapshot.TimeOfDay < fifth.Start)
+                breakLabel = "점심시간";
+        }
         var countdownText = countdown is null ? null : FormatCountdown(countdown);
         var statusText = status.Kind switch
         {
@@ -40,7 +52,7 @@ public static class CurrentStatusHeaderFormatter
             CurrentStatusKind.InPeriod =>
                 FormattableString.Invariant($"{status.CurrentPeriodNumber}교시 · 종료까지 {countdownText}"),
             CurrentStatusKind.Break =>
-                FormattableString.Invariant($"쉬는시간 · {status.NextPeriodNumber}교시까지 {countdownText}"),
+                FormattableString.Invariant($"{breakLabel} · {status.NextPeriodNumber}교시까지 {countdownText}"),
             CurrentStatusKind.AfterLastPeriod => "오늘 수업 종료",
             CurrentStatusKind.Weekend => "오늘은 수업이 없습니다",
             _ => throw new ArgumentOutOfRangeException(nameof(status)),

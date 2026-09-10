@@ -175,3 +175,26 @@ license 검증이 필요하며 불명확한 font의 자동 다운로드/재배�
 [ADR 0010](adr/0010-optional-lunch-break-presentation.md): Core의 5상태를 유지하고 Lunch
 kind는 추가하지 않는다. 다른 gap/상태와 countdown/highlight 의미는 그대로다.
 현재 런타임에는 적용하지 않았으며 모든 Break가 기존 기본 문구를 표시한다.
+
+## Effective Day / Date Overrides — current milestone, 2026-09-10
+
+These statuses supersede earlier future/exclusion rows for the same features.
+
+| Feature | Status | Boundary |
+| --- | --- | --- |
+| Effective Day Resolution | IMPLEMENTED — AUTOMATED VERIFIED / USER NATIVE REVIEW ACCEPTED | One clock snapshot and one date resolution; coherent status/countdown/date/time/grid/highlight |
+| Date Timetable Override | IMPLEMENTED — AUTOMATED VERIFIED / USER NATIVE REVIEW ACCEPTED | DateOnly weekday complete 7-cell immutable snapshot; remaining 28 cells use Base |
+| Date Period Schedule Override | IMPLEMENTED — AUTOMATED VERIFIED / USER NATIVE REVIEW ACCEPTED | Independent complete chronological 1–7; gap/touching allowed; base unchanged |
+| Date Override runtime/editor | IMPLEMENTED — AUTOMATED VERIFIED / USER NATIVE REVIEW ACCEPTED | Private runtime map; fixed date Draft; atomic Apply/remove; Cancel/X/Escape; weekends rejected |
+| Cell editing provenance | IMPLEMENTED — AUTOMATED VERIFIED / USER NATIVE REVIEW ACCEPTED | Displayed Base/date source; fixed open target with explicit label; schedule-only stays Base |
+| Optional Lunch Presentation | IMPLEMENTED — AUTOMATED VERIFIED / USER NATIVE REVIEW ACCEPTED | Default OFF menu, immediate refresh, captured effective 4→5 interval, Core remains Break |
+| School/Canonical import | IMPLEMENTED — existing native evidence retained; current coexistence checked within documented native scope | Base-only target explicitly labeled; overrides preserved |
+| Date-specific import target | PLANNED | No importer target expansion |
+| Persistence | PLANNED | Overrides and lunch option reset on restart |
+| Teacher Profiles/Groups | PLANNED | Timetable values can move to profile ownership; schedules remain school-day concern |
+| Semester Sets | PLANNED | No model/storage/UI added |
+| Clock presets / per-element fonts / Bundled-System-Online fonts | PLANNED | Existing requirements unchanged |
+
+[ADR 0011](adr/0011-effective-day-and-date-overrides.md), [verification](DATE-OVERRIDES.md).
+
+Native acceptance scope and restart evidence are recorded in [Date Overrides](DATE-OVERRIDES.md); automated coverage is broader than the observed native scenarios.

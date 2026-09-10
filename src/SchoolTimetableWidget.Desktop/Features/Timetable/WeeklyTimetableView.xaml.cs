@@ -1,4 +1,5 @@
 using SchoolTimetableWidget.Desktop.Features.PeriodScheduleEditing;
+using SchoolTimetableWidget.Desktop.Features.DateOverrides;
 using System.Windows.Input;
 using SchoolTimetableWidget.Core.Features.TimetableImport;
 using SchoolTimetableWidget.Desktop.Features.TimetableImport;
@@ -13,6 +14,26 @@ public partial class WeeklyTimetableView : UserControl
     public WeeklyTimetableView() => InitializeComponent();
 
     public TimetableImportActions ImportActions { get; set; } = new(new WindowsSpreadsheetClipboard());
+
+    public DateOverrideEditor? DateEditor { get; set; }
+    public Func<DateOnly?>? GetCurrentDate { get; set; }
+    public LunchPresentationOption? LunchOption { get; set; }
+
+    private void DateOverride_CanExecute(object sender, CanExecuteRoutedEventArgs e)
+    { e.CanExecute = DateEditor is not null && GetCurrentDate?.Invoke() is not null; e.Handled = true; }
+    private void DateOverride_Executed(object sender, ExecutedRoutedEventArgs e)
+    {
+        e.Handled = true;
+        if (DateEditor is not null && GetCurrentDate?.Invoke() is { } date && Window.GetWindow(this) is { IsVisible: true } owner)
+            new DateOverrideEditorWindow(DateEditor, date) { Owner = owner }.ShowDialog();
+    }
+    private void Lunch_CanExecute(object sender, CanExecuteRoutedEventArgs e)
+    { e.CanExecute = LunchOption is not null; e.Handled = true; }
+    private void Lunch_Executed(object sender, ExecutedRoutedEventArgs e)
+    {
+        e.Handled = true;
+        if (LunchOption is not null) LunchOption.Enabled = !LunchOption.Enabled;
+    }
 
     public PeriodScheduleEditor? ScheduleEditor { get; set; }
 

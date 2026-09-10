@@ -1116,3 +1116,58 @@ by this documentation change. Existing runtime behavior remains OFF/ordinary Bre
 Boundary cases and one-clock/one-schedule regression checks are future verification
 criteria in ADR 0010, not tests claimed as executed. The prior milestone records
 of ordinary Break describe the default and remain valid.
+
+## Effective Day / Date Overrides — implementation, 2026-09-10
+
+**IMPLEMENTED — AUTOMATED VERIFIED / USER NATIVE REVIEW ACCEPTED.** [ADR 0011](adr/0011-effective-day-and-date-overrides.md)
+records the user-approved 7-cell complete snapshot and displayed-provenance editing rules.
+Earlier foundation/future sections are historical; this section supersedes their exclusion
+of Effective Day, date overrides and the ADR 0010 runtime lunch option.
+
+Core Features/SchoolDays contains DayTimetable (seven immutable SubjectText/ClassText
+values), DateSpecificOverride (DateOnly + independently optional timetable/schedule),
+EffectiveDayConfiguration and pure EffectiveDayResolver. The resolver takes a date and
+captured values, projects only that weekday into the base week, and returns effective
+schedule/provenance. It has no WPF, Korean strings, clock read or runtime dictionary.
+PeriodSchedule's existing complete chronological invariant is shared by base/date schedules.
+
+Desktop Features/DateOverrides owns a private DateOnly map in RuntimeDateOverrides.
+TryReplace checks the captured entry before one full-reference replacement/removal. The
+minimal API supports all component removal through validated replacement; no generic
+repository or persistence API. DateOverrideEditSession owns independent Drafts, reuses
+PeriodScheduleEditSession's candidate validation without committing it, then invokes its
+owner once with both validated values. Null/null removes the entry. Disabled Draft fields
+are ignored. DateOverrideEditor adapts fixed-date whole-entry and single-cell transactions.
+Cell-only edits compare the captured timetable snapshot, preserve the current schedule
+component and reject removed/replaced timetable targets. The date adapter never reads clocks.
+
+WeeklyTimetableViewModel keeps its Base CommittedTimetable separate from DisplayedOverride
+and its stable 35 cell presentations. Effective publication installs provenance and all
+values/projections before cell notifications. WeeklyTimetableEditor checks the displayed
+component and weekday, captures the typed target at opening, and delegates to the date
+adapter when appropriate. Text equality and period-schedule presence never select a target.
+Base editing/import projects through the still-current date timetable; it cannot overwrite
+that override. Explicit Base labels remain in single-cell and import dialogs.
+
+App composes runtime state and one effective-date function. CurrentStatusRefreshLoop reads
+one clock snapshot, invokes that function once, and shares the result's schedule with Core
+status/countdown and Desktop formatting. It publishes the same result's grid/provenance and
+current slot. Reentrant refresh publication is suppressed; there is no nested message pump
+or await. Existing fixed/general schedule overloads remain for non-effective callers and
+partial/unordered Core contract tests; production uses the effective overload.
+ContentChanged requests Windows content-minimum measurement only for changed display text,
+including midnight content transitions. Ordinary ticks, provenance-only changes, lunch
+labels and highlight do not remeasure the grid through this hook.
+
+LunchPresentationOption is default-OFF run-local Desktop state. Its menu requests the same
+RefreshNow on changes. The formatter uses only supplied snapshot/status/countdown/effective
+periods and selects the label by period 4/5 identity. No Lunch Core kind, hard-coded time,
+second timer, schedule query or Settings infrastructure. CurrentDateText/CurrentTimeText/
+StatusText stay separate. Existing font/preset future requirements remain unchanged.
+
+Timetable values have no global/profile identity and can move under teacher-profile
+ownership; school-day PeriodSchedule remains a separate value/concern. The combined runtime
+entry provides today's atomic editing boundary without fixing a future persistence/profile
+schema. Profiles/groups, semester sets, date imports and persistence are PLANNED.
+
+See [Date Overrides verification](DATE-OVERRIDES.md) for tests, self-audit and native limits.

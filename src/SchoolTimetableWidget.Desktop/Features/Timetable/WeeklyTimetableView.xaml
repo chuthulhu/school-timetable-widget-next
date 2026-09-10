@@ -4,8 +4,11 @@
              xmlns:local="clr-namespace:SchoolTimetableWidget.Desktop.Features.Timetable"
              xmlns:import="clr-namespace:SchoolTimetableWidget.Desktop.Features.TimetableImport"
              xmlns:periods="clr-namespace:SchoolTimetableWidget.Desktop.Features.PeriodScheduleEditing"
+             xmlns:dates="clr-namespace:SchoolTimetableWidget.Desktop.Features.DateOverrides"
              FontSize="16" MinWidth="500">
     <UserControl.CommandBindings>
+        <CommandBinding Command="{x:Static dates:DateOverrideCommands.Edit}" Executed="DateOverride_Executed" CanExecute="DateOverride_CanExecute" />
+        <CommandBinding Command="{x:Static dates:DateOverrideCommands.Lunch}" Executed="Lunch_Executed" CanExecute="Lunch_CanExecute" />
         <CommandBinding Command="{x:Static periods:PeriodScheduleCommands.Edit}" Executed="PeriodSchedule_Executed" CanExecute="PeriodSchedule_CanExecute" />
         <CommandBinding Command="{x:Static import:TimetableImportCommands.School}" Executed="SchoolImport_Executed" CanExecute="Import_CanExecute" />
         <CommandBinding Command="{x:Static import:TimetableImportCommands.Canonical}" Executed="CanonicalImport_Executed" CanExecute="Import_CanExecute" />
@@ -26,6 +29,13 @@
                       CommandTarget="{Binding PlacementTarget, RelativeSource={RelativeSource AncestorType=ContextMenu}}" />
             <Separator />
             <MenuItem Header="일과 시간 편집..." Command="{x:Static periods:PeriodScheduleCommands.Edit}"
+                      CommandTarget="{Binding PlacementTarget, RelativeSource={RelativeSource AncestorType=ContextMenu}}" />
+            <Separator />
+            <MenuItem Header="날짜별 예외 설정..." Command="{x:Static dates:DateOverrideCommands.Edit}"
+                      CommandTarget="{Binding PlacementTarget, RelativeSource={RelativeSource AncestorType=ContextMenu}}" />
+            <MenuItem Header="4교시와 5교시 사이를 '점심시간'으로 표시" IsCheckable="True"
+                      IsChecked="{Binding PlacementTarget.LunchOption.Enabled, RelativeSource={RelativeSource AncestorType=ContextMenu}, Mode=OneWay}"
+                      Command="{x:Static dates:DateOverrideCommands.Lunch}"
                       CommandTarget="{Binding PlacementTarget, RelativeSource={RelativeSource AncestorType=ContextMenu}}" />
         </ContextMenu>
     </UserControl.ContextMenu>
@@ -111,7 +121,7 @@
             <ItemsControl.ItemTemplate>
                 <DataTemplate>
                     <local:TimetableCellControl EditRequested="Cell_EditRequested"
-                                                ToolTip="더블클릭/F2로 편집 · 우클릭으로 가져오기/일과 시간 편집 · Ctrl+V 학교 양식 · 실행 중에만 유지"
+                                                ToolTip="더블클릭/F2로 표시된 대상 편집 · 우클릭으로 가져오기/일과/날짜별 예외 · Ctrl+V 학교 양식 · 실행 중에만 유지"
                                                 AutomationProperties.Name="{Binding SlotLabel}">
                         <Border Style="{StaticResource BodySlotBorder}" MinHeight="44">
                             <TextBlock Text="{Binding DisplayText, Mode=OneWay}"

@@ -757,3 +757,36 @@ Settings P2, date override, font management or the other excluded future feature
 - 향후 Settings의 `[ ] 4교시와 5교시 사이를 '점심시간'으로 표시` 후보로 제공한다.
   다음 Effective Day / Date Override 설계에 최소 표시 옵션 경계를 포함하되,
   지금 Settings UI/schema/persistence나 실제 점심 표시 기능을 선제 구현하지 않는다.
+
+## Effective Day / Date Overrides — approved 2026-09-10
+
+**IMPLEMENTED — AUTOMATED VERIFIED / USER NATIVE REVIEW ACCEPTED.** User milestone request and explicit
+seven-cell/provenance confirmation; [ADR 0011](adr/0011-effective-day-and-date-overrides.md).
+This section supersedes earlier future/exclusion statements for this milestone only.
+
+- DateOnly identifies a weekday exception. Timetable and period schedule are independently
+  optional: neither/base, timetable only, schedule only, or both. Base data is unchanged.
+- A date timetable is a complete immutable 1–7 snapshot for that date's weekday, initialized
+  from those seven base cells. No 35-cell override or sparse patch. The displayed grid
+  remains 35 cells; only the current date's weekday can show its timetable override.
+- F2/double-click follows displayed provenance. Base cells edit Base; date cells edit that
+  date. Schedule-only exceptions do not change timetable provenance. The editor labels the
+  target and captures source/date/weekday/period at open; midnight never retargets it.
+- Both drafts validate before one date replacement. Uncheck one component to remove only
+  it; uncheck both (or use 전체 예외 해제 then Apply) to remove the whole date. Invalid Apply,
+  Cancel/X/Escape and stale targets leave committed runtime values unchanged. Success closes.
+- Date selection precedes editing. 이 날짜 편집 loads and fixes the selected weekday date;
+  다른 날짜 선택 (초안 폐기) explicitly discards that Draft. Weekends are rejected and remain
+  Weekend regardless of the clock time; special school Saturdays are future calendar work.
+- One Application Clock snapshot and one effective resolution feed status/countdown,
+  independent date/time/status strings, grid and highlight. Today Apply/remove immediately
+  refreshes; future date edits do not refresh today's presentation. Midnight selects the new date.
+- School/Canonical import always replaces Base only. Its dialog explicitly labels that
+  target and retains date overrides. Date import target selection remains PLANNED.
+- The run-local lunch menu defaults OFF. ON labels Break as 점심시간 only in the captured
+  effective Period4.End <= time < Period5.Start interval (ADR 0010); countdown and five
+  Core states stay unchanged, touching has no lunch, and lunch has zero highlighted cells.
+- No persistence. Restart clears date overrides and resets lunch OFF. Teacher profiles/groups,
+  semester sets, font customization and durable Settings remain PLANNED.
+
+Verification/evidence scope: [Date Overrides](DATE-OVERRIDES.md).

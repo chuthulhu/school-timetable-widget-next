@@ -1,4 +1,5 @@
 using System.Collections.ObjectModel;
+using SchoolTimetableWidget.Core.Features.SchoolDays;
 using SchoolTimetableWidget.Core.Features.Timetable;
 
 namespace SchoolTimetableWidget.Desktop.Features.Timetable;
@@ -31,6 +32,16 @@ public sealed class WeeklyTimetableViewModel
     public ReadOnlyCollection<TimetableCellViewModel> Cells { get; }
     public WeeklyTimetable CommittedTimetable { get; private set; }
     public WeeklyTimetableEditor Editor { get; }
+    public DateSpecificOverride? DisplayedOverride { get; private set; }
+    public event EventHandler? ContentChanged;
+
+    public void ApplyEffectiveDay(EffectiveDayConfiguration effective)
+    {
+        ArgumentNullException.ThrowIfNull(effective);
+        if (_publishing) throw new InvalidOperationException("Cannot replace presentation during publication.");
+        Publish(effective.Timetable, () => DisplayedOverride = effective.DateOverride);
+    }
+
 
     internal (SchoolDay Day, int PeriodNumber) GetSlot(TimetableCellViewModel cell)
     {
@@ -44,8 +55,7 @@ public sealed class WeeklyTimetableViewModel
     {
         if (_publishing || !ReferenceEquals(CommittedTimetable[baseline.Day, baseline.PeriodNumber], baseline)) return false;
         var next = CommittedTimetable.WithCellValue(baseline.Day, baseline.PeriodNumber, value);
-        CommittedTimetable = next;
-        _cellsBySlot[(baseline.Day, baseline.PeriodNumber)].SetValue(value);
+        Publish(EffectiveDayResolver.ProjectTimetable(next, DisplayedOverride), () => CommittedTimetable = next);
         return true;
     }
 
@@ -55,21 +65,27 @@ public sealed class WeeklyTimetableViewModel
         ArgumentNullException.ThrowIfNull(baseline);
         ArgumentNullException.ThrowIfNull(replacement);
         if (_publishing || Editor.ActiveSession is not null || !ReferenceEquals(CommittedTimetable, baseline)) return false;
-        var values = replacement.Cells.Select(cell => cell.Value).ToArray();
+        Publish(EffectiveDayResolver.ProjectTimetable(replacement, DisplayedOverride), () => CommittedTimetable = replacement);
+        return true;
+    }
+
+    private void Publish(WeeklyTimetable presentation, Action accept)
+    {
+        var values = presentation.Cells.Select(cell => cell.Value).ToArray();
         var displays = values.Select(TimetableCellFormatter.Format).ToArray();
         var changed = Cells.Select((cell, i) => cell.Value != values[i]).ToArray();
         var displayChanged = Cells.Select((cell, i) => cell.DisplayText != displays[i]).ToArray();
         _publishing = true;
         try
         {
-            CommittedTimetable = replacement;
+            accept();
             for (var i = 0; i < Cells.Count; i++) Cells[i].SetValueWithoutNotification(values[i], displays[i]);
             // All 35 canonical values and projections are already coherent at the first notification.
             for (var i = 0; i < Cells.Count; i++)
                 if (changed[i]) Cells[i].NotifyValueChanged(displayChanged[i]);
-            return true;
         }
         finally { _publishing = false; }
+        if (displayChanged.Any(c => c)) ContentChanged?.Invoke(this, EventArgs.Empty);
     }
 
     /// <summary>Null clears the current slot. Invalid identities fail before changing state.</summary>

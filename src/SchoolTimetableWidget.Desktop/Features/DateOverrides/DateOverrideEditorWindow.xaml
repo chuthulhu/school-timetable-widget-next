@@ -1,0 +1,55 @@
+<Window x:Class="SchoolTimetableWidget.Desktop.Features.DateOverrides.DateOverrideEditorWindow"
+ xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+ xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+ Title="날짜별 예외 설정" Width="720" Height="740" MinWidth="580" MinHeight="480"
+ WindowStartupLocation="CenterOwner" ShowInTaskbar="False" FontSize="15">
+ <Grid Margin="20">
+  <Grid.RowDefinitions><RowDefinition Height="Auto"/><RowDefinition Height="Auto"/><RowDefinition Height="*"/><RowDefinition Height="Auto"/><RowDefinition Height="Auto"/></Grid.RowDefinitions>
+  <StackPanel>
+   <TextBlock Text="기본 시간표와 일과를 유지하면서 선택한 날짜만 변경합니다." TextWrapping="Wrap"/>
+   <TextBlock Text="변경 내용과 점심 표시 옵션은 앱을 종료할 때까지 유지됩니다." FontSize="13" Margin="0,4,0,12" TextWrapping="Wrap"/>
+   <StackPanel Orientation="Horizontal">
+    <Label Content="날짜" Target="{Binding ElementName=DateInput}"/>
+    <DatePicker x:Name="DateInput" Width="160" SelectedDateFormat="Short" AutomationProperties.Name="예외 설정 날짜"/>
+    <Button x:Name="BeginButton" Content="이 날짜 편집" Click="Begin_Click" Margin="8,0" Padding="12,5"/>
+    <Button x:Name="ChangeDateButton" Content="다른 날짜 선택 (초안 폐기)" Click="ChangeDate_Click" IsEnabled="False" Padding="8,5"/>
+   </StackPanel>
+  </StackPanel>
+  <TextBlock Grid.Row="1" Text="{Binding TargetLabel}" FontWeight="SemiBold" Margin="0,12,0,8"/>
+  <ScrollViewer Grid.Row="2" VerticalScrollBarVisibility="Auto">
+   <StackPanel x:Name="EditPanel" IsEnabled="False">
+    <CheckBox x:Name="TimetableToggle" Content="이 날짜에 별도 시간표 사용" IsChecked="{Binding UseTimetable}" Margin="0,4,0,8"/>
+    <TextBlock Text="교시 / 교과 / 반 — 체크 해제 후 적용하면 기본 시간표로 돌아갑니다." FontSize="13" TextWrapping="Wrap" Margin="0,0,0,6"/>
+    <ItemsControl x:Name="TimetableRows" ItemsSource="{Binding TimetableRows}" IsEnabled="{Binding UseTimetable}">
+     <ItemsControl.ItemTemplate><DataTemplate>
+      <Grid Margin="0,3"><Grid.ColumnDefinitions><ColumnDefinition Width="44"/><ColumnDefinition Width="*"/><ColumnDefinition Width="*"/></Grid.ColumnDefinitions>
+       <TextBlock Text="{Binding PeriodNumber}" VerticalAlignment="Center"/>
+       <TextBox Grid.Column="1" Text="{Binding SubjectText, UpdateSourceTrigger=PropertyChanged}" AcceptsReturn="True" TextWrapping="Wrap" VerticalScrollBarVisibility="Auto" MinHeight="32" MaxHeight="120" Padding="5" Margin="0,0,8,0" AutomationProperties.Name="교과"/>
+       <TextBox Grid.Column="2" Text="{Binding ClassText, UpdateSourceTrigger=PropertyChanged}" AcceptsReturn="True" TextWrapping="Wrap" VerticalScrollBarVisibility="Auto" MinHeight="32" MaxHeight="120" Padding="5" AutomationProperties.Name="반"/>
+      </Grid>
+     </DataTemplate></ItemsControl.ItemTemplate>
+    </ItemsControl>
+    <CheckBox x:Name="ScheduleToggle" Content="이 날짜에 별도 일과 사용" IsChecked="{Binding UseSchedule}" Margin="0,20,0,8"/>
+    <TextBlock Text="교시 / 시작 / 종료 (24시간제 HH:mm) — 체크 해제 후 적용하면 기본 일과로 돌아갑니다." FontSize="13" TextWrapping="Wrap" Margin="0,0,0,6"/>
+    <ItemsControl x:Name="ScheduleRows" ItemsSource="{Binding ScheduleDraft.Rows}" IsEnabled="{Binding UseSchedule}">
+     <ItemsControl.ItemTemplate><DataTemplate>
+      <Grid Margin="0,3"><Grid.ColumnDefinitions><ColumnDefinition Width="44"/><ColumnDefinition Width="*"/><ColumnDefinition Width="*"/></Grid.ColumnDefinitions>
+       <TextBlock Text="{Binding PeriodNumber}" VerticalAlignment="Center"/>
+       <TextBox Grid.Column="1" Text="{Binding StartText, UpdateSourceTrigger=PropertyChanged}" Padding="5" Margin="0,0,8,0" AutomationProperties.Name="시작 시간"/>
+       <TextBox Grid.Column="2" Text="{Binding EndText, UpdateSourceTrigger=PropertyChanged}" Padding="5" AutomationProperties.Name="종료 시간"/>
+      </Grid>
+     </DataTemplate></ItemsControl.ItemTemplate>
+    </ItemsControl>
+   </StackPanel>
+  </ScrollViewer>
+  <StackPanel Grid.Row="3" Margin="0,8,0,0">
+   <TextBlock x:Name="DateError" Foreground="DarkRed" TextWrapping="Wrap"/>
+   <TextBlock x:Name="ErrorMessage" Text="{Binding ErrorText}" Foreground="DarkRed" TextWrapping="Wrap"/>
+  </StackPanel>
+  <StackPanel Grid.Row="4" Orientation="Horizontal" HorizontalAlignment="Right" Margin="0,12,0,0">
+   <Button x:Name="RemoveButton" Content="전체 예외 해제" Click="Remove_Click" IsEnabled="False" Padding="10,6" Margin="0,0,16,0"/>
+   <Button x:Name="ApplyButton" Content="적용" Click="Apply_Click" IsEnabled="False" IsDefault="False" MinWidth="80" Padding="12,6"/>
+   <Button x:Name="CancelButton" Content="취소" Click="Cancel_Click" IsCancel="True" MinWidth="80" Padding="12,6" Margin="8,0,0,0"/>
+  </StackPanel>
+ </Grid>
+</Window>

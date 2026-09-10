@@ -1,4 +1,5 @@
 using System.Windows.Threading;
+using SchoolTimetableWidget.Core.Features.SchoolDays;
 using SchoolTimetableWidget.Desktop.Features.Timetable;
 using SchoolTimetableWidget.Core.Features.CurrentStatus;
 using SchoolTimetableWidget.Core.Features.Periods;
@@ -17,6 +18,11 @@ public sealed class CurrentStatusRefreshLoop : IDisposable
     private readonly CurrentStatusHeaderViewModel _viewModel;
     private readonly WeeklyTimetableViewModel _timetableViewModel;
     private readonly DispatcherTimer _timer;
+    private readonly Func<DateOnly, EffectiveDayConfiguration>? _resolveDay;
+    private readonly Func<bool>? _getLunch;
+    public DateOnly? CurrentDate { get; private set; }
+    public EffectiveDayConfiguration? CurrentConfiguration { get; private set; }
+    private bool _refreshing;
     private bool _isRunning;
     private bool _disposed;
 
@@ -48,6 +54,18 @@ public sealed class CurrentStatusRefreshLoop : IDisposable
             Interval = TimeSpan.FromSeconds(1),
         };
         _timer.Tick += OnTick;
+    }
+
+    public CurrentStatusRefreshLoop(IApplicationClock clock,
+        Func<DateOnly, EffectiveDayConfiguration> resolveDay,
+        CurrentStatusHeaderViewModel viewModel, WeeklyTimetableViewModel timetableViewModel,
+        Func<bool> getLunch)
+        : this(clock, DefaultPeriodSchedule.Periods, viewModel, timetableViewModel)
+    {
+        ArgumentNullException.ThrowIfNull(resolveDay);
+        ArgumentNullException.ThrowIfNull(getLunch);
+        _resolveDay = resolveDay;
+        _getLunch = getLunch;
     }
 
     public bool IsRunning
@@ -100,16 +118,29 @@ public sealed class CurrentStatusRefreshLoop : IDisposable
     public void RefreshNow()
     {
         VerifyUsable();
-        var snapshot = _clock.GetSnapshot();
-        var schedule = _getSchedule();
-        var status = CurrentStatusResolver.Resolve(snapshot, schedule);
-        var countdown = CurrentStatusCountdownCalculator.Calculate(snapshot, status);
-        var text = CurrentStatusHeaderFormatter.Format(snapshot, status, countdown);
-        var slot = CurrentTimetableSlot.From(snapshot, status);
-        // Both results are computed first, then published synchronously on the same dispatcher.
-        // There is no await, second clock read, or independent highlight timer.
-        _viewModel.Apply(text);
-        _timetableViewModel.SetCurrentCell(slot);
+        if (_refreshing) return;
+        _refreshing = true;
+        try
+        {
+            var snapshot = _clock.GetSnapshot();
+            var effective = _resolveDay is null ? null : _resolveDay(snapshot.Date)
+                    ?? throw new InvalidOperationException("Effective configuration is required.");
+            if (effective is not null && effective.Date != snapshot.Date)
+                throw new InvalidOperationException("Effective configuration has a different date.");
+            var schedule = effective?.Schedule.Periods ?? _getSchedule();
+            var status = CurrentStatusResolver.Resolve(snapshot, schedule);
+            var countdown = CurrentStatusCountdownCalculator.Calculate(snapshot, status);
+            var text = CurrentStatusHeaderFormatter.Format(snapshot, status, countdown, schedule, _getLunch?.Invoke() ?? false);
+            var slot = CurrentTimetableSlot.From(snapshot, status);
+            // Captured results are published synchronously on the same dispatcher.
+            // There is no await, second clock read, or independent highlight timer.
+            CurrentDate = snapshot.Date;
+            CurrentConfiguration = effective;
+            if (effective is not null) _timetableViewModel.ApplyEffectiveDay(effective);
+            _viewModel.Apply(text);
+            _timetableViewModel.SetCurrentCell(slot);
+        }
+        finally { _refreshing = false; }
     }
 
     public void Dispose()

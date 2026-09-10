@@ -3,7 +3,8 @@
 Status: **Accepted**
 Date: 2026-09-10
 Authority: user's explicit future product requirement.
-Implementation: **PLANNED — NOT IMPLEMENTED**.
+Implementation: **IMPLEMENTED — AUTOMATED VERIFIED / USER NATIVE REVIEW ACCEPTED**. Runtime option and effective-day
+integration: [ADR 0011](0011-effective-day-and-date-overrides.md), [verification](../DATE-OVERRIDES.md).
 
 ## Decision
 
@@ -37,10 +38,12 @@ Core display option, generic policy hierarchy or new previous-period domain fiel
 is necessary for this presentation rule.
 
 The composition layer supplies the option. A future Settings checkbox may own the
-preference; UI, persistence and exact public API are not implemented by this decision.
-Until implemented, all runtime Break text remains the default ordinary label.
+preference; this original decision did not implement UI or persistence. The later
+ADR 0011 milestone adds only the runtime menu and formatter inputs.
+The implemented run-local context-menu option defaults OFF and resets on restart.
+Durable Settings ownership remains PLANNED.
 
-## Planned verification, not executed
+## Original verification plan (execution recorded in DATE-OVERRIDES.md)
 
 OFF: every Break keeps existing text, including a long period-4-to-5 gap.
 ON: exact period 4 End shows lunch when Break; just before period 5 Start still
