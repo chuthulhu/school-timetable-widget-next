@@ -672,3 +672,65 @@ validation, clipboard and ownership decisions within that request.
 
 Earlier Editing Foundation exclusions describe that completed milestone, not a
 prohibition on this subsequently authorized Bulk milestone.
+
+## Current Date / Future Clock Presentation — approved 2026-09-10
+
+사용자 추가 요청 및 [ADR 0008](adr/0008-clock-status-presentation.md)을 따른다.
+기존 Editing Foundation의 날짜 표시 제외는 당시 범위이며, 이번에는 날짜 기반 표시를 구현한다.
+
+- `CurrentDateText`의 현재 canonical 기본 표시는 `yyyy년 MM월 dd일`이다
+  (예: `2026년 09월 10일`). Culture에 의해 달력/숫자/형식이 바뀌지 않는다.
+- `CurrentDateText`, `CurrentTimeText`, `StatusText`는 독립 값이다. Date/time/status와
+  highlight는 동일 ApplicationTimeSnapshot에서 파생한다. 현재 HH:mm:ss와 A8 문구는 유지한다.
+- 현재 한 줄 compact/standard Header는 교체 가능한 layout candidate다.
+  v1 final clock design이나 반드시 한 줄이라는 architecture contract가 아니다.
+- Ordinary second tick은 Header 높이, status 위치, timetable geometry를 바꾸지 않는다.
+  사용자 preset/setting 변경은 의도적인 re-layout과 preferred size 변경을 허용한다.
+- Future presets(Standard/Large Digital/Compact/Minimal), 12/24시간, 초/AM-PM/date/
+  weekday/status 표시 선택, 날짜 형식, 독립 font size/weight/alignment/spacing,
+  digital typography와 Settings persistence는 PLANNED다. 이름과 세부 UX는 후속 결정이다.
+  A4/A8의 항상 표시/24시간 기본은 현재 표시 후보의 기본이며 미래 선택 옵션을 금지하지 않는다.
+- Core는 시간 사실/status/countdown만, Desktop은 표시 방식만 담당한다.
+  미래 AM/PM/weekday도 snapshot을 재사용하며 별도 clock read를 추가하지 않는다.
+- 이번 범위에 전체 Settings object/schema/UI/persistence, preset 구현, 미사용 속성,
+  third-party font dependency를 포함하지 않는다. Period Schedule Editing Foundation의
+  원래 범위를 display Settings까지 확대하지 않는다.
+
+### Future per-element font sources — approved 2026-09-10
+
+Title/Time/AmPm/Date/Weekday/Status별로 Bundled/System/Online font source와 family를
+독립 선택할 수 있어야 한다. Local Font File은 optional future다. Header 전체에
+하나의 FontFamily를 강제하지 않으며 Core에 font 설정을 넣지 않는다.
+
+Online은 사용자 요청에 의한 approved HTTPS source → 다운로드 → 검증/app-local cache
+→ local/private font resolution을 따른다. Remote HTTP FontFamily/startup CDN 호출/
+normal clock rendering의 network 의존은 금지한다. Missing font/cache/offline/download
+실패에는 safe fallback을 사용하고 crash/blank text/시간표·상태 사용 불가를 방지한다.
+
+Preset/font 설정은 stable source/family/provider identity를 사용하며 machine absolute
+path/font binary에 종속되지 않는다. TTF/OTF 등 Desktop asset을 우선 고려하되 WPF/.NET 10
+지원 형식은 실제 milestone의 spike에서 확정한다. WOFF/WOFF2 지원을 추측하지 않는다.
+Bundled/Online font license·배포 조건을 검증하고 가능한 provider/family/license/version-source
+metadata를 추적한다. License 불명확 font를 자동 다운로드/재배포하지 않는다.
+
+현재는 future requirement와 coupling 회피만 반영하며 font manager/Settings UI,
+system picker/online browser/downloader/cache/font persistence/custom preset persistence는
+구현하지 않는다. 자세한 방향은 ARCHITECTURE/FEATURE-MAP 및 ADR 0008 후속 기록을 따른다.
+
+## Base Period Schedule Editing — approved 2026-09-10
+
+[ADR 0009](adr/0009-editable-base-period-schedule.md) records the user-approved editing policy.
+Committed base schedules contain exactly 1..7, in that order, with Start < End and
+previous End <= next Start. Gaps/touching are allowed; reversed chronological order
+and overlap reject the entire Apply, without silent reorder or renumbering. General
+Core resolver support for unordered calculation inputs remains unchanged.
+
+An owned seven-row HH:mm editor opens from `일과 시간 편집...` in the timetable context
+menu. Read-only period numbers, independent invalid-capable text Draft, complete
+parse/validation, Korean field/pair errors, atomic in-memory Apply-and-close and
+Cancel/X/Escape discard are required. Failure keeps both runtime and the editor Draft.
+Successful replacement immediately refreshes Header/countdown/highlight together
+using one clock and one schedule snapshot. Timetable SubjectText/ClassText are unchanged.
+
+This milestone has no persistence: restarting uses defaults. It does not implement
+Settings P2, date override, font management or the other excluded future features.

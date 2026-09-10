@@ -1,3 +1,4 @@
+using SchoolTimetableWidget.Desktop.Features.PeriodScheduleEditing;
 using System.Windows.Input;
 using SchoolTimetableWidget.Core.Features.TimetableImport;
 using SchoolTimetableWidget.Desktop.Features.TimetableImport;
@@ -13,6 +14,18 @@ public partial class WeeklyTimetableView : UserControl
 
     public TimetableImportActions ImportActions { get; set; } = new(new WindowsSpreadsheetClipboard());
 
+    public PeriodScheduleEditor? ScheduleEditor { get; set; }
+
+    private void PeriodSchedule_CanExecute(object sender, CanExecuteRoutedEventArgs e)
+    {
+        e.CanExecute = ScheduleEditor is not null;
+        e.Handled = true;
+    }
+    private void PeriodSchedule_Executed(object sender, ExecutedRoutedEventArgs e)
+    {
+        e.Handled = true;
+        if (Window.GetWindow(this) is { IsVisible: true } owner) ScheduleEditor?.ShowEditor(owner);
+    }
     private void Import_CanExecute(object sender, CanExecuteRoutedEventArgs e)
     {
         e.CanExecute = DataContext is WeeklyTimetableViewModel { Editor.ActiveSession: null };

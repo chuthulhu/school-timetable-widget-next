@@ -47,6 +47,7 @@ public static class CurrentStatusHeaderFormatter
         };
 
         return new CurrentStatusHeaderText(
+            snapshot.Date.ToString("yyyy년 MM월 dd일", CultureInfo.InvariantCulture),
             snapshot.LocalTime.ToString("HH:mm:ss", CultureInfo.InvariantCulture), statusText);
     }
 

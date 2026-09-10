@@ -1,3 +1,4 @@
+using SchoolTimetableWidget.Desktop.Features.PeriodScheduleEditing;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Controls.Primitives;
@@ -98,7 +99,7 @@ public class ImportViewTests
         var target = new WeeklyTimetableViewModel(WeeklyTimetable.Empty());
         var view = new WeeklyTimetableView { DataContext = target, ImportActions = new(clipboard) };
         Layout(view);
-        Assert.Equal(3, view.CommandBindings.Count);
+        Assert.Equal(4, view.CommandBindings.Count);
         var binding = Assert.IsType<KeyBinding>(Assert.Single(view.InputBindings.Cast<InputBinding>()));
         Assert.Equal(Key.V, binding.Key); Assert.Equal(ModifierKeys.Control, binding.Modifiers);
         Assert.Same(TimetableImportCommands.School, binding.Command);
@@ -107,8 +108,8 @@ public class ImportViewTests
         Layout(menu);
         var entries = menu.Items.OfType<MenuItem>().ToArray();
         Assert.All(entries, entry => Assert.Same(view, entry.CommandTarget));
-        Assert.Equal(3, entries.Length);
-        Assert.Equal(new ICommand[] { TimetableImportCommands.School, TimetableImportCommands.Canonical, TimetableImportCommands.CopyTemplate }, entries.Select(m => m.Command));
+        Assert.Equal(4, entries.Length);
+        Assert.Equal(new ICommand[] { TimetableImportCommands.School, TimetableImportCommands.Canonical, TimetableImportCommands.CopyTemplate, PeriodScheduleCommands.Edit }, entries.Select(m => m.Command));
         Assert.True(TimetableImportCommands.School.CanExecute(null, view));
         TimetableImportCommands.CopyTemplate.Execute(null, view); // unshown view: fake adapter, no dialog
         Assert.Equal(1, clipboard.Writes);

@@ -915,3 +915,171 @@ profiles/groups, semester sets and persistence remain future work.
   [Bulk Timetable Input](TIMETABLE-BULK-INPUT.md), with [ADR 0007](adr/0007-bulk-timetable-input.md).
   Earlier milestone descriptions are historical; their “not implemented” statements
   do not override this current implementation status.
+
+## Current date and future clock/status presentation — 2026-09-10
+
+CurrentDateText foundation: **IMPLEMENTED — AUTOMATED / OBJECT VERIFIED**.
+[ADR 0008](adr/0008-clock-status-presentation.md)과 Product Contract의 후속 사용자 요청을 따른다.
+이전 Phase 0.6–0.8의 두 텍스트 및 Editing Foundation의 날짜 제외 서술은 당시 기록이다.
+
+### Current foundation and self-audit
+
+- 기존 Desktop formatter/result/ViewModel에 `CurrentDateText`만 추가했다.
+  `snapshot.Date`에서 invariant Gregorian `yyyy년 MM월 dd일`을 만들고, 기존
+  `CurrentTimeText`/`StatusText`와 독립적으로 보유한다. 사용하지 않는 AM/PM/weekday
+  property나 combined display string은 추가하지 않았다.
+- RefreshLoop는 변경 없이 cycle당 GetSnapshot 1회 → status → countdown → formatter
+  및 current slot을 계산한다. 날짜도 이 snapshot을 사용한다. ViewModel은 세 값을
+  모두 교체한 후 실제 변경된 property만 알린다. 초 변경은 날짜 알림을 발생시키지 않는다.
+- Core와 clock adapter는 변경하지 않았다. Domain에 ClockDisplayMode/FontSize/
+  FontFamily/한국어 AM-PM/WPF Style이 없으며, 표시 변경으로 추가 clock read가 생기지 않는다.
+- 현재 XAML은 date/time/status를 독립 TextBlock으로 표시하는 한 줄 standard candidate다.
+  날짜/시간의 fixed slots, 기존 고정 높이, status의 남은 폭과 ellipsis를 사용한다.
+  초 변경으로 status가 밀리거나 timetable row가 움직이지 않는다. MainWindow는
+  feature View만 조립하므로 미래 배치는 해당 View와 Desktop formatter 안에서 교체 가능하다.
+  고정 DIP 값·한 줄 배치를 architecture contract 또는 최종 preset으로 간주하지 않는다.
+- Header 크기는 현재 후보에서 tick 동안 일정하다. 향후 Large Digital 등의 preset이나
+  사용자 크기 설정 변경은 preferred size/re-layout을 의도적으로 바꿀 수 있다.
+  일반 초 tick의 geometry 불변과 사용자 설정 변경의 re-layout을 구분한다.
+
+### Future customization — PLANNED, not implemented
+
+| Feature | Status | Direction / boundary |
+| --- | --- | --- |
+| Clock/Status presentation presets | PLANNED | Standard, Large Digital, Compact, Minimal; 이름/배치는 future UX에서 변경 가능 |
+| Clock size customization | PLANNED | Time/Date/Status별 font size, font weight, alignment, spacing; preset 기본값 + 세부 사용자 override 확장 |
+| 12/24-hour / seconds / AM-PM options | PLANNED | HH:mm:ss / HH:mm / h:mm:ss + AM-PM / h:mm + AM-PM; 한국어 오전/오후; 동일 snapshot 사용 |
+| Date/weekday format options | PLANNED | date/weekday/status show-hide; yyyy년 MM월 dd일 dddd 또는 MM월 dd일 (ddd) 등; 현재 기본에는 weekday 없음 |
+| Digital typography option | PLANNED | Normal system font 또는 digital/seven-segment 후보; 도입 시 bundled font 배포·상업적 사용 license 검증 |
+| Settings persistence | PLANNED | 미래 Clock / Status Display 섹션과 값 저장; Settings object/schema/UI는 이번 범위 밖 |
+
+Core는 snapshot/status/countdown 의미를 제공하며 Desktop이 format/font/size/layout/preset을
+담당한다. 미래 property와 preset hierarchy, font dependency, Settings persistence를 지금
+만들지 않는다. CurrentDateText foundation의 완료는 위 customization의 구현 완료가 아니다.
+Period Schedule Editing의 전체 구현/완료를 이 추가 요구의 구현으로 대신 주장하지 않는다.
+
+### Verification — 2026-09-10
+
+- `dotnet build SchoolTimetableWidget.sln --no-restore`: exit 0, warning/error 0.
+- `dotnet test SchoolTimetableWidget.sln --no-build --logger "console;verbosity=minimal"`:
+  **413 passed**, failed/skipped 0. 기존 408 + 신규 date 사례 5개이며 관련 기존 tests도 갱신했다.
+- Canonical 날짜/연초/윤일, ko-KR/en-US/ar-SA culture 독립성, 동일 local date의
+  source/revision/offset 독립성, 자정/주말/시간원 전환/뒤로 보정에서 snapshot 1회 사용,
+  첫 Header 알림 시 세 값 일관성 및 실제 XAML binding을 검증했다.
+- 표시하지 않은 MainWindow의 content tree에서 WPF Measure/Arrange로 800→620→500→800
+  폭 왕복과 초/상태/날짜 변경을 검증했다. Header 높이/status 원점 및 35셀 사각형이
+  각 폭에서 유지되고 timetable measure가 tick으로 무효화되지 않음을 확인했다.
+  이 폭은 테스트 예시이며 제품 minimum/preset 계약이 아니다.
+- Source audit: production 직접 PC time read는 기존 fallback adapter의
+  DateTimeOffset.Now 한 곳뿐이다. Feature clock read는 기존 RefreshLoop 한 곳이다.
+  Core에 font/size/display mode/한국어 AM-PM/WPF 의존 추가 없음.
+- 증거는 build, contract tests, unshown WPF object/binding/Measure/Arrange 및 source inspection이다.
+  실제 desktop 창 표시/입력/resize gesture/DPI/font rendering 확인은 수행하지 않았다.
+  날짜 추가 전 native smoke를 이번 날짜 후보의 native 검증으로 재사용하지 않는다.
+
+### Future font sources and per-element selection — 2026-09-10
+
+사용자 추가 요구다. 모두 **PLANNED**, optional Local Font File만 별도 future 후보이며
+현재 Period Schedule Editing milestone에 font manager/Settings 구현을 추가하지 않는다.
+
+| Source | Future resolution / boundary |
+| --- | --- |
+| Bundled | 앱과 함께 배포하는 resource/private font. Pretendard, DSEG7 계열 등은 예시이며 선택/라이선스 승인이 아님 |
+| System | 현재 Windows에 설치된 font family, 사용자가 설치한 font도 선택 가능 |
+| Online / Downloaded | 허용된 catalog(예: Google Fonts) → 사용자 요청 다운로드 → validate/cache → local/private FontFamily resolution |
+| Local Font File | OPTIONAL FUTURE — 사용자가 TTF/OTF 파일을 골라 앱 전용 font로 등록; 현재 미구현 |
+
+- Future elements `Title`, `Time`, `AmPm`, `Date`, `Weekday`, `Status`는 각각 다른
+  source/family를 선택할 수 있어야 한다. 예를 들어 Time=Online/Orbitron,
+  Date=Bundled/Pretendard, Status=System/맑은 고딕처럼 mixed typography를 지원한다.
+  예시 family를 현재 dependency로 추가하거나 제공 가능성이 검증됐다고 주장하지 않는다.
+- Header 전체에 하나의 FontFamily를 강제하지 않는다. 현재 세 텍스트의 독립
+  TextBlock/binding을 유지한다. 현 View/VM/formatter에는 FontFamily를 묶는 설정이나
+  전체 요소에 강제하는 local FontFamily 값이 없으며, 각 TextBlock에 향후 별도
+  FontFamily/Style을 적용할 수 있다. 상속되는 system 기본 font는 초기 기본값이다.
+  미사용 Title/AmPm/Weekday property 및 FontSelection 타입은 만들지 않는다.
+- FontSelection의 개념적 stable identity는 SourceKind, FamilyId, FamilyName,
+  optional ProviderId(Online) 등이다. 정확한 schema는 후속 설계한다.
+  Machine-specific absolute font file path를 canonical setting으로 저장하지 않으며
+  cache file path는 runtime resolution detail이다.
+- Online asset은 사용자 선택/요청으로만 HTTPS의 known/approved provider에서 받는다.
+  앱 전용 local cache 및 font availability 검증을 거친다. Remote HTTP URL을
+  WPF UI FontFamily에 직접 연결하지 않는다. Startup마다 CDN을 호출하지 않으며
+  normal clock rendering은 network request에 의존하지 않는다.
+- 다운로드 실패가 startup 실패로 이어져서는 안 된다. Offline에서는 기존 cache 또는
+  safe bundled/default fallback으로 동작한다. System font missing 또는 Online cache
+  missing + network unavailable이면 fallback을 사용하고 crash/blank text/시간표·상태
+  사용 불가를 방지한다. 향후 Settings는 requested font와 실제 fallback 상태를 표시할 수 있다.
+- Desktop에서 사용할 수 있는 TTF/OTF/compatible OpenType asset을 우선 고려한다.
+  WOFF/WOFF2 직접 지원을 추측하여 계약화하지 않는다. Online Font milestone에서
+  WPF/.NET 10 지원 형식을 spike하고 확정하며 필요하면 provider의 desktop asset을 사용한다.
+- 다른 PC의 custom preset도 font binary/absolute path에 종속되지 않는다. System font는
+  없을 수 있으므로 fallback, Online font는 cache 없을 때 사용자 요청에 따른 provider
+  재해석/다운로드 또는 fallback, Bundled font는 앱 제공 자산으로 resolve한다.
+- Bundled/Online font는 도입 전에 license/배포 조건을 검증한다. Catalog는 가능한
+  Provider, Family, License, Version/source metadata를 추적한다. License가 불명확한
+  font를 자동 다운로드/재배포하는 구조를 만들지 않는다.
+- Font source/identity/provider/cache/fallback resolution은 Desktop presentation 및
+  명시적 Windows/resource/network 경계의 후속 책임이다. Core snapshot/status/countdown은
+  font를 모른다. Local FontFamily를 해결한 뒤 렌더링하며 clock/tick에 font I/O를 넣지 않는다.
+
+현재 추가한 것은 future 요구와 coupling self-audit 기록이다. Font settings UI,
+system picker, online browser/downloader/cache, font persistence 및 custom preset
+persistence는 구현하지 않았다. 별도 font 파일/package/network 요청도 추가하지 않았다.
+
+## Base period schedule editing — 2026-09-10
+
+**IMPLEMENTED — AUTOMATED VERIFIED / USER NATIVE SMOKE PASSED (limited scope)**. [ADR 0009](adr/0009-editable-base-period-schedule.md)
+records the user's explicit chronological ordering decision; see
+[Period Schedule Editing](PERIOD-SCHEDULE-EDITING.md) for validation and native evidence.
+
+- Core `PeriodSchedule` is a complete immutable base schedule: exactly 1..7 in input
+  order, Start < End, previous End <= next Start. The constructor copies input and
+  exposes a read-only collection of immutable definitions. It does not reorder or
+  renumber. Existing general unordered/partial resolver contracts remain unchanged.
+- Desktop `RuntimePeriodSchedule` owns one accepted schedule reference. Replacement
+  accepts an already validated complete value and rejects stale baselines before
+  any change. This is in-memory state, not a persistence service or global AppState.
+- `PeriodScheduleEditSession`/`PeriodDraftRow` hold seven immutable identities and
+  mutable text Drafts. HH:mm exact invariant parsing and Korean field/pair errors
+  are Desktop responsibilities. Draft changes never construct runtime intervals.
+  All fields and interval/order relations validate before one complete candidate
+  is submitted. Invalid Apply keeps the Draft/dialog; successful Apply closes.
+- `PeriodScheduleEditor` adapts session commit to runtime replacement and the explicit
+  App-supplied `RefreshNow` callback. Session and dialog know no clock/resolver/status/
+  countdown/highlight. Cancel/X/Escape do not replace state or request a refresh.
+- The refresh loop's production constructor receives a snapshot accessor. Each cycle
+  reads the clock once and the schedule once, then uses those same snapshots for all
+  calculations and presentation/highlight publication. It never reads the source
+  again during that cycle. The fixed-input convenience constructor still captures
+  input once for non-editable callers and existing general resolver tests; App uses
+  the live runtime accessor, so applied edits do not wait for restart or another tick.
+- App initializes the runtime source from DefaultPeriodSchedule on each launch and
+  injects the editor into the existing feature view. The timetable context menu adds
+  `일과 시간 편집...`; no permanent toolbar row or timetable geometry change.
+  Modal editor uses seven rows with read-only numbers and fourteen HH:mm TextBoxes.
+- MainWindow remains composition only. Period Apply changes no SubjectText/ClassText,
+  weekly content, cell editor, import parser or import target. Existing current-cell
+  rendering remains background-only. The current View and 35 cell objects remain.
+- Future Base + date-specific override → effective schedule must use the same clock
+  date and immutable schedule boundary; this milestone implements only the base.
+  Persistence, date overrides, font/settings/preset machinery and platform lifecycle
+  additions are absent. Date/font requirements remain as recorded in ADR 0008.
+- Explicit development `--period-preview` uses Monday 2026-09-07 13:10 plus monotonic
+  process-local elapsed time, representative timetable text and the normal editor.
+  The title identifies synthetic time. No system clock change; normal startup still
+  uses the PC fallback. It can be combined with `--bulk-preview` for sample imports.
+
+The previous Phase 0.7 fixed-schedule/future-editing descriptions are historical.
+Current date Header retains automated/object verification and has passed limited user
+native readability/resize review. Font customization remains PLANNED.
+
+### Period schedule native acceptance — 2026-09-10
+
+The user explicitly granted `native 승인` after direct launch, visible date/time/status,
+editor entry/seven rows, invalid-time error, Cancel and physical editor-X discard,
+period-5 Apply/highlight, readable period-5 Header/horizontal resize, F2 cell editing,
+School/Canonical previews and restart-default checks. Exact responses and limitations
+are in [Period Schedule Editing](PERIOD-SCHEDULE-EDITING.md). This does not establish
+all OS input, import clipboard/Apply, all boundaries, DPI or pixel geometry coverage.
+Owned native processes were normally closed by Codex without force termination.

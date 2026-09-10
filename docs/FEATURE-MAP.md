@@ -20,9 +20,9 @@ PLANNED 기능에도 계약에 명시된 DEFERRED 상세는 그대로 남아 있
 | Upcoming highlight | DEFERRED — 미구현 | A4 Current Status Header | optional 보조 강조; current와 구분 유지 |
 | Break status Core | IMPLEMENTED — FOUNDATION / Phase 0.4 | A6, P4; Current Status State Model | CurrentStatusResult의 Break, NextPeriodNumber, TransitionTime으로 구현; 긴 gap도 Break |
 | Countdown Core foundation | IMPLEMENTED — FOUNDATION / Phase 0.5 | A7, A5, P4, I16; Countdown Display Semantics | 동일 snapshot/status의 tick 차이, floor·LessThanMinute·hours/minutes 의미 값, stale input 거부; UI 미구현 |
-| Countdown presentation formatter | IMPLEMENTED — FOUNDATION / Phase 0.6 | A8, A7; Current Status Header Presentation Text | Desktop의 한국어 formatter 및 immutable 두 텍스트 결과, countdown 조합 검증, presentation contract tests. 다국어 infrastructure는 현재 범위 밖 |
-| Current Status Header | IMPLEMENTED — USER NATIVE SMOKE PASSED / Phase 0.8 | A4, A7, A8, A9, I15–I16; Current Status Header | 별도 UserControl의 두 텍스트 binding, 고정 높이 및 App activation 구현; 사용자 host Windows에서 표시/live update/기본 폭 및 가로 resize 안정성 확인 |
-| Header ViewModel foundation | IMPLEMENTED — FOUNDATION / Phase 0.7 | A8, A9, I15–I16 | 두 read-only 문자열, 계산 결과 Apply, 같은 문자열 PropertyChanged 억제; clock/timer/layout 책임 없음 |
+| Countdown presentation formatter | IMPLEMENTED — FOUNDATION / Phase 0.6 | A8, A7; Current Status Header Presentation Text | Desktop의 한국어 formatter 및 immutable 독립 텍스트 결과 (후속 CurrentDateText 포함), countdown 조합 검증, presentation contract tests. 다국어 infrastructure는 현재 범위 밖 |
+| Current Status Header | IMPLEMENTED — USER NATIVE SMOKE PASSED / Phase 0.8 | A4, A7, A8, A9, I15–I16; Current Status Header | 별도 UserControl의 텍스트 binding (날짜 추가 검증은 아래 별도 기록), 고정 높이 및 App activation 구현; 사용자 host Windows에서 표시/live update/기본 폭 및 가로 resize 안정성 확인 |
+| Header ViewModel foundation | IMPLEMENTED — FOUNDATION / Phase 0.7 | A8, A9, I15–I16 | 세 read-only 문자열(CurrentDateText 포함), 계산 결과 Apply, 같은 문자열 PropertyChanged 억제; clock/timer/layout 책임 없음 |
 | Live refresh loop foundation | IMPLEMENTED — FOUNDATION / Phase 0.7 | A9, A5, I16 | Desktop DispatcherTimer 약 1초, Start 즉시 refresh, cycle당 snapshot 1회, Start/Stop/Dispose, missed tick replay 없음 |
 | Actual Header XAML/rendering | IMPLEMENTED — USER NATIVE SMOKE PASSED / Phase 0.8 | A4, A8, I15 | XAML/binding/object tests 통과; 고정 높이/fixed time column/Tabular/NoWrap 후보. 기본 폭의 clipping/겹침 없음과 가로 resize 안정성 사용자 확인; font glyph 지원/DPI/최소 폭은 별도 검증 |
 | Actual app activation/wiring | IMPLEMENTED — USER NATIVE SMOKE PASSED / Phase 0.8 | A9, A5, I16 | App OnStartup에서 동일 clock/default schedule 주입, Start 후 Show, OnExit Dispose. 사용자 live refresh 확인 및 X 종료 후 process 소멸 확인; 계측된 cadence/Dispose 실행 증거는 아님 |
@@ -30,7 +30,7 @@ PLANNED 기능에도 계약에 명시된 DEFERRED 상세는 그대로 남아 있
 | Suspend/resume integration | DEFERRED | A9, A5 | OS detection/event 연결 미구현; RefreshNow로 현재 상태 재평가 가능한 기반만 제공 |
 | Application Clock / KRISS | PARTIAL — Phase 0.2 foundation | A5, I16–I20 | [0004](adr/0004-application-time-source.md); Core snapshot/interface, Desktop PC fallback, App 소유 경계, Tests fake/contract tests 구현. KRISS 동기화는 미구현; endpoint/client/보정/동시 전환 DEFERRED |
 | Timetable Editing | PARTIAL — EDITING FOUNDATION COMPLETE / USER NATIVE SMOKE PASSED | M1–M2, A2, R16, I3, I6–I7; approved Editing Foundation | [0006](adr/0006-single-cell-in-memory-editing.md); 교과/반 별도 Draft, atomic one-cell in-memory Apply/Cancel; persistence 미구현 |
-| Period Editing | PLANNED | M2–M3, P4, R6, R16 | [0004](adr/0004-application-time-source.md); time validation 상세 DEFERRED |
+| Base Period Schedule Editing | IMPLEMENTED — AUTOMATED VERIFIED / USER NATIVE SMOKE PASSED | M3, P4, R6; approved base editing | [0009](adr/0009-editable-base-period-schedule.md); 정확히 1..7 chronological order, HH:mm Draft/validation, atomic Apply-and-close, persistence 제외 |
 | Settings | PLANNED | P2–P3, M5, R8–R14, I2, I10, I13–I14 | [0003](adr/0003-settings-transaction.md); overflow/Reset UI 상세 DEFERRED |
 | Persistence | PLANNED | R15–R21, I1, I3–I4; Data Safety Principles | [0003](adr/0003-settings-transaction.md); technology/schema/durability DEFERRED |
 | Legacy Migration | PLANNED | P8, C1–C6, I4–I5; Migration Contract | [0001](adr/0001-golden-reference-policy.md); provenance/concurrency 상세 DEFERRED |
@@ -54,9 +54,9 @@ PLANNED 기능에도 계약에 명시된 DEFERRED 상세는 그대로 남아 있
 | Feature | 상태 | 요구 / 경계 |
 | --- | --- | --- |
 | Date-specific timetable override | FUTURE REQUIREMENT — NOT IMPLEMENTED | DateOnly 날짜의 예외; 기본 weekly 불변 |
-| Date-specific period schedule override | FUTURE REQUIREMENT — NOT IMPLEMENTED | DateOnly 날짜의 예외; 기본 schedule 불변; timetable override와 독립 |
+| Date-specific period schedule override | PLANNED | DateOnly 날짜의 예외; 기본 schedule 불변; timetable override와 독립 |
 | Effective day configuration | FUTURE REQUIREMENT — NOT IMPLEMENTED | timetable only / schedule only / both / neither; 같은 snapshot 날짜로 resolve한 구성을 Status/Highlight/Notification이 공유 |
-| CurrentDateText | FUTURE REQUIREMENT — NOT IMPLEMENTED | yyyy년 MM월 dd일; 기존 CurrentTimeText(HH:mm:ss) 별도 유지; date/time/status 동일 IApplicationClock snapshot |
+| CurrentDateText | IMPLEMENTED — FOUNDATION / AUTOMATED + OBJECT VERIFIED | yyyy년 MM월 dd일; CurrentTimeText(HH:mm:ss)/StatusText와 독립; 동일 snapshot의 date/time/status/highlight; ADR 0008; native 날짜 가독성/resize 승인 범위는 PERIOD-SCHEDULE-EDITING 기록 |
 
 모델/override UI/schema/calendar/date selector는 후속 milestone에서 설계한다.
 소유권과 coupling 제약은 [Architecture](ARCHITECTURE.md#future-date-configuration-constraints--2026-09-10)에 기록한다.
@@ -111,3 +111,55 @@ Supersedes the A/B “future” statuses above; C and other future features are 
 | Multi-profile/date/semester/persistence | FUTURE / NOT IMPLEMENTED | No models, schema or additional target UI added |
 
 See [Bulk verification](TIMETABLE-BULK-INPUT.md) and [ADR 0007](adr/0007-bulk-timetable-input.md).
+
+## Clock/Status presentation — 2026-09-10
+
+CurrentDateText는 구현된 foundation이며 아래 future customization과 구분한다.
+현재 한 줄 standard layout은 native candidate이며 v1 final design contract가 아니다.
+기존 Phase 0.8 Header smoke는 날짜 추가 전 결과다. 이후 날짜 가독성/resize 사용자 승인은 PERIOD-SCHEDULE-EDITING에 별도 기록했다. 새 날짜 배치의 자동 증거는
+[Architecture의 검증 기록](ARCHITECTURE.md#current-date-and-future-clockstatus-presentation--2026-09-10)을 따른다.
+
+| Feature | Status | Direction / boundary |
+| --- | --- | --- |
+| Clock/Status presentation presets | PLANNED | Standard/Large Digital/Compact/Minimal; 정확한 명칭/배치 미확정 |
+| Clock size customization | PLANNED | Time/Date/Status별 크기, 굵기, 정렬, 간격; preset 기본값 + 사용자 override |
+| 12/24-hour / seconds / AM-PM options | PLANNED | HH:mm:ss, HH:mm, h:mm:ss 또는 h:mm + 오전/오후; 추가 clock read 금지 |
+| Date/weekday format options | PLANNED | 날짜/요일/상태 표시 선택, weekday 포함 날짜 형식; 현재 기본 yyyy년 MM월 dd일 |
+| Digital typography option | PLANNED | System/digital/seven-segment 후보; 향후 font license 확인, 현재 dependency 없음 |
+| Settings persistence | PLANNED | 미래 Clock / Status Display 설정 저장; 현재 object/schema/UI 미구현 |
+
+[ADR 0008](adr/0008-clock-status-presentation.md): normal tick의 geometry 불변과
+preset/setting 변경의 의도적 re-layout을 구분한다. Core 시간 의미와 Desktop 표시 책임을 유지한다.
+
+### Font sources and mixed typography — future requirement
+
+| Feature | Status | Direction / boundary |
+| --- | --- | --- |
+| Per-element font customization | PLANNED | Title/Time/AmPm/Date/Weekday/Status 각각 독립 source/family; mixed typography 허용, Header 단일 font 강제 금지 |
+| Bundled fonts | PLANNED | 앱 resource/private font; 도입 전 license/배포 조건 확인, 예시 family 채택 미확정 |
+| System font selection | PLANNED | Windows 설치 font 및 사용자 설치 family 선택 |
+| Online font catalog/download/cache | PLANNED | 사용자 요청, approved HTTPS provider → download → validate/app-local cache → local FontFamily; startup/tick의 CDN 의존 금지 |
+| Missing-font fallback | PLANNED | Missing system/cache 또는 offline/download 실패 시 bundled/default; crash/blank text/앱 사용 불가 방지, 향후 fallback 상태 표시 가능 |
+| Custom preset portability | PLANNED | Stable source/family/provider identity; absolute path/font binary 의존 금지, 다른 PC에서 resolve/cache/fallback |
+| Local Font File | OPTIONAL FUTURE — NOT IMPLEMENTED | 사용자 선택 TTF/OTF를 앱 전용 font로 등록하는 후보 |
+
+Font identity schema는 후속 설계하며 machine-specific cache 경로는 runtime detail이다.
+Desktop TTF/OTF/OpenType asset 우선 방향과 WPF/.NET 10 형식 spike를 구분한다.
+WOFF/WOFF2 직접 지원을 가정하지 않는다. Provider/Family/License/Version-source metadata와
+license 검증이 필요하며 불명확한 font의 자동 다운로드/재배포는 허용하지 않는다.
+세부 요구와 현재 독립 TextBlock coupling audit는 ARCHITECTURE의 font sources 절을 따른다.
+이번 milestone에는 font UI/picker/browser/downloader/cache/font·preset persistence를 구현하지 않는다.
+
+## Period Schedule Editing Foundation — current implementation
+
+| Feature | Status | Boundary / evidence |
+| --- | --- | --- |
+| Base Period Schedule Editing | IMPLEMENTED — AUTOMATED VERIFIED / USER NATIVE SMOKE PASSED | Context menu → seven-row HH:mm Draft; invalid retains dialog/state; Apply-and-close; chronological 1..7 enforced without reorder |
+| Runtime Schedule Replacement | IMPLEMENTED — AUTOMATED VERIFIED / USER NATIVE SMOKE PASSED | One immutable accepted schedule swap, one immediate shared refresh; one clock + one schedule snapshot per cycle |
+| Current Date Header | IMPLEMENTED — AUTOMATED / OBJECT VERIFIED + USER READABILITY/RESIZE SMOKE PASSED | Existing independent CurrentDateText/time/status retained and date regression tests maintained |
+| Date-specific Period Override | PLANNED | Independent future effective schedule; base unchanged |
+| Period Schedule Persistence | PLANNED | Current edits last only until exit; restart restores defaults |
+| Clock/Font customization | PLANNED | Existing per-element/preset/font source/cache/fallback requirements preserved, no implementation added |
+
+[ADR 0009](adr/0009-editable-base-period-schedule.md) and
+[Period Schedule Editing verification](PERIOD-SCHEDULE-EDITING.md) are the current authority.

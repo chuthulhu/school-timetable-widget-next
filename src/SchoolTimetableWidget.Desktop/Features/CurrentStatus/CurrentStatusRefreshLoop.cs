@@ -13,29 +13,34 @@ namespace SchoolTimetableWidget.Desktop.Features.CurrentStatus;
 public sealed class CurrentStatusRefreshLoop : IDisposable
 {
     private readonly IApplicationClock _clock;
-    private readonly PeriodDefinition[] _periods;
+    private readonly Func<IReadOnlyList<PeriodDefinition>> _getSchedule;
     private readonly CurrentStatusHeaderViewModel _viewModel;
     private readonly WeeklyTimetableViewModel _timetableViewModel;
     private readonly DispatcherTimer _timer;
     private bool _isRunning;
     private bool _disposed;
 
-    /// <summary>
-    /// Captures the supplied schedule for this loop's lifetime; Core validates it at refresh.
-    /// Editable schedule replacement is a future composition decision.
-    /// </summary>
+    /// <summary>Fixed-snapshot convenience for callers without editable schedule ownership.</summary>
     public CurrentStatusRefreshLoop(
         IApplicationClock clock,
         IEnumerable<PeriodDefinition> periods,
         CurrentStatusHeaderViewModel viewModel,
         WeeklyTimetableViewModel timetableViewModel)
+        : this(clock, CaptureSchedule(periods), viewModel, timetableViewModel) { }
+
+    /// <summary>The source returns one stable schedule snapshot for each refresh cycle.</summary>
+    public CurrentStatusRefreshLoop(
+        IApplicationClock clock,
+        Func<IReadOnlyList<PeriodDefinition>> getSchedule,
+        CurrentStatusHeaderViewModel viewModel,
+        WeeklyTimetableViewModel timetableViewModel)
     {
         ArgumentNullException.ThrowIfNull(clock);
-        ArgumentNullException.ThrowIfNull(periods);
+        ArgumentNullException.ThrowIfNull(getSchedule);
         ArgumentNullException.ThrowIfNull(viewModel);
         ArgumentNullException.ThrowIfNull(timetableViewModel);
         _clock = clock;
-        _periods = periods.ToArray();
+        _getSchedule = getSchedule;
         _viewModel = viewModel;
         _timetableViewModel = timetableViewModel;
         _timer = new DispatcherTimer(DispatcherPriority.Background)
@@ -96,7 +101,8 @@ public sealed class CurrentStatusRefreshLoop : IDisposable
     {
         VerifyUsable();
         var snapshot = _clock.GetSnapshot();
-        var status = CurrentStatusResolver.Resolve(snapshot, _periods);
+        var schedule = _getSchedule();
+        var status = CurrentStatusResolver.Resolve(snapshot, schedule);
         var countdown = CurrentStatusCountdownCalculator.Calculate(snapshot, status);
         var text = CurrentStatusHeaderFormatter.Format(snapshot, status, countdown);
         var slot = CurrentTimetableSlot.From(snapshot, status);
@@ -124,6 +130,13 @@ public sealed class CurrentStatusRefreshLoop : IDisposable
         {
             RefreshNow();
         }
+    }
+
+    private static Func<IReadOnlyList<PeriodDefinition>> CaptureSchedule(IEnumerable<PeriodDefinition> periods)
+    {
+        ArgumentNullException.ThrowIfNull(periods);
+        var captured = Array.AsReadOnly(periods.ToArray());
+        return () => captured;
     }
 
     private void VerifyUsable()

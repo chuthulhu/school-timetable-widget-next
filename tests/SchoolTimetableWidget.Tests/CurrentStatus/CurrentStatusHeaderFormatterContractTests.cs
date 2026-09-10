@@ -141,6 +141,7 @@ public class CurrentStatusHeaderFormatterContractTests
                 foreach (var snapshot in new[] { standard, later })
                 {
                     var actual = ResolveAndFormat(snapshot);
+                    Assert.Equal(expected.CurrentDateText, actual.CurrentDateText);
                     Assert.Equal(expected.CurrentTimeText, actual.CurrentTimeText);
                     Assert.Equal(expected.StatusText, actual.StatusText);
                 }
@@ -168,6 +169,7 @@ public class CurrentStatusHeaderFormatterContractTests
                 CultureInfo.CurrentUICulture = culture;
 
                 var morning = ResolveAndFormat(Snapshot(new TimeOnly(9, 5, 7)));
+                Assert.Equal("2026년 09월 07일", morning.CurrentDateText);
                 Assert.Equal("09:05:07", morning.CurrentTimeText);
                 Assert.Equal("1교시 · 종료까지 44분", morning.StatusText);
                 var afternoon = ResolveAndFormat(Snapshot(new TimeOnly(12, 50)));

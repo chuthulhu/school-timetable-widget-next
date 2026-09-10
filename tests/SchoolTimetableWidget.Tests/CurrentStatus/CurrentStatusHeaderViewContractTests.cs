@@ -73,12 +73,14 @@ public class CurrentStatusHeaderViewContractTests
 
         // Assert layout strategy, not unapproved candidate DIP values or rendered font pixels.
         Assert.True(double.IsFinite(view.Height) && view.Height > 0);
-        Assert.Equal(2, grid.ColumnDefinitions.Count);
+        Assert.Equal(3, grid.ColumnDefinitions.Count);
         Assert.True(grid.ColumnDefinitions[0].Width.IsAbsolute);
         Assert.True(grid.ColumnDefinitions[0].Width.Value > 0);
-        Assert.True(grid.ColumnDefinitions[1].Width.IsStar);
-        Assert.Equal(0, Grid.GetColumn(time));
-        Assert.Equal(1, Grid.GetColumn(status));
+        Assert.True(grid.ColumnDefinitions[1].Width.IsAbsolute);
+        Assert.True(grid.ColumnDefinitions[2].Width.IsStar);
+        Assert.Equal(0, Grid.GetColumn(TextBlockOf(view, "CurrentDateTextBlock")));
+        Assert.Equal(1, Grid.GetColumn(time));
+        Assert.Equal(2, Grid.GetColumn(status));
         Assert.Equal(TextWrapping.NoWrap, time.TextWrapping);
         Assert.Equal(TextWrapping.NoWrap, status.TextWrapping);
         Assert.Equal(TextTrimming.CharacterEllipsis, status.TextTrimming);

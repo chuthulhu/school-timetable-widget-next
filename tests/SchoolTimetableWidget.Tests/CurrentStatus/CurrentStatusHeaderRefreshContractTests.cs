@@ -14,13 +14,14 @@ namespace SchoolTimetableWidget.Tests.CurrentStatus;
 public class CurrentStatusHeaderRefreshContractTests
 {
     [Fact]
-    public void ViewModelStartsEmptyAndExposesOnlyTwoReadOnlyTexts()
+    public void ViewModelStartsEmptyAndExposesThreeReadOnlyTexts()
     {
         var model = new CurrentStatusHeaderViewModel();
+        Assert.Equal(string.Empty, model.CurrentDateText);
         Assert.Equal(string.Empty, model.CurrentTimeText);
         Assert.Equal(string.Empty, model.StatusText);
         var properties = typeof(CurrentStatusHeaderViewModel).GetProperties();
-        Assert.Equal(new[] { "CurrentTimeText", "StatusText" }, properties.Select(p => p.Name).Order());
+        Assert.Equal(new[] { "CurrentDateText", "CurrentTimeText", "StatusText" }, properties.Select(p => p.Name).Order());
         Assert.All(properties, p => Assert.Null(p.SetMethod));
         Assert.Throws<ArgumentNullException>("text", () => model.Apply(null!));
     }
@@ -312,7 +313,7 @@ public class CurrentStatusHeaderRefreshContractTests
     {
         var clock = new FakeApplicationClock(Snapshot(9, 49, 59));
         Assert.Throws<ArgumentNullException>("clock", () => new CurrentStatusRefreshLoop(null!, [], new(), new WeeklyTimetableViewModel(WeeklyTimetable.Empty())));
-        Assert.Throws<ArgumentNullException>("periods", () => new CurrentStatusRefreshLoop(clock, null!, new(), new WeeklyTimetableViewModel(WeeklyTimetable.Empty())));
+        Assert.Throws<ArgumentNullException>("periods", () => new CurrentStatusRefreshLoop(clock, (IEnumerable<PeriodDefinition>)null!, new(), new WeeklyTimetableViewModel(WeeklyTimetable.Empty())));
         Assert.Throws<ArgumentNullException>("viewModel", () => new CurrentStatusRefreshLoop(clock, [], null!, new WeeklyTimetableViewModel(WeeklyTimetable.Empty())));
         Assert.Equal(0, clock.ReadCount);
     });
