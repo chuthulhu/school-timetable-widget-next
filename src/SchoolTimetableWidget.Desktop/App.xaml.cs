@@ -49,13 +49,15 @@ public partial class App : Application
         {
             if (_statusRefreshLoop!.CurrentDate == date) _statusRefreshLoop.RefreshNow();
         });
+        headerViewModel.SetDisplay(runtime.Display.Current);
+        runtime.Display.Changed += (_, _) => headerViewModel.SetDisplay(runtime.Display.Current);
         var timetableViewModel = runtime.Timetable;
         _statusRefreshLoop = new CurrentStatusRefreshLoop(ApplicationClock,
             runtime.Resolve, headerViewModel, timetableViewModel, () => runtime.Lunch.Enabled);
         try
         {
             MainWindow = new MainWindow(headerViewModel, timetableViewModel,
-                runtime.ScheduleEditor, profile.LoadResult.Notice);
+                runtime.ScheduleEditor, profile.LoadResult.Notice, runtime.Display);
             var timetableView = (WeeklyTimetableView)MainWindow.FindName("Timetable");
             timetableView.DateEditor = runtime.DateEditor;
             timetableView.GetCurrentDate = () => _statusRefreshLoop.CurrentDate;

@@ -264,3 +264,22 @@ These states supersede the preceding future rows for this milestone.
 
 User native UX approval: 2026-09-11. Arrow/header visual polish remains future styling/display
 work and is explicitly not a milestone blocker. Evidence: [Week Navigation](WEEK-NAVIGATION.md).
+
+## Styling / Display Presets Foundation — current 2026-09-11
+
+This section supersedes historical PLANNED entries for the implemented subset.
+[ADR 0014](adr/0014-display-presets-and-schema-v2.md), [Display Settings](DISPLAY-SETTINGS.md).
+
+| Feature | Status | Scope |
+| --- | --- | --- |
+| Display Presets | IMPLEMENTED — NATIVE REVIEW CONFIRMED | Four editable initial configurations and independent layout |
+| Per-element typography | IMPLEMENTED — NATIVE REVIEW CONFIRMED | Time/Date/Weekday/Status family/size/weight/style |
+| System font selection | IMPLEMENTED — NATIVE REVIEW CONFIRMED | WPF installed families, logical names, safe fallback |
+| Display Settings P2 | IMPLEMENTED — NATIVE REVIEW CONFIRMED | Live Preview, Apply, OK, Cancel/X and current-preset Reset |
+| Time/date format and visibility | IMPLEMENTED — NATIVE REVIEW CONFIRMED | 12/24h, AM/PM, seconds, date/weekday/status |
+| Profile schema 2 / v1 compatibility | IMPLEMENTED — NATIVE REVIEW CONFIRMED | No rewrite on v1 load, full next-save upgrade |
+| Week/header visual polish | IMPLEMENTED — NATIVE REVIEW CONFIRMED | Chevron styles, date/weekday hierarchy, soft Today background |
+| Bundled font catalog | PLANNED | No bundled assets |
+| Online font catalog/download/cache | PLANNED | No network/cache implementation |
+| Named custom presets | PLANNED | No multi-preset manager |
+| Color/theme editor | PLANNED | No full theme/Fluent redesign |

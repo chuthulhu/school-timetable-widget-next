@@ -33,7 +33,7 @@ public class WeeklyTimetableViewContractTests
         Assert.Equal(new[] { "월", "화", "수", "목", "금" }, Descendants<TextBlock>(days).Where((_, i) => i % 2 == 1).Select(t => t.Text));
         Assert.Equal(new[] { "1", "2", "3", "4", "5", "6", "7" }, Descendants<TextBlock>(periods).Select(t => t.Text));
         var corner = Assert.IsType<Border>(view.FindName("CornerHeader"));
-        Assert.Equal("<", Assert.IsType<Button>(corner.Child).Content);
+        Assert.Equal("‹", Assert.IsType<Button>(corner.Child).Content);
         Assert.Equal(10, Descendants<TextBlock>(days).Count());
         var panel = Assert.Single(Descendants<UniformGrid>(body));
         Assert.Equal(7, panel.Rows);

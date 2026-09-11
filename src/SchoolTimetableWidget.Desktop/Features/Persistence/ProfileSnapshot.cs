@@ -1,3 +1,4 @@
+using SchoolTimetableWidget.Desktop.Features.DisplaySettings;
 using System.Collections.ObjectModel;
 using SchoolTimetableWidget.Core.Features.Periods;
 using SchoolTimetableWidget.Core.Features.SchoolDays;
@@ -9,7 +10,7 @@ namespace SchoolTimetableWidget.Desktop.Features.Persistence;
 public sealed class ProfileSnapshot
 {
     public ProfileSnapshot(WeeklyTimetable timetable, PeriodSchedule schedule,
-        IEnumerable<DateSpecificOverride> overrides, bool showLunch)
+        IEnumerable<DateSpecificOverride> overrides, bool showLunch, DisplayConfiguration? display = null)
     {
         ArgumentNullException.ThrowIfNull(timetable);
         ArgumentNullException.ThrowIfNull(schedule);
@@ -21,11 +22,14 @@ public sealed class ProfileSnapshot
         Schedule = schedule;
         Overrides = Array.AsReadOnly(entries.OrderBy(e => e.Date).ToArray());
         ShowLunch = showLunch;
+        Display = display ?? DisplayPresets.Create(DisplayPreset.Standard);
+        Display.Validate();
     }
 
     public WeeklyTimetable Timetable { get; }
     public PeriodSchedule Schedule { get; }
     public ReadOnlyCollection<DateSpecificOverride> Overrides { get; }
     public bool ShowLunch { get; }
+    public DisplayConfiguration Display { get; }
     public static ProfileSnapshot Defaults() => new(WeeklyTimetable.Empty(), new(DefaultPeriodSchedule.Periods), [], false);
 }

@@ -14,15 +14,15 @@ namespace SchoolTimetableWidget.Tests.CurrentStatus;
 public class CurrentStatusHeaderRefreshContractTests
 {
     [Fact]
-    public void ViewModelStartsEmptyAndExposesThreeReadOnlyTexts()
+    public void ViewModelStartsEmptyAndExposesIndependentReadOnlyTextsAndDisplay()
     {
         var model = new CurrentStatusHeaderViewModel();
         Assert.Equal(string.Empty, model.CurrentDateText);
         Assert.Equal(string.Empty, model.CurrentTimeText);
         Assert.Equal(string.Empty, model.StatusText);
         var properties = typeof(CurrentStatusHeaderViewModel).GetProperties();
-        Assert.Equal(new[] { "CurrentDateText", "CurrentTimeText", "StatusText" }, properties.Select(p => p.Name).Order());
-        Assert.All(properties, p => Assert.Null(p.SetMethod));
+        Assert.Equal(new[] { "AmPmText", "CurrentDateText", "CurrentTimeText", "Display", "StatusText", "WeekdayText" }, properties.Select(p => p.Name).Order());
+        Assert.All(properties, p => Assert.False(p.SetMethod?.IsPublic ?? false));
         Assert.Throws<ArgumentNullException>("text", () => model.Apply(null!));
     }
 

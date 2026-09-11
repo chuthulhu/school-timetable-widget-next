@@ -56,3 +56,11 @@ Canonical 설정은 stable source/family/provider identity이며 machine absolut
 font binary에 종속되지 않는다. Format 지원 spike 및 license/metadata 검증은 실제
 Font milestone에서 수행한다. 정확한 source/cache/schema 구현은 현재 범위 밖이다.
 상세 future 요구는 ARCHITECTURE/FEATURE-MAP을 따른다.
+
+## Display implementation follow-up — 2026-09-11
+
+[ADR 0014](0014-display-presets-and-schema-v2.md) implements the explicitly requested
+display presets, per-element system font selection, format/visibility, P2 settings and
+schema 2. It supersedes this ADR's former implementation deferrals for that subset.
+The one-snapshot rule and Desktop ownership remain; all future bundled/online font and
+named custom preset boundaries stay planned. Native UX approval is still separate.

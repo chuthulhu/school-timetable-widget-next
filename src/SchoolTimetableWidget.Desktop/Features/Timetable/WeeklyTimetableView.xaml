@@ -4,6 +4,7 @@
              xmlns:local="clr-namespace:SchoolTimetableWidget.Desktop.Features.Timetable"
              xmlns:import="clr-namespace:SchoolTimetableWidget.Desktop.Features.TimetableImport"
              xmlns:periods="clr-namespace:SchoolTimetableWidget.Desktop.Features.PeriodScheduleEditing"
+             xmlns:display="clr-namespace:SchoolTimetableWidget.Desktop.Features.DisplaySettings"
              xmlns:dates="clr-namespace:SchoolTimetableWidget.Desktop.Features.DateOverrides"
              FontSize="16" MinWidth="500">
     <UserControl.CommandBindings>
@@ -19,6 +20,9 @@
     </UserControl.InputBindings>
     <UserControl.ContextMenu>
         <ContextMenu>
+            <MenuItem Header="표시 설정..." InputGestureText="Ctrl+," Command="{x:Static display:DisplaySettingsCommands.Open}"
+                      CommandTarget="{Binding PlacementTarget, RelativeSource={RelativeSource AncestorType=ContextMenu}}"/>
+            <Separator/>
             <MenuItem Header="학교 시간표 가져오기..." InputGestureText="Ctrl+V"
                       Command="{x:Static import:TimetableImportCommands.School}"
                       CommandTarget="{Binding PlacementTarget, RelativeSource={RelativeSource AncestorType=ContextMenu}}" />
@@ -40,6 +44,28 @@
         </ContextMenu>
     </UserControl.ContextMenu>
     <UserControl.Resources>
+        <Style x:Key="WeekArrow" TargetType="Button">
+            <Setter Property="Background" Value="Transparent"/>
+            <Setter Property="Foreground" Value="#485563"/>
+            <Setter Property="FontSize" Value="26"/>
+            <Setter Property="BorderThickness" Value="0"/>
+            <Setter Property="Cursor" Value="Hand"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="Button">
+                        <Border x:Name="Surface" Background="{TemplateBinding Background}" CornerRadius="5">
+                            <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                        </Border>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsMouseOver" Value="True"><Setter TargetName="Surface" Property="Background" Value="#E5ECF3"/></Trigger>
+                            <Trigger Property="IsPressed" Value="True"><Setter TargetName="Surface" Property="Background" Value="#D1DFED"/></Trigger>
+                            <Trigger Property="IsKeyboardFocused" Value="True"><Setter TargetName="Surface" Property="Background" Value="#D1DFED"/></Trigger>
+                            <Trigger Property="IsEnabled" Value="False"><Setter Property="Opacity" Value="0.35"/></Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
         <!-- Candidate spacing only; content participates in WPF measurement. -->
         <Style x:Key="SlotBorder" TargetType="Border">
             <Setter Property="BorderBrush" Value="{DynamicResource {x:Static SystemColors.ControlLightBrushKey}}" />
@@ -82,15 +108,15 @@
             <Setter Property="Background" Value="{DynamicResource {x:Static SystemColors.ControlBrushKey}}" />
             <Style.Triggers>
                 <DataTrigger Binding="{Binding IsToday}" Value="True">
-                    <Setter Property="Background" Value="#FFDCECF8" />
+                    <Setter Property="Background" Value="#E5EFF6" />
                 </DataTrigger>
             </Style.Triggers>
         </Style>
         <DataTemplate x:Key="DateHeaderTemplate">
             <Border Style="{StaticResource DateHeaderBorder}">
                 <StackPanel VerticalAlignment="Center">
-                    <TextBlock Text="{Binding DateText}" TextAlignment="Center" VerticalAlignment="Center" TextWrapping="NoWrap" />
-                    <TextBlock Text="{Binding WeekdayText}" TextAlignment="Center" VerticalAlignment="Center" TextWrapping="NoWrap" />
+                    <TextBlock Text="{Binding DateText}" FontSize="15" FontWeight="SemiBold" TextAlignment="Center" VerticalAlignment="Center" TextWrapping="NoWrap" />
+                    <TextBlock Text="{Binding WeekdayText}" FontSize="13" Margin="0,3,0,0" Foreground="#52606D" TextAlignment="Center" VerticalAlignment="Center" TextWrapping="NoWrap" />
                 </StackPanel>
             </Border>
         </DataTemplate>
@@ -114,7 +140,7 @@
         </Grid.RowDefinitions>
         <Border x:Name="CornerHeader" Style="{StaticResource SlotBorder}"
                 Background="{DynamicResource {x:Static SystemColors.ControlBrushKey}}">
-            <Button x:Name="PreviousWeekButton" Content="&lt;" Command="{Binding PreviousWeekCommand}"
+            <Button x:Name="PreviousWeekButton" Content="‹" Style="{StaticResource WeekArrow}" Command="{Binding PreviousWeekCommand}"
                     ToolTip="이전 주" AutomationProperties.Name="이전 주" Padding="0" MinHeight="28" />
         </Border>
         <ItemsControl x:Name="WeekdayHeaders" Grid.Column="1"
@@ -124,7 +150,7 @@
                 <ItemsPanelTemplate><UniformGrid Rows="1" Columns="5" /></ItemsPanelTemplate>
             </ItemsControl.ItemsPanel>
         </ItemsControl>
-        <Button x:Name="NextWeekButton" Grid.Column="2" Content="&gt;" Command="{Binding NextWeekCommand}"
+        <Button x:Name="NextWeekButton" Grid.Column="2" Content="›" Style="{StaticResource WeekArrow}" Command="{Binding NextWeekCommand}"
                 ToolTip="다음 주" AutomationProperties.Name="다음 주" Margin="2,6" Padding="0" MinHeight="28" />
         <ItemsControl x:Name="PeriodHeaders" Grid.Row="1"
                       ItemsSource="{Binding PeriodHeaders, Mode=OneWay}"

@@ -26,4 +26,5 @@
     <ProjectReference Include="..\..\src\SchoolTimetableWidget.Desktop\SchoolTimetableWidget.Desktop.csproj" />
   </ItemGroup>
 
+  <ItemGroup><EmbeddedResource Include="DisplaySettings\profile-v1.json" /></ItemGroup>
 </Project>

@@ -60,7 +60,10 @@ public static class CurrentStatusHeaderFormatter
 
         return new CurrentStatusHeaderText(
             snapshot.Date.ToString("yyyy년 MM월 dd일", CultureInfo.InvariantCulture),
-            snapshot.LocalTime.ToString("HH:mm:ss", CultureInfo.InvariantCulture), statusText);
+            snapshot.LocalTime.ToString("HH:mm:ss", CultureInfo.InvariantCulture), statusText,
+            new[] { "일요일", "월요일", "화요일", "수요일", "목요일", "금요일", "토요일" }[(int)snapshot.Date.DayOfWeek],
+            snapshot.LocalTime.Hour < 12 ? "오전" : "오후",
+            snapshot.LocalTime.ToString("h:mm:ss", CultureInfo.InvariantCulture));
     }
 
     private static string FormatCountdown(CountdownDisplayValue countdown)

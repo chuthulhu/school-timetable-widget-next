@@ -1311,3 +1311,27 @@ triggers change backgrounds only. Exact spacing/color remain native candidates.
 Native UX was explicitly approved on 2026-09-11. The user defers detailed arrow/header
 visual polish to a future styling/display milestone; it is not a blocker here. The observed
 native scope and limits are recorded in [Week Navigation](WEEK-NAVIGATION.md).
+
+## Display Settings implementation — 2026-09-11
+
+**IMPLEMENTED — NATIVE REVIEW CONFIRMED**. [ADR 0014](adr/0014-display-presets-and-schema-v2.md)
+and [Display Settings](DISPLAY-SETTINGS.md) supersede prior display PLANNED entries.
+
+Desktop Features/DisplaySettings contains immutable configuration/preset defaults, per-element
+Drafts, a P2 transaction session, runtime preview ownership, and the display-only settings view.
+Infrastructure/Windows/SystemFontCatalog enumerates and resolves WPF system family names,
+including fallback without replacing canonical identity. No Core, global AppState, provider
+framework, new package or downloaded font is introduced.
+
+CurrentStatusHeaderFormatter adds same-snapshot weekday/AM-PM/12-hour fields; the independent
+date/time/status values remain. ViewModel caches the last immutable formatted facts and applies
+display choices without clock reads. Header view reconfigures its retained controls on Display
+changes only, reserving slots for stable ordinary ticks; oversized header width is scrollable.
+App wires the Display owner to that ViewModel and the existing WindowContentMinimum boundary.
+The shared clock/status/highlight refresh loop is unchanged.
+
+ProfileSnapshot carries validated immutable Display. ProfileSession has a typed SaveDisplay
+callback and preserves Current.Display in all other saves. Separate strict v1 and v2 storage
+DTOs ensure v1 upgrade in memory only, followed by v2 on the next successful user save.
+Preview never enters a save of another feature. JSON shape, UI, fallback, tests and evidence
+are detailed in Display Settings; native UX acceptance was confirmed on 2026-09-11.

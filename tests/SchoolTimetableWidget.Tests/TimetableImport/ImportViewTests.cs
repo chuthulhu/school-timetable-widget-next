@@ -109,8 +109,8 @@ public class ImportViewTests
         Layout(menu);
         var entries = menu.Items.OfType<MenuItem>().ToArray();
         Assert.All(entries, entry => Assert.Same(view, entry.CommandTarget));
-        Assert.Equal(6, entries.Length);
-        Assert.Equal(new ICommand[] { TimetableImportCommands.School, TimetableImportCommands.Canonical, TimetableImportCommands.CopyTemplate, PeriodScheduleCommands.Edit, DateOverrideCommands.Edit, DateOverrideCommands.Lunch }, entries.Select(m => m.Command));
+        Assert.Equal(7, entries.Length);
+        Assert.Equal(new ICommand[] { SchoolTimetableWidget.Desktop.Features.DisplaySettings.DisplaySettingsCommands.Open, TimetableImportCommands.School, TimetableImportCommands.Canonical, TimetableImportCommands.CopyTemplate, PeriodScheduleCommands.Edit, DateOverrideCommands.Edit, DateOverrideCommands.Lunch }, entries.Select(m => m.Command));
         Assert.True(TimetableImportCommands.School.CanExecute(null, view));
         TimetableImportCommands.CopyTemplate.Execute(null, view); // unshown view: fake adapter, no dialog
         Assert.Equal(1, clipboard.Writes);

@@ -1,3 +1,5 @@
+using SchoolTimetableWidget.Desktop.Features.DisplaySettings;
+using System.Windows.Input;
 using SchoolTimetableWidget.Desktop.Features.PeriodScheduleEditing;
 using System.Windows;
 using SchoolTimetableWidget.Desktop.Features.CurrentStatus;
@@ -8,7 +10,7 @@ namespace SchoolTimetableWidget.Desktop;
 /// <summary>Composes feature views without owning their calculation or timer lifecycle.</summary>
 public partial class MainWindow : Window
 {
-    public MainWindow(CurrentStatusHeaderViewModel headerViewModel, WeeklyTimetableViewModel timetableViewModel, PeriodScheduleEditor? scheduleEditor = null, string persistenceNotice = "")
+    public MainWindow(CurrentStatusHeaderViewModel headerViewModel, WeeklyTimetableViewModel timetableViewModel, PeriodScheduleEditor? scheduleEditor = null, string persistenceNotice = "", RuntimeDisplaySettings? display = null)
     {
         ArgumentNullException.ThrowIfNull(headerViewModel);
         ArgumentNullException.ThrowIfNull(timetableViewModel);
@@ -18,5 +20,12 @@ public partial class MainWindow : Window
         StatusHeader.DataContext = headerViewModel;
         Timetable.DataContext = timetableViewModel;
         Timetable.ScheduleEditor = scheduleEditor;
+        CommandBindings.Add(new CommandBinding(DisplaySettingsCommands.Open, (_, _) =>
+        {
+            if (display is null) return;
+            var session = display.Open();
+            try { new DisplaySettingsWindow(session) { Owner = this }.ShowDialog(); }
+            finally { session.Cancel(); }
+        }, (_, e) => e.CanExecute = display is not null));
     }
 }

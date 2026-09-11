@@ -78,3 +78,10 @@ identity or merge teacher timetable ownership with school-day schedule semantics
 Legacy conversion may later produce this validated snapshot and use the same save
 pipeline. No legacy source, backup UI, Settings/font/clock customization, tray,
 autostart, notification, installer or updater is implemented here.
+
+## Schema 2 follow-up — 2026-09-11
+
+[ADR 0014](0014-display-presets-and-schema-v2.md) adds required profile.display in v2.
+A separate strict v1 reader injects Standard display defaults without a load rewrite;
+the next successful user save writes v2. Existing durable inputs and atomic boundary
+are unchanged. Old v1-only binaries may reject v2; downgrade support is not implemented.

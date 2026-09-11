@@ -1,3 +1,4 @@
+using SchoolTimetableWidget.Desktop.Features.DisplaySettings;
 using SchoolTimetableWidget.Core.Features.SchoolDays;
 using SchoolTimetableWidget.Desktop.Features.DateOverrides;
 using SchoolTimetableWidget.Desktop.Features.PeriodScheduleEditing;
@@ -12,6 +13,7 @@ public sealed class ProfileRuntime
     {
         Session = session;
         var initial = session.Current;
+        Display = new(initial.Display, session.SaveDisplay);
         Timetable = new(initial.Timetable, session.SaveTimetable);
         Schedule = new(initial.Schedule, session.SaveSchedule);
         Overrides = new(initial.Overrides, session.SaveOverrides);
@@ -25,6 +27,7 @@ public sealed class ProfileRuntime
         Timetable.Editor.DateEditor = DateEditor;
         ScheduleEditor = new(Schedule, refresh);
     }
+    public RuntimeDisplaySettings Display { get; }
     public ProfileSession Session { get; }
     public WeeklyTimetableViewModel Timetable { get; }
     public RuntimePeriodSchedule Schedule { get; }

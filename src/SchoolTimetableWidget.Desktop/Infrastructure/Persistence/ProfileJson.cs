@@ -1,3 +1,4 @@
+using SchoolTimetableWidget.Desktop.Features.DisplaySettings;
 using System.Globalization;
 using System.Text.Json;
 using System.Text.Json.Serialization;
@@ -23,12 +24,12 @@ public static class ProfileJson
 
     public static byte[] Serialize(ProfileSnapshot value)
     {
-        var document = new Document(1, new Profile(
+        var document = new Document(2, new Profile(
             value.Timetable.Cells.Select(Cell.From).ToArray(), Period.From(value.Schedule),
             value.Overrides.Select(e => new Override(
                 e.Date.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture),
                 e.Timetable is null ? null : e.Timetable.Values.Select((v, i) => new Cell(e.Day.ToString(), i + 1, v.SubjectText, v.ClassText)).ToArray(),
-                e.Schedule is null ? null : Period.From(e.Schedule))).ToArray(), new Presentation(value.ShowLunch)));
+                e.Schedule is null ? null : Period.From(e.Schedule))).ToArray(), new Presentation(value.ShowLunch), Display.From(value.Display)));
         var bytes = JsonSerializer.SerializeToUtf8Bytes(document, Options);
         // Validate the complete storage document before any file I/O.
         _ = Deserialize(bytes);
@@ -40,8 +41,10 @@ public static class ProfileJson
         using var json = JsonDocument.Parse(bytes.ToArray(), new JsonDocumentOptions { AllowDuplicateProperties = false });
         if (!json.RootElement.TryGetProperty("schemaVersion", out var version) || !version.TryGetInt32(out var number))
             throw new JsonException("Missing schema version.");
-        if (number != 1) throw new UnsupportedProfileVersionException();
-        var document = JsonSerializer.Deserialize<Document>(bytes, Options) ?? throw new JsonException("Null document.");
+        if (number is not (1 or 2)) throw new UnsupportedProfileVersionException();
+        var document = number == 1
+            ? Upgrade(JsonSerializer.Deserialize<DocumentV1>(bytes, Options) ?? throw new JsonException("Null document."))
+            : JsonSerializer.Deserialize<Document>(bytes, Options) ?? throw new JsonException("Null document.");
         var profile = document.Profile;
         if (profile.Timetable.Any(c => c is null) || profile.DateOverrides.Any(e => e is null))
             throw new JsonException("Null array entry.");
@@ -62,11 +65,43 @@ public static class ProfileJson
             }
             return new DateSpecificOverride(date, day, entry.PeriodSchedule is null ? null : Period.ToDomain(entry.PeriodSchedule));
         });
-        return new(week, schedule, overrides, profile.Presentation.ShowLunchBetweenPeriods4And5);
+        return new(week, schedule, overrides, profile.Presentation.ShowLunchBetweenPeriods4And5, profile.Display.ToValue());
     }
 
     private sealed record Document(int SchemaVersion, Profile Profile);
-    private sealed record Profile(Cell[] Timetable, Period[] PeriodSchedule, Override[] DateOverrides, Presentation Presentation);
+    private sealed record Profile(Cell[] Timetable, Period[] PeriodSchedule, Override[] DateOverrides, Presentation Presentation, Display Display);
+    private sealed record DocumentV1(int SchemaVersion, ProfileV1 Profile);
+    private sealed record ProfileV1(Cell[] Timetable, Period[] PeriodSchedule, Override[] DateOverrides, Presentation Presentation);
+    private static Document Upgrade(DocumentV1 old) => new(2, new(old.Profile.Timetable, old.Profile.PeriodSchedule,
+        old.Profile.DateOverrides, old.Profile.Presentation, Display.From(DisplayPresets.Create(DisplayPreset.Standard))));
+
+    private static T ParseName<T>(string name) where T : struct, Enum =>
+        Enum.TryParse<T>(name, out var value) && Enum.IsDefined(value) && value.ToString() == name
+            ? value : throw new JsonException("Invalid display value.");
+
+    private sealed record Font(string Source, string Family);
+    private sealed record Typography(Font Font, double Size, string Weight, string Style)
+    {
+        public static Typography From(ElementTypography value) => new(new(value.Font.Source.ToString(), value.Font.Family),
+            value.Size, value.Weight.ToString(), value.Style.ToString());
+        public ElementTypography ToValue() => new(new(ParseName<FontSourceKind>(Font.Source), Font.Family),
+            Size, ParseName<DisplayFontWeight>(Weight), ParseName<DisplayFontStyle>(Style));
+    }
+    private sealed record Display(string Preset, string Layout, Typography Time, Typography Date, Typography Weekday,
+        Typography Status, bool Use24Hour, bool ShowSeconds, bool ShowDate, bool ShowWeekday, bool ShowStatus)
+    {
+        public static Display From(DisplayConfiguration value) => new(value.Preset.ToString(), value.Layout.ToString(),
+            Typography.From(value.Time), Typography.From(value.Date), Typography.From(value.Weekday), Typography.From(value.Status),
+            value.Use24Hour, value.ShowSeconds, value.ShowDate, value.ShowWeekday, value.ShowStatus);
+        public DisplayConfiguration ToValue()
+        {
+            var value = new DisplayConfiguration(ParseName<DisplayPreset>(Preset), ParseName<DisplayLayout>(Layout),
+                Time.ToValue(), Date.ToValue(), Weekday.ToValue(), Status.ToValue(),
+                Use24Hour, ShowSeconds, ShowDate, ShowWeekday, ShowStatus);
+            value.Validate();
+            return value;
+        }
+    }
     private sealed record Presentation(bool ShowLunchBetweenPeriods4And5);
     private sealed record Override(string Date, Cell[]? Timetable, Period[]? PeriodSchedule);
     private sealed record Cell(string SchoolDay, int PeriodNumber, string SubjectText, string ClassText)

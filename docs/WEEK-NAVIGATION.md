@@ -200,3 +200,13 @@ exit-code-zero is not asserted. Final profile hash and stderr are checked with f
   only documentation acceptance/evidence changed afterward. Final commit/push identity and
   remote synchronization are reported in the completion response rather than embedded as a
   self-referential commit hash in this document.
+
+## Styling follow-up — 2026-09-11
+
+The deferred arrow/header polish is now **IMPLEMENTED — PENDING NATIVE REVIEW** in
+[Display Settings](DISPLAY-SETTINGS.md). ‹/› have local hover/pressed/focus styles;
+M/d is visually stronger than weekday and Today has a softer background. Five-column,
+35-cell, date-provenance, navigation, transient viewed week and highlight geometry
+contracts are unchanged. Header display settings do not alter column date formatting.
+Schema 2 is introduced solely for display inputs (ADR 0014), never for viewed week.
+The previous milestone's native approval does not approve these new visual candidates.

@@ -275,3 +275,23 @@ Restart initializes the containing actual week from the shared clock; saved over
 remain available when their exact dates are browsed. New isolated TEMP integration tests
 exercise this wiring and verify unchanged profile bytes/mtime through navigation/restart.
 The navigation milestone's verification/native status is recorded in [Week Navigation](WEEK-NAVIGATION.md).
+
+## Schema 2 display extension — 2026-09-11
+
+**IMPLEMENTED — PENDING NATIVE REVIEW**. [ADR 0014](adr/0014-display-presets-and-schema-v2.md)
+extends schema 1 with required profile.display and retains all previous inputs unchanged.
+Historical schema-1-only/no-Settings statements above describe the previous milestone.
+
+Explicit strict v1 DTOs load original profiles as valid writable state with Standard display
+defaults. No load rewrite, degraded fallback or data loss occurs for a valid v1 profile.
+The next successful save of any feature writes the complete v2 profile. v2 additionally
+validates layout/preset, each logical source/family/size/weight/style and format/visibility.
+Missing installed families remain valid logical identities and use local rendering fallback.
+Paths/remote font references and unsupported source kinds are rejected.
+
+SaveDisplay builds its complete candidate from the latest committed other inputs; all other
+save callbacks retain committed Display, excluding uncommitted preview. The same atomic
+temporary write/Flush/rename then publish boundary, writer lease, expected-byte guard and
+failed-load read-only safety remain. No startup/Preview/Cancel/exit write or downgrade support.
+Older v1-only apps may reject schema 2. Full details and test/native evidence:
+[Display Settings](DISPLAY-SETTINGS.md).

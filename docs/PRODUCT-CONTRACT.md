@@ -851,3 +851,31 @@ future week-browsing requirement.
 
 Native UX approved 2026-09-11; arrow/header visual polish is deferred to the future
 styling/display milestone by explicit user decision, without expanding this implementation.
+
+## Display Settings / Presets — approved 2026-09-11
+
+**IMPLEMENTED — PENDING NATIVE REVIEW**. [ADR 0014](adr/0014-display-presets-and-schema-v2.md),
+[behavior and evidence](DISPLAY-SETTINGS.md). This supersedes earlier PLANNED/no-Settings
+statements only for this requested milestone and updates A4/A8's presentation defaults.
+
+Four presets (표준/디지털/컴팩트/미니멀) apply initial values to Draft, then permit independent
+Time/Date/Weekday/Status font, size, weight and style. Layout never enforces a particular font.
+System family selection and safe missing-family fallback are implemented. 24/12-hour,
+Korean AM/PM, seconds and date/weekday/status visibility are configurable. Full current date,
+time and status stay separate, deriving from the same shared ApplicationTimeSnapshot.
+Week navigation M/d/weekday column format and all Core status/countdown semantics are unchanged.
+
+P2 Preview/Apply/OK/Cancel/X and last-successful-Apply baseline apply to all display changes,
+preset selection and Reset. Reset previews defaults of the selected preset. Font/layout changes
+remeasure the existing content minimum; normal ticks retain geometry. Oversized header width
+can scroll without crashing or forcing unbounded window width. Preferred geometry persistence
+and full responsive layout remain outside this milestone.
+
+Schema 2 adds display input to the whole profile; strict v1 compatibility injects Standard
+defaults without rewriting on load or losing any original input. Next successful user save
+writes v2. Saving failure retains disk/committed/baseline and the editable preview; no partial
+commit. No downgrade support. Existing missing/corrupt/unsupported safety rules remain.
+
+Built-in preset and per-element/system font implementation awaits native review. Bundled and
+online catalogs/download/cache, custom font import, named user presets and full colors/themes
+remain PLANNED. Final Fluent redesign is deferred.

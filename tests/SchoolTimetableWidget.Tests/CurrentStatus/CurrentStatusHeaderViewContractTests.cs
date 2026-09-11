@@ -67,7 +67,8 @@ public class CurrentStatusHeaderViewContractTests
     {
         var view = new CurrentStatusHeaderView();
         var border = Assert.IsType<Border>(view.Content);
-        var grid = Assert.IsType<Grid>(border.Child);
+        var scroll = Assert.IsType<ScrollViewer>(border.Child);
+        var grid = Assert.IsType<Grid>(scroll.Content);
         var time = TextBlockOf(view, "CurrentTimeTextBlock");
         var status = TextBlockOf(view, "StatusTextBlock");
 
@@ -78,8 +79,8 @@ public class CurrentStatusHeaderViewContractTests
         Assert.True(grid.ColumnDefinitions[0].Width.Value > 0);
         Assert.True(grid.ColumnDefinitions[1].Width.IsAbsolute);
         Assert.True(grid.ColumnDefinitions[2].Width.IsStar);
-        Assert.Equal(0, Grid.GetColumn(TextBlockOf(view, "CurrentDateTextBlock")));
-        Assert.Equal(1, Grid.GetColumn(time));
+        Assert.Equal(0, Grid.GetColumn((FrameworkElement)view.FindName("DateGroup")));
+        Assert.Equal(1, Grid.GetColumn((FrameworkElement)view.FindName("TimeGroup")));
         Assert.Equal(2, Grid.GetColumn(status));
         Assert.Equal(TextWrapping.NoWrap, time.TextWrapping);
         Assert.Equal(TextWrapping.NoWrap, status.TextWrapping);
