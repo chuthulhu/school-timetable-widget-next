@@ -465,6 +465,12 @@ Migration/restore 중에는 기존 Draft, geometry intent, debounce write가 새
 | Cancel / X | 마지막 성공 Apply baseline으로 controls + preview + owned runtime state 완전 복원 후 닫기 | baseline 이전으로 되돌리지 않음; 새 저장/OS 부작용 없음 |
 | 검증/저장 실패 | Draft/dialog 유지, 오류 표시, 수정/재시도 가능 | committed/baseline 불변, partial commit 없음 |
 
+표시 설정의 모든 열기 진입점(Ctrl+,, ContextMenu, 동일 command)은 하나의 창 소유권
+경계를 사용한다. 이미 열려 있으면 기존 창을 활성화하고 새 창/세션을 생성하지 않는다.
+중복 열기는 Draft, Preview, 마지막 Apply baseline 및 Draft 프리셋 목록을 보존하며
+저장하지 않는다. 닫은 뒤 다시 열면 committed에서 새 세션을 시작한다.
+**APPROVED — 2026-09-11 P2 duplicate-open follow-up.**
+
 예: 10pt에서 Open → 18pt Apply 성공 → 24pt Preview → Cancel/X는 18pt로 돌아간다.
 18pt Apply가 실패하면 24pt 편집을 계속할 수 있으나 Cancel 기준은 여전히 10pt다.
 Preview와 UI 변환만으로 opacity/alpha를 잃거나 signal 재진입으로 baseline을 바꾸지 않는다.

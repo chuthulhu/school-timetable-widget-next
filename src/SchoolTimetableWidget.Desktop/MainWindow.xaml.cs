@@ -10,7 +10,7 @@ namespace SchoolTimetableWidget.Desktop;
 /// <summary>Composes feature views without owning their calculation or timer lifecycle.</summary>
 public partial class MainWindow : Window
 {
-    public MainWindow(CurrentStatusHeaderViewModel headerViewModel, WeeklyTimetableViewModel timetableViewModel, PeriodScheduleEditor? scheduleEditor = null, string persistenceNotice = "", RuntimeDisplaySettings? display = null)
+    public MainWindow(CurrentStatusHeaderViewModel headerViewModel, WeeklyTimetableViewModel timetableViewModel, PeriodScheduleEditor? scheduleEditor = null, string persistenceNotice = "", RuntimeDisplaySettings? display = null, Action<DisplaySettingsWindow>? showDisplaySettings = null)
     {
         ArgumentNullException.ThrowIfNull(headerViewModel);
         ArgumentNullException.ThrowIfNull(timetableViewModel);
@@ -20,12 +20,9 @@ public partial class MainWindow : Window
         StatusHeader.DataContext = headerViewModel;
         Timetable.DataContext = timetableViewModel;
         Timetable.ScheduleEditor = scheduleEditor;
-        CommandBindings.Add(new CommandBinding(DisplaySettingsCommands.Open, (_, _) =>
-        {
-            if (display is null) return;
-            var session = display.Open();
-            try { new DisplaySettingsWindow(session) { Owner = this }.ShowDialog(); }
-            finally { session.Cancel(); }
-        }, (_, e) => e.CanExecute = display is not null));
+        var settingsWindow = display is null ? null : new DisplaySettingsWindowOwner(this, display, showDisplaySettings);
+        CommandBindings.Add(new CommandBinding(DisplaySettingsCommands.Open,
+            (_, e) => { settingsWindow?.Open(); e.Handled = true; },
+            (_, e) => { e.CanExecute = settingsWindow is not null; e.Handled = true; }));
     }
 }

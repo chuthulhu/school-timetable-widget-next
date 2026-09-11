@@ -1348,3 +1348,12 @@ no template lookup, clock read or new refresh mechanism. Small name/delete windo
 only input/confirmation; library validation and transactions remain in feature classes.
 ProfileJson adds strict v3 DTOs with reference-free payloads, retaining separate strict v1/v2
 readers. No Core change, new dependency, global AppState or font-provider framework.
+
+DisplaySettingsWindowOwner is the single display-window boundary used by MainWindow's
+shared routed command (keyboard, main/header and timetable context menus). It publishes
+its window reference before ShowDialog enters a nested dispatcher loop, activates an
+existing window on reentry, and releases the reference on Closed and modal unwind.
+The existing session Cancel fallback also runs if construction/presentation fails; errors
+are not swallowed. RuntimeDisplaySettings still rejects multiple active session owners.
+The optional presentation callback supports unshown WPF command/lifecycle regression tests;
+native activation, keyboard and modal-loop behavior require separate Windows evidence.

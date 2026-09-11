@@ -430,3 +430,76 @@ was released; no manual launch, production-data change or system-setting change 
   limitations and evidence attribution are preserved above.
 - The original milestone authorizes committing and ordinary fast-forward push to
   chuthulhu/school-timetable-widget-next origin/main after these successful checks.
+
+## P2 duplicate settings open — 2026-09-11 follow-up
+
+Correction to the final prior-run attribution: post-push inspection of PID 83600's stderr
+confirmed an unhandled InvalidOperationException ("표시 설정이 이미 열려 있습니다.") from
+RuntimeDisplaySettings.Open via MainWindow's command handler. Its absence was a crash,
+not normal shutdown. This supersedes the earlier uncertain-exit and no-outstanding-P2
+statements; the separate earlier successful native-X evidence remains valid.
+
+The handler called Open unconditionally while ShowDialog's nested dispatcher was active.
+DisplaySettingsWindowOwner now guards every shared command entry before session creation,
+activates the existing window and preserves Draft, Preview, library and Apply baseline.
+Closed/finally release ownership; the session's existing save/cancel behavior and runtime
+one-active-session invariant remain unchanged. No blanket exception handling, persistence,
+schema, clock or unrelated feature change is introduced.
+
+Validation status: regression and native checks in progress; this follow-up is not yet
+complete or authorized for commit/push until both have passed.
+
+Automated follow-up evidence:
+- Nine new unshown WPF regression cases cover repeated commands, incomplete Draft/error,
+  preview and library identity, last-Apply rollback, all three routed targets/context-menu
+  bindings, fresh reopen and cleanup after a presentation exception. The existing 751
+  tests remain; final restore/build/test passed **760/760, warnings/errors 0**.
+- Final normal-verbosity log:
+  C:/Users/ADMIN/AppData/Local/Temp/duplicate-settings-final-bf32367eb7f4431eb8ca203fca978f1b.log.
+- The first full run had 759/760: existing UserPresetViewTests.SaveNameDialogValidatesThenSelectorAndManagementReflectUserPreset
+  observed null SelectedValue after Save As. Its isolated rerun and the complete final rerun
+  passed without source/test changes. The cause of that intermittent observation has not
+  been established; it is not claimed fixed by this window-ownership change. First-run log:
+  C:/Users/ADMIN/AppData/Local/Temp/duplicate-settings-validation-4213fc0641b04ac8bea3eacf291e18f1.log.
+
+Native diagnostic started directly outside the sandbox with normal production window flags,
+--timetable-preview and a unique TEMP --dev-profile-directory. PID 92248 started at
+2026-09-11T14:37:21.8537901+09:00, window 8392858. TEMP directory:
+C:/Users/ADMIN/AppData/Local/Temp/duplicate-settings-native-2333969b614c417d900c3d0286e8cdda.
+The user-saved diagnostic fixture was copied there; production settings were not used.
+Initial SHA-256: CEF65CC61D5F9F4502B53A3ED17852878EC575493B30389FA167874126DD7BEA.
+Window discovery and screenshot/accessibility capture succeeded. The first Ctrl+, action
+failed before input with "failed to activate captured window". After fresh discovery and
+rehydration, one explicit activation retry returned the same error. Native input is paused
+pending the user bringing that existing window forward; this is an activation failure,
+not a launch/capture failure or a completed native regression.
+
+Native continuation and completion:
+- The user brought the existing window forward after the activation failure; Codex then
+  performed the remaining inputs directly. No relaunch or manual test checklist was needed.
+- Native Ctrl+, opened Settings. Codex unchecked seconds without Apply, observed the
+  seconds-free header Preview, then sent Ctrl+, three more times. Each capture retained
+  one Settings window (same accessibility entry 120), the same user preset/font and the
+  unchecked seconds Draft. No crash, new window or reset was observed.
+- Native right-click attempts on the exposed header/main and timetable areas while Settings
+  was modal did not open a context menu or change the Draft/window. Thus native menu
+  duplication was blocked by the modal interaction; execution of an already-open menu
+  command is covered by the unshown routed-command tests, not claimed as a native click.
+- Cancel closed Settings and restored seconds. Ctrl+, reopened a fresh window with saved
+  seconds/preset/font. Its title X closed normally. With Settings closed, native header
+  right-click exposed 표시 설정...; choosing that item opened Settings normally. Another
+  Ctrl+, retained that window (accessibility entry 329), then its title X closed normally.
+- Codex clicked the main title-bar X. A wait on the verified owned PID observed exit;
+  subsequent process lookup confirmed PID 92248 absent. stderr remained **0 bytes**.
+  ExitCode was unavailable from the attached Process object (null), so no numeric process
+  exit-code claim is made. No force termination was used.
+- TEMP profile SHA-256 and last-write time were unchanged during repeated opening and after
+  shutdown: CEF65CC61D5F9F4502B53A3ED17852878EC575493B30389FA167874126DD7BEA,
+  2026-09-11T04:22:57.4600817Z. No persistence write occurred. Original fixture untouched.
+  run.json and exit-result.json in the diagnostic directory retain launch/exit evidence.
+
+Follow-up status: implemented and native regression confirmed within the precisely stated
+menu/modal evidence above. No additional confirmed P1/P2 was found. The unrelated intermittent
+existing UI-test observation remains recorded, not silently relabeled a fix. Final automated
+checks passed 760 tests with warnings/errors 0; production source did not change afterward.
+Commit/push is authorized by the user's follow-up request after these checks.

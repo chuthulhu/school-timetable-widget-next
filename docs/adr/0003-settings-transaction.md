@@ -78,3 +78,12 @@ policy. Corrupt/unsupported profiles remain untouched; temporary defaults are la
 all commits blocked. No automatic recovery. The original DEFERRED crash-recovery entry
 continues to apply to future backup/restore and broader durability design, not to this
 now-approved native load-failure UX. Settings P2 behavior remains unchanged.
+
+## Display settings duplicate-open follow-up — 2026-09-11
+
+Accepted by the explicit P2 follow-up request. All display-settings open entries share a
+feature-specific window owner. While its modal window is open, Open activates that window
+without creating another session, changing Draft/Preview/library/baseline or saving.
+Closed releases window ownership; the next Open starts from committed state. The runtime
+single-session invariant remains enforced. This resolves display-window reentrancy only,
+not broader restore/import concurrency or a generic modal-management policy.
