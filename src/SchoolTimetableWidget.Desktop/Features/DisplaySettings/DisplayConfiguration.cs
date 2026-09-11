@@ -10,13 +10,13 @@ public sealed record FontSelection(FontSourceKind Source, string Family);
 public sealed record ElementTypography(FontSelection Font, double Size, DisplayFontWeight Weight, DisplayFontStyle Style);
 
 /// <summary>Immutable Desktop display inputs, independent of WPF and storage DTOs.</summary>
-public sealed record DisplayConfiguration(DisplayPreset Preset, DisplayLayout Layout,
+public sealed record DisplayConfiguration(DisplayPresetReference Preset, DisplayLayout Layout,
     ElementTypography Time, ElementTypography Date, ElementTypography Weekday, ElementTypography Status,
     bool Use24Hour, bool ShowSeconds, bool ShowDate, bool ShowWeekday, bool ShowStatus)
 {
     public void Validate()
     {
-        if (!Enum.IsDefined(Preset) || !Enum.IsDefined(Layout)) throw new ArgumentException("표시 스타일을 확인해 주세요.");
+        if (Preset is null || !Enum.IsDefined(Layout)) throw new ArgumentException("표시 스타일을 확인해 주세요.");
         ValidateElement(Time, 10, 96);
         ValidateElement(Date, 8, 48);
         ValidateElement(Weekday, 8, 48);

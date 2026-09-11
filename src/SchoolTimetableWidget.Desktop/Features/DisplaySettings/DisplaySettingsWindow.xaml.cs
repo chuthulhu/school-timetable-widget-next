@@ -34,13 +34,24 @@ public sealed class MissingFontMessageConverter : IValueConverter
 public partial class DisplaySettingsWindow : Window
 {
     public DisplaySettingsSession Session { get; }
-    public DisplaySettingsWindow(DisplaySettingsSession session)
+    private readonly Action<Window> _showPresetDialog;
+    public DisplaySettingsWindow(DisplaySettingsSession session, Action<Window>? showPresetDialog = null)
     {
         if (session.IsClosed) throw new ArgumentException("닫힌 설정입니다.", nameof(session));
         Session = session;
+        _showPresetDialog = showPresetDialog ?? (dialog => { dialog.Owner = this; dialog.ShowDialog(); });
         InitializeComponent();
         DataContext = session;
     }
+    private void SaveAsPreset_Click(object sender, RoutedEventArgs e) =>
+        _showPresetDialog(new PresetNameWindow("내 프리셋으로 저장", "", Session.TrySaveAs, () => Session.ErrorText));
+    private void RenamePreset_Click(object sender, RoutedEventArgs e)
+    {
+        if (Session.Preset.UserId is not { } id) return;
+        _showPresetDialog(new PresetNameWindow("이름 변경", Session.Presets.Get(id).Name, Session.TryRename, () => Session.ErrorText));
+    }
+    private void UpdatePreset_Click(object sender, RoutedEventArgs e) => Session.TryUpdate();
+    private void DeletePreset_Click(object sender, RoutedEventArgs e) => _showPresetDialog(new DeletePresetWindow(Session));
     private void Reset_Click(object sender, RoutedEventArgs e) => Session.Reset();
     private void Apply_Click(object sender, RoutedEventArgs e) => Session.TryApply();
     private void Accept_Click(object sender, RoutedEventArgs e) { if (Session.TryAccept()) Close(); }

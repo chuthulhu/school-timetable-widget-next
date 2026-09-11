@@ -11,12 +11,12 @@ public class DisplayTransactionTests
     public void PresetPreviewAndCancelDoNotWrite()
     {
         var saves = 0;
-        var owner = new RuntimeDisplaySettings(DisplayPresets.Create(DisplayPreset.Standard), _ => { saves++; return null; });
+        var owner = new RuntimeDisplaySettings(DisplayPresets.Create(DisplayPreset.Standard), UserDisplayPresetLibrary.Empty, (_, _) => { saves++; return null; });
         var session = owner.Open();
         session.Preset = DisplayPreset.Digital;
-        Assert.Equal(DisplayPreset.Digital, owner.Current.Preset); Assert.Equal(DisplayPreset.Standard, owner.Committed.Preset);
+        Assert.Equal(DisplayPreset.Digital, owner.Current.Preset.BuiltIn); Assert.Equal(DisplayPreset.Standard, owner.Committed.Preset.BuiltIn);
         session.Cancel();
-        Assert.Equal(owner.Committed, owner.Current); Assert.Equal(DisplayPreset.Standard, session.Preset);
+        Assert.Equal(owner.Committed, owner.Current); Assert.Equal(DisplayPreset.Standard, session.Preset.BuiltIn);
         Assert.Equal(0, saves); Assert.True(session.IsClosed);
     }
 
@@ -32,7 +32,7 @@ public class DisplayTransactionTests
         session.Preset = DisplayPreset.Minimal;
         session.Cancel();
         Assert.Equal(baseline, owner.Current); Assert.Equal(baseline, owner.Committed);
-        Assert.Equal(DisplayPreset.Digital, session.Preset);
+        Assert.Equal(DisplayPreset.Digital, session.Preset.BuiltIn);
         Assert.Equal("56", session.Elements[0].SizeText);
         Assert.Equal(DisplayFontWeight.Bold, session.Elements[1].Weight);
     }
@@ -52,14 +52,14 @@ public class DisplayTransactionTests
     public void FailureRetainsDraftAndBaselineThenRetryAcceptCloses()
     {
         var fail = true;
-        var owner = new RuntimeDisplaySettings(DisplayPresets.Create(DisplayPreset.Standard), _ => fail ? "저장 실패" : null);
+        var owner = new RuntimeDisplaySettings(DisplayPresets.Create(DisplayPreset.Standard), UserDisplayPresetLibrary.Empty, (_, _) => fail ? "저장 실패" : null);
         var session = owner.Open(); session.Preset = DisplayPreset.Digital;
         Assert.False(session.TryAccept()); Assert.False(session.IsClosed);
-        Assert.Equal("저장 실패", session.ErrorText); Assert.Equal(DisplayPreset.Standard, owner.Committed.Preset);
-        Assert.Equal(DisplayPreset.Digital, session.Preset); Assert.Equal(DisplayPreset.Digital, owner.Current.Preset);
+        Assert.Equal("저장 실패", session.ErrorText); Assert.Equal(DisplayPreset.Standard, owner.Committed.Preset.BuiltIn);
+        Assert.Equal(DisplayPreset.Digital, session.Preset.BuiltIn); Assert.Equal(DisplayPreset.Digital, owner.Current.Preset.BuiltIn);
         fail = false;
         Assert.True(session.TryAccept()); Assert.True(session.IsClosed);
-        session.Cancel(); Assert.Equal(DisplayPreset.Digital, owner.Current.Preset);
+        session.Cancel(); Assert.Equal(DisplayPreset.Digital, owner.Current.Preset.BuiltIn);
         Assert.False(session.TryApply());
     }
 
@@ -71,16 +71,16 @@ public class DisplayTransactionTests
         var runtime = new ProfileRuntime(profile, () => { }, _ => { });
         var session = runtime.Display.Open(); session.Preset = DisplayPreset.Digital;
         Assert.Null(profile.SaveLunch(true));
-        Assert.Equal(DisplayPreset.Standard, profile.Current.Display.Preset);
+        Assert.Equal(DisplayPreset.Standard, profile.Current.Display.Preset.BuiltIn);
         Assert.True(session.TryApply());
         Assert.True(profile.Current.ShowLunch);
         Assert.Null(profile.SaveTimetable(profile.Current.Timetable));
         Assert.Null(profile.SaveSchedule(profile.Current.Schedule));
         Assert.Null(profile.SaveOverrides(profile.Current.Overrides));
-        Assert.Equal(DisplayPreset.Digital, ProfileJson.Deserialize(File.ReadAllBytes(temp.File)).Display.Preset);
+        Assert.Equal(DisplayPreset.Digital, ProfileJson.Deserialize(File.ReadAllBytes(temp.File)).Display.Preset.BuiltIn);
         session.Preset = DisplayPreset.Minimal; session.Cancel();
         Assert.True(profile.Current.ShowLunch);
-        Assert.Equal(DisplayPreset.Digital, runtime.Display.Current.Preset);
+        Assert.Equal(DisplayPreset.Digital, runtime.Display.Current.Preset.BuiltIn);
     }
 
     [Theory]
@@ -94,11 +94,11 @@ public class DisplayTransactionTests
         using var store = new JsonProfileStore(temp.Directory, stage =>
         { if (fail && (int)stage == failureStage) throw new IOException("Injected"); });
         var profile = new ProfileSession(store);
-        var owner = new RuntimeDisplaySettings(profile.Current.Display, profile.SaveDisplay);
+        var owner = new RuntimeDisplaySettings(profile.Current.Display, profile.Current.DisplayPresets, profile.SaveDisplay);
         var session = owner.Open(); session.Preset = DisplayPreset.Digital;
         Assert.False(session.TryApply()); Assert.NotEmpty(session.ErrorText);
         Assert.Equal(before, File.ReadAllBytes(temp.File));
-        Assert.Equal(DisplayPreset.Standard, owner.Committed.Preset); Assert.Equal(owner.Committed, profile.Current.Display);
+        Assert.Equal(DisplayPreset.Standard, owner.Committed.Preset.BuiltIn); Assert.Equal(owner.Committed, profile.Current.Display);
         session.Cancel(); Assert.Equal(owner.Committed, owner.Current);
         fail = false; session = owner.Open(); session.Preset = DisplayPreset.Digital;
         Assert.True(session.TryApply());
@@ -114,6 +114,6 @@ public class DisplayTransactionTests
         Assert.Throws<InvalidOperationException>(() => owner.Open());
         a.Cancel(); var b = owner.Open(); b.Preset = DisplayPreset.Digital;
         a.Elements[0].SizeText = "90"; a.Preset = DisplayPreset.Minimal; a.Reset(); a.Cancel();
-        Assert.Equal(DisplayPreset.Digital, owner.Current.Preset);
+        Assert.Equal(DisplayPreset.Digital, owner.Current.Preset.BuiltIn);
     }
 }

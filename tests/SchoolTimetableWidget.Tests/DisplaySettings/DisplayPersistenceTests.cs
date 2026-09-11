@@ -20,7 +20,7 @@ public class DisplayPersistenceTests
     }
 
     [Fact]
-    public void V1LoadsAllInputsExactlyWithoutRewriteOrDegradationAndNextSaveWritesV2()
+    public void V1LoadsAllInputsExactlyWithoutRewriteOrDegradationAndNextSaveWritesV3()
     {
         using var temp = new TempProfile();
         var original = V1(); File.WriteAllBytes(temp.File, original);
@@ -34,22 +34,24 @@ public class DisplayPersistenceTests
             var expected = JsonNode.Parse(original)!["profile"];
             var restored = JsonNode.Parse(ProfileJson.Serialize(profile.Current))!["profile"]!;
             restored.AsObject().Remove("display");
+            restored.AsObject().Remove("displayPresets");
             Assert.True(JsonNode.DeepEquals(expected, restored)); // all cells, schedules, dates, lunch and precision
             Assert.Equal(original, File.ReadAllBytes(temp.File)); Assert.Equal(modified, File.GetLastWriteTimeUtc(temp.File));
             Assert.Null(profile.SaveDisplay(DisplayPresets.Create(DisplayPreset.Digital)));
             var saved = JsonNode.Parse(File.ReadAllBytes(temp.File))!;
-            Assert.Equal(2, saved["schemaVersion"]!.GetValue<int>());
+            Assert.Equal(3, saved["schemaVersion"]!.GetValue<int>());
             saved["profile"]!.AsObject().Remove("display");
+            saved["profile"]!.AsObject().Remove("displayPresets");
             Assert.True(JsonNode.DeepEquals(expected, saved["profile"]));
         }
         using var restart = new JsonProfileStore(temp.Directory);
-        Assert.Equal(DisplayPreset.Digital, restart.Load().Snapshot.Display.Preset);
+        Assert.Equal(DisplayPreset.Digital, restart.Load().Snapshot.Display.Preset.BuiltIn);
     }
 
     [Theory]
     [InlineData(DisplayPreset.Standard)] [InlineData(DisplayPreset.Digital)]
     [InlineData(DisplayPreset.Compact)] [InlineData(DisplayPreset.Minimal)]
-    public void V2RoundTripPreservesAllOverridesAndLogicalMissingFont(DisplayPreset preset)
+    public void V3RoundTripPreservesAllOverridesAndLogicalMissingFont(DisplayPreset preset)
     {
         var sample = ProfileStorageTests.Sample();
         var display = DisplayPresets.Create(preset);
@@ -72,24 +74,24 @@ public class DisplayPersistenceTests
         [
             ("missing display", p => p.Remove("display")),
             ("null display", p => p["display"] = null),
-            ("missing time", p => p["display"]!.AsObject().Remove("time")),
-            ("null time", p => p["display"]!["time"] = null),
-            ("null font", p => p["display"]!["time"]!["font"] = null),
-            ("missing font source", p => p["display"]!["time"]!["font"]!.AsObject().Remove("source")),
-            ("future source", p => p["display"]!["time"]!["font"]!["source"] = "OnlineDownloaded"),
-            ("path family", p => p["display"]!["time"]!["font"]!["family"] = "C:\\font.ttf"),
-            ("empty family", p => p["display"]!["date"]!["font"]!["family"] = ""),
-            ("null family", p => p["display"]!["date"]!["font"]!["family"] = null),
-            ("zero size", p => p["display"]!["time"]!["size"] = 0),
-            ("oversize", p => p["display"]!["weekday"]!["size"] = 49),
-            ("invalid size type", p => p["display"]!["status"]!["size"] = "large"),
-            ("invalid weight", p => p["display"]!["status"]!["weight"] = "Heavy"),
-            ("invalid style", p => p["display"]!["date"]!["style"] = "0"),
-            ("unknown layout", p => p["display"]!["layout"] = "Other"),
+            ("missing time", p => p["display"]!["settings"]!.AsObject().Remove("time")),
+            ("null time", p => p["display"]!["settings"]!["time"] = null),
+            ("null font", p => p["display"]!["settings"]!["time"]!["font"] = null),
+            ("missing font source", p => p["display"]!["settings"]!["time"]!["font"]!.AsObject().Remove("source")),
+            ("future source", p => p["display"]!["settings"]!["time"]!["font"]!["source"] = "OnlineDownloaded"),
+            ("path family", p => p["display"]!["settings"]!["time"]!["font"]!["family"] = "C:\\font.ttf"),
+            ("empty family", p => p["display"]!["settings"]!["date"]!["font"]!["family"] = ""),
+            ("null family", p => p["display"]!["settings"]!["date"]!["font"]!["family"] = null),
+            ("zero size", p => p["display"]!["settings"]!["time"]!["size"] = 0),
+            ("oversize", p => p["display"]!["settings"]!["weekday"]!["size"] = 49),
+            ("invalid size type", p => p["display"]!["settings"]!["status"]!["size"] = "large"),
+            ("invalid weight", p => p["display"]!["settings"]!["status"]!["weight"] = "Heavy"),
+            ("invalid style", p => p["display"]!["settings"]!["date"]!["style"] = "0"),
+            ("unknown layout", p => p["display"]!["settings"]!["layout"] = "Other"),
             ("numeric preset", p => p["display"]!["preset"] = 0),
-            ("missing seconds", p => p["display"]!.AsObject().Remove("showSeconds")),
-            ("null visibility", p => p["display"]!["showDate"] = null),
-            ("extra setting", p => p["display"]!["theme"] = "dark")
+            ("missing seconds", p => p["display"]!["settings"]!.AsObject().Remove("showSeconds")),
+            ("null visibility", p => p["display"]!["settings"]!["showDate"] = null),
+            ("extra setting", p => p["display"]!["settings"]!["theme"] = "dark")
         ];
         foreach (var (name, mutate) in cases)
         {
@@ -101,7 +103,7 @@ public class DisplayPersistenceTests
 
     [Theory]
     [MemberData(nameof(InvalidDisplay))]
-    public void InvalidV2FailsClosedWithoutPartialLoadOrOverwrite(string name, string json)
+    public void InvalidV3FailsClosedWithoutPartialLoadOrOverwrite(string name, string json)
     {
         Assert.NotEmpty(name);
         using var temp = new TempProfile(); File.WriteAllText(temp.File, json);
@@ -110,7 +112,7 @@ public class DisplayPersistenceTests
         {
             var profile = new ProfileSession(store);
             Assert.Equal(ProfileLoadState.Invalid, profile.LoadResult.State);
-            var runtime = new RuntimeDisplaySettings(profile.Current.Display, profile.SaveDisplay);
+            var runtime = new RuntimeDisplaySettings(profile.Current.Display, profile.Current.DisplayPresets, profile.SaveDisplay);
             var session = runtime.Open(); session.Preset = DisplayPreset.Digital;
             Assert.False(session.TryAccept()); Assert.False(session.IsClosed);
             session.Cancel();

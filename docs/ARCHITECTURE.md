@@ -1335,3 +1335,16 @@ callback and preserves Current.Display in all other saves. Separate strict v1 an
 DTOs ensure v1 upgrade in memory only, followed by v2 on the next successful user save.
 Preview never enters a save of another feature. JSON shape, UI, fallback, tests and evidence
 are detailed in Display Settings; native UX acceptance was confirmed on 2026-09-11.
+
+## User display preset ownership — 2026-09-11
+
+**IMPLEMENTED — NATIVE REVIEW CONFIRMED**. [ADR 0015](adr/0015-user-display-presets-and-schema-v3.md).
+DisplayPresetReference distinguishes built-in enum and user Guid. UserDisplayPreset and its
+copied read-only library are immutable Desktop values. DisplaySettingsSession owns Draft and
+last-successful-Apply library revisions; RuntimeDisplaySettings publishes display and library
+only after a single ProfileSession SaveDisplay succeeds. Other feature candidates preserve
+Current.DisplayPresets. Rendering still consumes the explicit DisplayConfiguration and uses
+no template lookup, clock read or new refresh mechanism. Small name/delete windows handle
+only input/confirmation; library validation and transactions remain in feature classes.
+ProfileJson adds strict v3 DTOs with reference-free payloads, retaining separate strict v1/v2
+readers. No Core change, new dependency, global AppState or font-provider framework.

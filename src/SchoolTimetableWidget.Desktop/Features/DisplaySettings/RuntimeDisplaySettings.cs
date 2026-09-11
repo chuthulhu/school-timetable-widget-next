@@ -1,11 +1,21 @@
 namespace SchoolTimetableWidget.Desktop.Features.DisplaySettings;
 
-/// <summary>One display editor owns preview; persistence success precedes commitment.</summary>
-public sealed class RuntimeDisplaySettings(DisplayConfiguration initial, Func<DisplayConfiguration, string?> save)
+/// <summary>One display editor owns preview; one save publishes display and library together.</summary>
+public sealed class RuntimeDisplaySettings
 {
+    private readonly Func<DisplayConfiguration, UserDisplayPresetLibrary, string?> _save;
     private DisplaySettingsSession? _active;
-    public DisplayConfiguration Committed { get; private set; } = Validated(initial);
-    public DisplayConfiguration Current { get; private set; } = Validated(initial);
+    public RuntimeDisplaySettings(DisplayConfiguration initial, UserDisplayPresetLibrary presets,
+        Func<DisplayConfiguration, UserDisplayPresetLibrary, string?> save)
+    {
+        presets.ValidateReference(initial);
+        Committed = Current = initial;
+        CommittedPresets = presets;
+        _save = save;
+    }
+    public DisplayConfiguration Committed { get; private set; }
+    public DisplayConfiguration Current { get; private set; }
+    public UserDisplayPresetLibrary CommittedPresets { get; private set; }
     public event EventHandler? Changed;
     public DisplaySettingsSession Open()
     {
@@ -19,14 +29,14 @@ public sealed class RuntimeDisplaySettings(DisplayConfiguration initial, Func<Di
         Current = value;
         Changed?.Invoke(this, EventArgs.Empty);
     }
-    internal string? Commit(DisplayConfiguration candidate)
+    internal string? Commit(DisplayConfiguration candidate, UserDisplayPresetLibrary presets)
     {
-        candidate.Validate();
-        var error = save(candidate);
+        presets.ValidateReference(candidate);
+        var error = _save(candidate, presets);
         if (error is not null) return error;
         Committed = candidate;
+        CommittedPresets = presets;
         Preview(candidate);
         return null;
     }
-    private static DisplayConfiguration Validated(DisplayConfiguration value) { value.Validate(); return value; }
 }

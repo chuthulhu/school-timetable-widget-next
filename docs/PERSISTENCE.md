@@ -295,3 +295,17 @@ temporary write/Flush/rename then publish boundary, writer lease, expected-byte 
 failed-load read-only safety remain. No startup/Preview/Cancel/exit write or downgrade support.
 Older v1-only apps may reject schema 2. Full details and test/native evidence:
 [Display Settings](DISPLAY-SETTINGS.md).
+
+## Schema v3 user library — 2026-09-11
+
+**IMPLEMENTED — NATIVE REVIEW CONFIRMED**. [ADR 0015](adr/0015-user-display-presets-and-schema-v3.md)
+supersedes the schema-v2 writer. profile.display stores an explicit discriminated preset
+reference and settings. profile.displayPresets stores user Guid/name/settings values only;
+built-in definitions and font binaries are never copied to the library. The whole library,
+payloads, normalized names and active reference validate before any commit or complete load.
+
+Separate strict v1/v2 readers upgrade in memory to empty libraries, preserving v2 display
+and every other original input. They remain writable and never rewrite at startup. The next
+successful user save writes v3. Display/library publish together after the existing one-file
+atomic save; other saves use committed library and cannot leak settings Draft. Failed load
+still preserves the entire original and blocks saving. Font availability is not corruption.

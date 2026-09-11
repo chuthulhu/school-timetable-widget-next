@@ -36,11 +36,17 @@
             <StackPanel Margin="0,0,12,0">
                 <DockPanel Margin="0,0,0,12">
                     <Label Content="표시 스타일" Target="{Binding ElementName=PresetSelector}" VerticalAlignment="Center" Width="100"/>
-                    <ComboBox x:Name="PresetSelector" ItemsSource="{x:Static local:DisplayChoices.Presets}"
+                    <ComboBox x:Name="PresetSelector" ItemsSource="{Binding PresetChoices}"
                               SelectedValuePath="Value" DisplayMemberPath="Label"
                               SelectedValue="{Binding Preset, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
                               AutomationProperties.Name="표시 스타일"/>
                 </DockPanel>
+                <WrapPanel Margin="0,0,0,10">
+                    <Button x:Name="SaveAsPresetButton" Content="내 프리셋으로 저장..." Click="SaveAsPreset_Click" Margin="0,0,8,6" Padding="10,6"/>
+                    <Button x:Name="RenamePresetButton" Content="이름 변경..." Click="RenamePreset_Click" IsEnabled="{Binding CanManageSelected}" Margin="0,0,8,6" Padding="10,6"/>
+                    <Button x:Name="UpdatePresetButton" Content="현재 설정으로 업데이트" Click="UpdatePreset_Click" IsEnabled="{Binding CanManageSelected}" Margin="0,0,8,6" Padding="10,6"/>
+                    <Button x:Name="DeletePresetButton" Content="내 프리셋 삭제..." Click="DeletePreset_Click" IsEnabled="{Binding HasUserPresets}" Margin="0,0,8,6" Padding="10,6"/>
+                </WrapPanel>
                 <WrapPanel Margin="0,0,0,6">
                     <CheckBox x:Name="Use24HourCheckBox" Content="24시간제" IsChecked="{Binding Use24Hour}"/>
                     <CheckBox x:Name="SecondsCheckBox" Content="초 표시" IsChecked="{Binding ShowSeconds}"/>

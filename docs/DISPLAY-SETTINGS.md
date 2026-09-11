@@ -234,3 +234,199 @@ v1/v2 DTOs, system-font fallback and same-snapshot display rendering; no outstan
 finding was identified within this inspected scope. git diff --check passed. Bundled/online
 fonts and the other explicitly deferred capabilities remain planned. Commit and ordinary
 fast-forward push are authorized by the original request after this accepted verification.
+
+## User-defined display presets — 2026-09-11
+
+**IMPLEMENTED — NATIVE REVIEW CONFIRMED**. Rename/update/delete and preset transaction
+persistence have the same accepted status. Authority: user milestone;
+[ADR 0015](adr/0015-user-display-presets-and-schema-v3.md).
+Start: main HEAD/origin/main 8cdcf6449b697b7fcfabfcf4728375e9fb391b5d, clean.
+
+표시 스타일에서 **기본 제공 · …**와 **내 프리셋 · …**를 구분합니다.
+**내 프리셋으로 저장...**은 현재 설정을 이름과 함께 임시 목록에 추가하고 선택합니다.
+이후 글꼴/크기 등을 바꿔도 원본은 그대로입니다. **기본값으로**는 현재 선택한 스타일의
+저장값을 미리 봅니다. **이름 변경...**은 이름만 바꾸며 **현재 설정으로 업데이트**를
+직접 눌러야 원본 설정을 교체합니다. 기본 제공 스타일은 변경할 수 없습니다.
+
+**내 프리셋 삭제...**에서 삭제할 항목을 선택하고 이름을 확인한 뒤 **삭제**합니다.
+현재 사용 중인 항목은 삭제가 막히며 다른 표시 스타일을 먼저 고르도록 안내합니다.
+삭제 목록 선택은 현재 표시 스타일을 바꾸지 않습니다. 이름은 앞뒤 공백 제거/NFC,
+60 UTF-16 단위 이내, 빈 이름/제어문자 금지, 내 프리셋끼리 대소문자 무시 중복 금지입니다.
+
+추가·이름 변경·업데이트·삭제 모두 **적용/확인** 때 표시 설정과 함께 한 번에 저장됩니다.
+**취소/X**는 마지막 적용 이후의 표시 미리보기와 프리셋 목록 변경을 모두 되돌립니다.
+저장 실패 시 기존 저장값을 유지하고 편집 내용을 남겨 재시도할 수 있습니다.
+Schema v3 saves stable identities and all display inputs without font files. Strict v1/v2
+compatibility, complete validation and existing missing-font fallback remain in effect.
+Preset import/export, bundled fonts and online font catalog remain **PLANNED**.
+
+Verification results will be recorded after execution. Automated WPF object/event checks
+are distinct from native keyboard/IME, OS focus behavior and human readability/UX approval.
+
+## User preset automated validation and self-audit — 2026-09-11
+
+- dotnet restore, dotnet build --no-restore, dotnet test --no-build --logger
+  "console;verbosity=normal": exit 0; **751 passed, 0 failed/skipped**, build warnings/errors 0.
+  Baseline 695 retained with 56 new cases. Log:
+  C:/Users/ADMIN/AppData/Local/Temp/user-presets-validation-be9a895300ad47faab1d66cc63b2ffe5.log.
+- Existing assertions were adapted to the explicit preset reference and schema-v3 writer;
+  no baseline tests were removed/skipped. One initial failure was an unchanged week-navigation
+  expectation of schema 2; the assertion now checks schema 3 while retaining the original
+  no-write/navigation/override invariants.
+- Fixed v1 and v2 fixtures verify writable/no-rewrite load and exact full-profile semantics,
+  including tick precision, date components and missing-font identities. New v3 cases cover
+  multiple Korean/Unicode names, duplicate IDs/names, missing/null/invalid payload fields,
+  invalid font identity, forbidden binary fields, mixed and dangling references.
+- Model/transaction tests cover all input capture, immutable values/copy isolation, stable
+  rename identity, explicit update, active-delete rejection, Reset, each library mutation's
+  Cancel rollback, retryable Apply failure at all four atomic write fault stages, and other
+  feature saves preserving committed library while excluding Draft. Current library and
+  display restart/selection/Reset are verified against real isolated TEMP profile files.
+- Unshown WPF object/event tests exercise actual name/deletion windows through an injected
+  dialog presenter, validation messages, selectors, management enablement, rename/update,
+  inactive selection plus explicit delete confirmation, Apply/file persistence and Cancel/X.
+  These do not establish native text entry, IME, focus behavior or readability acceptance.
+- Source self-audit found no outstanding P1/P2 finding in the inspected scope. No mutable
+  Draft references enter templates; built-ins remain immutable; rendering reads explicit
+  configuration; one typed callback submits display/library together before publication.
+  Strict v1/v2 readers, complete v3 validation, missing-font fallback and every other feature
+  save boundary were reviewed. No Core/clock changes, startup rewrite, font binaries,
+  import/export, online/bundled font implementation or generic framework was added.
+- git diff --check passed. Commit/push remain gated on user native UX approval.
+
+## User preset direct computer-use smoke — partial, 2026-09-11
+
+The user explicitly requested direct computer control for native verification. During this
+foreground interval Codex used computer-use 26.903.71938 / @oai/sky. This was not background
+input. The normal Debug executable was launched directly outside the sandbox with
+--timetable-preview and an explicit isolated --dev-profile-directory. Production window
+flags and the normal PC-fallback Application Clock were unchanged; no system clock or
+production profile was changed. Initial data was the fixed v1 test fixture with 35 cells,
+precise schedules, date overrides and lunch enabled.
+
+TEMP directory: C:/Users/ADMIN/AppData/Local/Temp/user-presets-native-a376222eced2477d8105f22caa57b181.
+First PID 80948, started 2026-09-11T12:51:06.5859415+09:00; input-idle true.
+The window was returned by the computer-use tool, and native screenshots/accessibility
+showed the normal main window and owned settings/name windows. This establishes capture
+success for this run; final user desktop visibility/readability/UX approval is still pending.
+
+Directly observed:
+
+- Ctrl+, opens Display Settings. The selector shows the four 기본 제공 entries; rename,
+  update and delete are disabled when the library is empty.
+- Coordinate click opens Save As and focuses the name field. Clicking Save with an empty
+  field shows the Korean validation message and retains the dialog. Name-window title X
+  returns to Display Settings. No preset was created and profile bytes remained unchanged.
+- Seconds checkbox changes Preview. Apply writes schema 3 and keeps Settings open. All
+  original timetable/schedule/date-override/lunch inputs compare exactly to the v1 fixture.
+- Reset enables seconds in Preview; settings title X restores the last applied no-seconds
+  display. The saved bytes remain identical to immediately after Apply.
+- Main title X closes PID 80948 normally; process absence and zero stderr were independently
+  checked. No forced termination was used.
+- Restart with the same executable/profile: PID 79944, started
+  2026-09-11T12:56:51.3188585+09:00. Native capture shows retained no-seconds header and the
+  timetable. Startup profile SHA-256 remains
+  9AE67059EC4A484760B02942EE17FC1BD2516DE6E8994959EC270D788FE10EBE.
+  Initial v1 SHA-256 was 706A8E4CCAD76494E167508A5B103C084225E67FD710FF4A708A450378F2808D.
+  The restarted settings window is open for the user's remaining input review.
+
+Observed automation boundary, not an established app defect:
+
+- list_windows exposes only the main window; settings and name dialogs appear in captures
+  and the accessibility tree but are not independent targetable windows. Element click on
+  the observed selector returns 'element 131 is not available in cached app state'.
+- Screenshot coordinate click opens the style popup, but clicking Digital activates the
+  main window and dismisses the popup without changing Standard. No fabricated window
+  handles or changed production flags were used.
+- type_text targeted to the only exposed main window does not enter text into the observed
+  focused NameInput. Codex explicitly clicked NameInput, observed caret/focus, then retried
+  once; the field remained empty and the main window became active. Capture works; modal
+  discovery/targeting and input delivery are the limiting steps. No native text/IME success
+  is claimed. A displayed accessibility focus line alone was insufficient evidence.
+
+Remaining user native review: Digital/font/size entry, Korean preset creation and selection,
+user-template Reset, rename, explicit update, active-delete guidance/inactive-delete
+confirmation, library Cancel rollback, and applying a user preset for restart confirmation.
+Codex can inspect resulting profile data and perform owned normal restart; the user need
+not run PowerShell or launch the app manually. User UX approval and custom-preset native
+restart remain pending. No commit or push has been made.
+
+## User-created preset and continued native smoke — 2026-09-11
+
+The user reported saving the preset ("저잠함", understood as "저장함"). Codex then read
+only the isolated diagnostic profile and captured the native app. It contains user preset
+교무실 시계, stable ID 72544ad8-0664-4f2e-bde0-6a1f9730cd26, Digital layout, Eras ITC
+Time family, size 48, Medium/Normal, with seconds enabled. The active reference points to
+that ID and the complete display payload matches the saved template. Creation/name/font
+entry is user-performed evidence; Codex did not automate those keystrokes. A size change
+or broader IME coverage is not inferred. All original v1 timetable/schedule/date/lunch
+inputs remain exactly preserved.
+
+During the continuing authorized computer-use interval, Codex directly verified:
+
+- Reopened Settings selects 내 프리셋 · 교무실 시계 and enables management controls.
+- Temporarily disabling seconds then Reset restores seconds and the user font Eras ITC.
+- Disabling seconds, explicitly clicking 현재 설정으로 업데이트, re-enabling seconds as a
+  further preview, then Reset restores the explicitly updated seconds-disabled payload.
+  The deletion picker accessibility value independently exposes that updated Draft payload.
+- The deletion picker lists the user preset. Selecting it keeps Delete disabled and shows
+  the instruction to select another display style first. No deletion was performed here.
+- Closing the deletion picker and clicking Settings Cancel restores the original seconds-on
+  display. Profile bytes remain identical to the user's saved baseline; no Apply was used
+  during this temporary update test.
+- Main title X normally closes owned PID 79944; process absence and zero stderr verified.
+- Direct restart with the same executable/TEMP profile produces PID 83600 at
+  2026-09-11T13:24:35.2847369+09:00. Native capture and reopened Settings show the retained
+  user preset, Eras ITC size 48 and seconds enabled. Profile SHA-256 before temporary edits,
+  after Cancel, and after restart is unchanged:
+  CEF65CC61D5F9F4502B53A3ED17852878EC575493B30389FA167874126DD7BEA.
+
+Remaining native/user review: switching away and reselecting the user template; actual
+rename text entry; inactive-preset confirmed deletion and Cancel restoration; overall UX
+approval. The observed modal targeting/input limitations still apply. Settings is open for
+these steps. No source/test change was made in this continued native run. Commit/push and
+post-acceptance final verification remain pending.
+
+## User preset native acceptance — 2026-09-11
+
+The user answered "정상작동" after the remaining checklist: switching to another style and
+reselecting 교무실 시계, renaming it to 교무실 시계2, switching away, confirming deletion of
+that inactive user preset, and cancelling Display Settings. This is recorded as the user's
+successful native review and UX acceptance for this milestone, together with the prior
+user-created preset and Codex's direct native observations. These particular selection,
+rename and deletion interactions are user-reported; no automated keyboard/IME success or
+broader OS-focus coverage is inferred.
+
+Codex independently compared the diagnostic profile after this checklist with the original
+user-saved baseline. Both SHA-256 values are
+CEF65CC61D5F9F4502B53A3ED17852878EC575493B30389FA167874126DD7BEA.
+The original preset name/ID/payload and all other saved inputs are therefore unchanged after
+Cancel. Earlier pending statements are chronological records, superseded by this acceptance
+and the current feature status declarations.
+
+Before final build, Codex verified PID 83600's executable and exact start time and requested
+Process.CloseMainWindow. It returned false and the initial 10-second wait did not observe
+exit. A subsequent computer-use Ctrl+, / title-X attempt ended with 'foreground window did
+not report a process id'; a process query then confirmed PID 83600 was absent. No forced
+termination was issued. This last sequence is recorded as process absence with uncertain
+input attribution, not an additional proven native-X success. Earlier directly verified
+native-X shutdown/restart evidence remains valid. Final commands run after the executable
+was released; no manual launch, production-data change or system-setting change is needed.
+
+## User preset final post-acceptance validation — 2026-09-11
+
+- dotnet restore, dotnet build --no-restore and dotnet test --no-build --logger
+  "console;verbosity=normal" all exited 0. **751 tests passed, 0 failed/skipped;
+  build warnings/errors 0**. This retains the 695 baseline plus 56 new cases.
+- Log: C:/Users/ADMIN/AppData/Local/Temp/user-presets-approved-final-40648930722e4fbeb35281b6b2096d59.log.
+- Final self-audit rechecked immutable payload/identity, selected-template Reset, library
+  rollback, single display/library save-before-publish, committed-library preservation in
+  all other saves, strict v1/v2/v3 validation and font fallback. No outstanding P1/P2 finding
+  was identified in the inspected scope. Core, clock and production data remain unchanged.
+- No production code changed after native acceptance; only approval and evidence documents
+  were updated. A trailing documentation blank line found by diff-check was removed.
+- User native acceptance is complete for the requested checklist. Broader IME, all-DPI,
+  multi-monitor and general OS focus coverage is not claimed. Existing modal automation
+  limitations and evidence attribution are preserved above.
+- The original milestone authorizes committing and ordinary fast-forward push to
+  chuthulhu/school-timetable-widget-next origin/main after these successful checks.

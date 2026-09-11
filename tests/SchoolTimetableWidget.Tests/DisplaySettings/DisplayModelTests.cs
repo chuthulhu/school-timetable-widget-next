@@ -24,7 +24,7 @@ public class DisplayModelTests
     {
         var value = DisplayPresets.Create(preset);
         value.Validate();
-        Assert.Equal(preset, value.Preset); Assert.Equal(layout, value.Layout);
+        Assert.Equal(preset, value.Preset.BuiltIn); Assert.Equal(layout, value.Layout);
         Assert.Equal(size, value.Time.Size); Assert.Equal(seconds, value.ShowSeconds);
         Assert.Equal(date, value.ShowDate); Assert.Equal(status, value.ShowStatus);
         Assert.True(value.Use24Hour); Assert.False(value.ShowWeekday);
@@ -64,7 +64,7 @@ public class DisplayModelTests
         var cells = table.Cells.ToArray();
         var columns = table.Columns.ToArray();
         var current = table.Cells.Single(c => c.IsCurrent);
-        var owner = new RuntimeDisplaySettings(header.Display, _ => throw new Exception("Preview must not save."));
+        var owner = new RuntimeDisplaySettings(header.Display, UserDisplayPresetLibrary.Empty, (_, _) => throw new Exception("Preview must not save."));
         owner.Changed += (_, _) => header.SetDisplay(owner.Current);
         var draft = owner.Open();
         draft.Preset = DisplayPreset.Digital;
@@ -116,7 +116,7 @@ public class DisplayModelTests
         Assert.Throws<ArgumentException>(() => (DisplayPresets.Create(DisplayPreset.Standard) with
         { Time = DisplayPresets.Create(DisplayPreset.Standard).Time with { Font = new(FontSourceKind.System, family) } }).Validate());
 
-    internal static RuntimeDisplaySettings Owner() => new(DisplayPresets.Create(DisplayPreset.Standard), _ => null);
+    internal static RuntimeDisplaySettings Owner() => new(DisplayPresets.Create(DisplayPreset.Standard), UserDisplayPresetLibrary.Empty, (_, _) => null);
     internal static ApplicationTimeSnapshot Snapshot(int hour) => new(new DateTimeOffset(2026, 9, 11, hour, 23, 18,
         TimeSpan.FromHours(9)), ApplicationTimeSource.PcLocalFallback, 0);
     internal static CurrentStatusHeaderText Text(int hour)

@@ -879,3 +879,22 @@ commit. No downgrade support. Existing missing/corrupt/unsupported safety rules 
 Built-in preset and per-element/system font implementation awaits native review. Bundled and
 online catalogs/download/cache, custom font import, named user presets and full colors/themes
 remain PLANNED. Final Fluent redesign is deferred.
+
+## User-defined display presets — approved 2026-09-11
+
+**IMPLEMENTED — NATIVE REVIEW CONFIRMED**. The explicit user milestone and
+[ADR 0015](adr/0015-user-display-presets-and-schema-v3.md) extend the display foundation.
+Save As, selection, rename, explicit update and confirmed deletion operate on named user
+styles with stable Guid identity; built-ins remain immutable. Names are trimmed/NFC,
+nonblank, up to 60 UTF-16 units, with case-insensitive uniqueness among user styles.
+Save As selects the captured style. Later changes leave its saved template unchanged.
+Reset restores the selected template. Delete targets an inactive user style through a
+small picker and confirmation; active-style deletion is blocked with guidance to switch first.
+
+The display and user library share Preview/Apply/OK/Cancel/X and one durable save boundary.
+Cancel discards all changes after the last successful Apply, including library management.
+Save failure keeps old disk/commitment and retryable Draft. Schema v3 validates the whole
+library and active reference. Strict v1/v2 load remains writable without startup rewrite;
+next save writes v3 with all original user inputs preserved. Missing fonts use existing
+fallback without changing identity. Preset import/export, bundled/online fonts remain PLANNED.
+This section supersedes prior named-preset PLANNED and schema-v2-current statements.

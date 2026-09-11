@@ -1,0 +1,17 @@
+<Window x:Class="SchoolTimetableWidget.Desktop.Features.DisplaySettings.DeletePresetWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        Title="내 프리셋 삭제" Width="440" SizeToContent="Height" ResizeMode="NoResize"
+        ShowInTaskbar="False" WindowStartupLocation="CenterOwner" FontSize="14">
+    <StackPanel Margin="20">
+        <TextBlock Text="삭제할 내 프리셋을 선택해 주세요." Margin="0,0,0,10"/>
+        <ListBox x:Name="DeletePresetList" Height="150" DisplayMemberPath="Name" SelectionChanged="SelectionChanged"
+                 AutomationProperties.Name="삭제할 내 프리셋"/>
+        <TextBlock x:Name="DeletePrompt" TextWrapping="Wrap" Margin="0,12"/>
+        <TextBlock Text="삭제도 적용 또는 확인을 눌러야 최종 저장됩니다." Foreground="#555555" TextWrapping="Wrap" Margin="0,0,0,12"/>
+        <StackPanel Orientation="Horizontal" HorizontalAlignment="Right">
+            <Button Content="취소" IsCancel="True" Click="Cancel_Click" Padding="18,7"/>
+            <Button x:Name="ConfirmDeleteButton" Content="삭제" IsEnabled="False" Click="Delete_Click" Margin="8,0,0,0" Padding="18,7"/>
+        </StackPanel>
+    </StackPanel>
+</Window>

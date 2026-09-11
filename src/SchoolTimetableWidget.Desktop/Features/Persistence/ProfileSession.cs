@@ -42,12 +42,15 @@ public sealed class ProfileSession
     public static ProfileSession Unavailable(string path) => new(path);
     public ProfileLoadResult LoadResult { get; }
     public ProfileSnapshot Current { get; private set; }
-    public string? SaveTimetable(WeeklyTimetable value) => Commit(new(value, Current.Schedule, Current.Overrides, Current.ShowLunch, Current.Display));
-    public string? SaveSchedule(PeriodSchedule value) => Commit(new(Current.Timetable, value, Current.Overrides, Current.ShowLunch, Current.Display));
-    public string? SaveOverrides(IReadOnlyCollection<DateSpecificOverride> value) => Commit(new(Current.Timetable, Current.Schedule, value, Current.ShowLunch, Current.Display));
-    public string? SaveLunch(bool value) => Commit(new(Current.Timetable, Current.Schedule, Current.Overrides, value, Current.Display));
+    public string? SaveTimetable(WeeklyTimetable value) => Commit(new(value, Current.Schedule, Current.Overrides, Current.ShowLunch, Current.Display, Current.DisplayPresets));
+    public string? SaveSchedule(PeriodSchedule value) => Commit(new(Current.Timetable, value, Current.Overrides, Current.ShowLunch, Current.Display, Current.DisplayPresets));
+    public string? SaveOverrides(IReadOnlyCollection<DateSpecificOverride> value) => Commit(new(Current.Timetable, Current.Schedule, value, Current.ShowLunch, Current.Display, Current.DisplayPresets));
+    public string? SaveLunch(bool value) => Commit(new(Current.Timetable, Current.Schedule, Current.Overrides, value, Current.Display, Current.DisplayPresets));
 
-    public string? SaveDisplay(DisplayConfiguration value) => Commit(new(Current.Timetable, Current.Schedule, Current.Overrides, Current.ShowLunch, value));
+    public string? SaveDisplay(DisplayConfiguration value) => Commit(new(Current.Timetable, Current.Schedule, Current.Overrides, Current.ShowLunch, value, Current.DisplayPresets));
+
+    public string? SaveDisplay(DisplayConfiguration value, UserDisplayPresetLibrary presets) =>
+        Commit(new(Current.Timetable, Current.Schedule, Current.Overrides, Current.ShowLunch, value, presets));
 
     private string? Commit(ProfileSnapshot candidate)
     {

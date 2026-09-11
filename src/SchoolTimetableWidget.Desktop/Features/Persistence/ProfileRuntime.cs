@@ -13,7 +13,7 @@ public sealed class ProfileRuntime
     {
         Session = session;
         var initial = session.Current;
-        Display = new(initial.Display, session.SaveDisplay);
+        Display = new(initial.Display, initial.DisplayPresets, session.SaveDisplay);
         Timetable = new(initial.Timetable, session.SaveTimetable);
         Schedule = new(initial.Schedule, session.SaveSchedule);
         Overrides = new(initial.Overrides, session.SaveOverrides);

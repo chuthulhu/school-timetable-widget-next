@@ -28,8 +28,8 @@ public class DisplayViewTests
             Layout((FrameworkElement)dialog.Content, 690, 560);
             var preset = (ComboBox)dialog.FindName("PresetSelector");
             Assert.Equal(4, preset.Items.Count);
-            preset.SelectedValue = DisplayPreset.Digital; Drain(dialog);
-            Assert.Equal(DisplayPreset.Digital, owner.Current.Preset);
+            preset.SelectedValue = DisplayPresetReference.BuiltInPreset(DisplayPreset.Digital); Drain(dialog);
+            Assert.Equal(DisplayPreset.Digital, owner.Current.Preset.BuiltIn);
             Layout((FrameworkElement)dialog.Content, 690, 560);
             var editors = (ItemsControl)dialog.FindName("ElementEditors");
             var sizes = Descendants<TextBox>(editors).Where(t => t.Name == "SizeInput").ToArray();
@@ -65,14 +65,14 @@ public class DisplayViewTests
     public void OkSavesAndClosesButFailureStaysOpen() => HighlightTestDispatcher.Run(() =>
     {
         var fail = true;
-        var owner = new RuntimeDisplaySettings(DisplayPresets.Create(DisplayPreset.Standard), _ => fail ? "저장 실패" : null);
+        var owner = new RuntimeDisplaySettings(DisplayPresets.Create(DisplayPreset.Standard), UserDisplayPresetLibrary.Empty, (_, _) => fail ? "저장 실패" : null);
         var dialog = new DisplaySettingsWindow(owner.Open());
         try
         {
             dialog.Session.Preset = DisplayPreset.Digital;
             Click(dialog, "AcceptButton"); Assert.False(dialog.Session.IsClosed); Assert.Equal("저장 실패", dialog.Session.ErrorText);
             fail = false; Click(dialog, "AcceptButton"); Assert.True(dialog.Session.IsClosed);
-            Assert.Equal(DisplayPreset.Digital, owner.Committed.Preset);
+            Assert.Equal(DisplayPreset.Digital, owner.Committed.Preset.BuiltIn);
         }
         finally { dialog.Close(); }
     });

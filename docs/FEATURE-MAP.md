@@ -283,3 +283,19 @@ This section supersedes historical PLANNED entries for the implemented subset.
 | Online font catalog/download/cache | PLANNED | No network/cache implementation |
 | Named custom presets | PLANNED | No multi-preset manager |
 | Color/theme editor | PLANNED | No full theme/Fluent redesign |
+
+## User-defined display presets — current 2026-09-11
+
+This supersedes prior named-preset PLANNED and current-writer-v2 entries.
+
+| Feature | Status | Scope |
+| --- | --- | --- |
+| User-defined display presets | IMPLEMENTED — NATIVE REVIEW CONFIRMED | Stable ID, Save As, selection and Reset |
+| Rename/update/delete | IMPLEMENTED — NATIVE REVIEW CONFIRMED | Selected rename/update; inactive-only confirmed delete |
+| Preset transaction persistence | IMPLEMENTED — NATIVE REVIEW CONFIRMED | One display/library save and last-Apply rollback |
+| Schema v3 / v1-v2 compatibility | IMPLEMENTED — NATIVE REVIEW CONFIRMED | Strict full load, no startup rewrite, next-save upgrade |
+| Preset import/export | PLANNED | No sharing UI or format |
+| Bundled fonts | PLANNED | No font assets |
+| Online font catalog | PLANNED | No network/download/cache |
+
+[ADR 0015](adr/0015-user-display-presets-and-schema-v3.md), [evidence](DISPLAY-SETTINGS.md).
