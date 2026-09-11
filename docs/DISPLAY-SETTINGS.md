@@ -503,3 +503,17 @@ menu/modal evidence above. No additional confirmed P1/P2 was found. The unrelate
 existing UI-test observation remains recorded, not silently relabeled a fix. Final automated
 checks passed 760 tests with warnings/errors 0; production source did not change afterward.
 Commit/push is authorized by the user's follow-up request after these checks.
+
+## Bundled/online fonts and selector P2 — 2026-09-11
+
+The current picker adds 앱 제공 글꼴 / Windows 글꼴 / 온라인 글꼴 for each of the four independent elements.
+Explicit download succeeds before a new online candidate becomes the Draft selection and Preview; while
+pending the old font remains with a visible explanation. Complete downloads survive Cancel. Missing saved
+online fonts show fallback/re-download status while retaining identity and normal persistence.
+Save As selection is now resolved by stable ID into the current choices; WPF collection-reset nulls cannot
+become user edits. The original failing test is retained and extended WPF coverage includes all sources,
+collection refresh/rename, Reset, Apply/Cancel, repeated switching and restart. No timing retries or delays.
+Full behavior, exact font/license provenance, schema v4 and native approval: [Font Catalog](FONT-CATALOG.md).
+This supersedes bundled/online PLANNED entries above. User native UX approval ("확인, 승인") includes
+explicit download/preview, Save As selection, restart, missing-cache fallback and re-download restoration.
+Automated WPF selector regression also verifies stable IDs across collection refresh and transactions.

@@ -1,3 +1,4 @@
+using SchoolTimetableWidget.Desktop.Infrastructure.Windows;
 namespace SchoolTimetableWidget.Desktop.Features.DisplaySettings;
 
 /// <summary>One display editor owns preview; one save publishes display and library together.</summary>
@@ -6,13 +7,15 @@ public sealed class RuntimeDisplaySettings
     private readonly Func<DisplayConfiguration, UserDisplayPresetLibrary, string?> _save;
     private DisplaySettingsSession? _active;
     public RuntimeDisplaySettings(DisplayConfiguration initial, UserDisplayPresetLibrary presets,
-        Func<DisplayConfiguration, UserDisplayPresetLibrary, string?> save)
+        Func<DisplayConfiguration, UserDisplayPresetLibrary, string?> save, FontLibrary? fonts = null)
     {
         presets.ValidateReference(initial);
         Committed = Current = initial;
         CommittedPresets = presets;
         _save = save;
+        Fonts = fonts ?? FontLibrary.LocalOnly;
     }
+    public FontLibrary Fonts { get; }
     public DisplayConfiguration Committed { get; private set; }
     public DisplayConfiguration Current { get; private set; }
     public UserDisplayPresetLibrary CommittedPresets { get; private set; }

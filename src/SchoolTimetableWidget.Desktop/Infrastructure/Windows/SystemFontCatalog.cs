@@ -36,7 +36,7 @@ public sealed class SystemFontCatalog
     public static FontStyle Style(DisplayFontStyle style) => style == DisplayFontStyle.Italic ? FontStyles.Italic : FontStyles.Normal;
     private static IEnumerable<FontFamily> Enumerate()
     {
-        try { return Fonts.SystemFontFamilies.ToArray(); }
+        try { return System.Windows.Media.Fonts.SystemFontFamilies.ToArray(); }
         catch (Exception error) when (error is IOException or UnauthorizedAccessException or ArgumentException or System.Security.SecurityException)
         {
             System.Diagnostics.Debug.WriteLine(error);

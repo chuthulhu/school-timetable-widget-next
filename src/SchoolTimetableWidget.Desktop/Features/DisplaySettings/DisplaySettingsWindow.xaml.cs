@@ -14,6 +14,8 @@ public static class DisplaySettingsCommands
 public sealed record DisplayChoice<T>(T Value, string Label);
 public static class DisplayChoices
 {
+    public static IReadOnlyList<DisplayChoice<FontSourceKind>> FontSources { get; } =
+        [new(FontSourceKind.Bundled, "앱 제공 글꼴"), new(FontSourceKind.System, "Windows 글꼴"), new(FontSourceKind.OnlineDownloaded, "온라인 글꼴")];
     public static IReadOnlyList<DisplayChoice<DisplayPreset>> Presets { get; } =
         [new(DisplayPreset.Standard, "표준"), new(DisplayPreset.Digital, "디지털"),
          new(DisplayPreset.Compact, "컴팩트"), new(DisplayPreset.Minimal, "미니멀")];
@@ -42,6 +44,15 @@ public partial class DisplaySettingsWindow : Window
         _showPresetDialog = showPresetDialog ?? (dialog => { dialog.Owner = this; dialog.ShowDialog(); });
         InitializeComponent();
         DataContext = session;
+    }
+    private void PresetSelectionChanged(object sender, System.Windows.Controls.SelectionChangedEventArgs e)
+    {
+        // Collection resets can clear WPF selection; only an actual selected stable ID is an edit.
+        if (PresetSelector.SelectedItem is DisplayChoice<DisplayPresetReference> choice) Session.Preset = choice.Value;
+    }
+    private async void DownloadFont_Click(object sender, RoutedEventArgs e)
+    {
+        if (sender is FrameworkElement { DataContext: ElementTypographyDraft element }) await element.DownloadAsync();
     }
     private void SaveAsPreset_Click(object sender, RoutedEventArgs e) =>
         _showPresetDialog(new PresetNameWindow("내 프리셋으로 저장", "", Session.TrySaveAs, () => Session.ErrorText));

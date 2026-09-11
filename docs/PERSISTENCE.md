@@ -309,3 +309,14 @@ and every other original input. They remain writable and never rewrite at startu
 successful user save writes v3. Display/library publish together after the existing one-file
 atomic save; other saves use committed library and cannot leak settings Draft. Failed load
 still preserves the entire original and blocks saving. Font availability is not corruption.
+
+## Schema v4 fonts — 2026-09-11
+
+[ADR 0016](adr/0016-bundled-and-downloaded-fonts.md) supersedes the v3 writer: typography font objects add required
+familyId beside source/family, with System/Bundled/OnlineDownloaded semantics. Strict v1/v2/v3 DTOs still
+accept original files, preserving all user inputs and injecting System IDs without startup rewrite.
+Both active display and user templates store references only; no URL/path/catalog inventory/font binary.
+Missing/corrupt online files are runtime availability failures, not degraded persistence. Downloaded files
+live under the selected profile directory's separate fonts/<id>/<source-commit>/ folder and remain after
+Settings Cancel. Profile atomic commit, writer lease and external-change checks are unchanged.
+The tests and runtime composition use TEMP fonts, never production cache. [Evidence](FONT-CATALOG.md).

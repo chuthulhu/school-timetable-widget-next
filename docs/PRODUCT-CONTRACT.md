@@ -904,3 +904,13 @@ library and active reference. Strict v1/v2 load remains writable without startup
 next save writes v3 with all original user inputs preserved. Missing fonts use existing
 fallback without changing identity. Preset import/export, bundled/online fonts remain PLANNED.
 This section supersedes prior named-preset PLANNED and schema-v2-current statements.
+
+## Bundled and online font catalog — approved 2026-09-11
+
+The explicit milestone and [ADR 0016](adr/0016-bundled-and-downloaded-fonts.md) implement the earlier font-source
+requirements for Time/Date/Weekday/Status: 앱 제공 글꼴, Windows 글꼴, 온라인 글꼴, independently per element.
+A curated catalog permits explicit verified download and local private rendering. Startup/ticks need no
+network. Missing/corrupt cache uses fallback without invalidating/replacing saved identities or presets.
+Cancel rolls back display/library but retains complete reusable downloads. V4 stores source/family/FamilyId;
+strict v1/v2/v3 load remains writable without rewrite. Full contract, licenses and evidence: [Font Catalog](FONT-CATALOG.md).
+Native UX was approved by the user on 2026-09-11. Earlier bundled/online PLANNED statements are superseded only for this scope.

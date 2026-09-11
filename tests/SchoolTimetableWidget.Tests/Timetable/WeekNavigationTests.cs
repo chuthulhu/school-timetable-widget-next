@@ -225,7 +225,7 @@ public class WeekNavigationTests
         }
         Assert.Equal(saved, File.ReadAllBytes(temp.File)); Assert.Equal(modified, File.GetLastWriteTimeUtc(temp.File));
         using var json = System.Text.Json.JsonDocument.Parse(saved);
-        Assert.Equal(3, json.RootElement.GetProperty("schemaVersion").GetInt32());
+        Assert.Equal(4, json.RootElement.GetProperty("schemaVersion").GetInt32());
         Assert.DoesNotContain("ViewedWeek", System.Text.Encoding.UTF8.GetString(saved), StringComparison.OrdinalIgnoreCase);
     }
 }

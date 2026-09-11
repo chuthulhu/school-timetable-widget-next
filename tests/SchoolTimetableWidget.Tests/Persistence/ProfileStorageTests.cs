@@ -38,7 +38,7 @@ public class ProfileStorageTests
             Assert.Equal(lunch, ProfileJson.Deserialize(bytes).ShowLunch);
             Assert.False(bytes.AsSpan().StartsWith(Encoding.UTF8.Preamble));
             var parsed = JsonNode.Parse(bytes)!;
-            Assert.Equal(3, (int)parsed["schemaVersion"]!);
+            Assert.Equal(4, (int)parsed["schemaVersion"]!);
             Assert.Equal("2026-09-07", (string?)parsed["profile"]!["dateOverrides"]![0]!["date"]);
             Assert.Equal("09:00:00.0000123", (string?)parsed["profile"]!["periodSchedule"]![0]!["start"]);
             Assert.Equal(new[] { "schemaVersion", "profile" }, parsed.AsObject().Select(p => p.Key));
@@ -113,7 +113,7 @@ public class ProfileStorageTests
             yield return [name, document.ToJsonString(), ProfileLoadState.Invalid];
         }
         var future = JsonNode.Parse(ProfileJson.Serialize(Sample()))!;
-        future["schemaVersion"] = 4;
+        future["schemaVersion"] = 5;
         yield return ["future version", future.ToJsonString(), ProfileLoadState.Unsupported];
     }
 

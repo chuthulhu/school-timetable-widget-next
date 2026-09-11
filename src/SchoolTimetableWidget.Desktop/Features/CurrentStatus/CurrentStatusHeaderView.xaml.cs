@@ -11,6 +11,19 @@ namespace SchoolTimetableWidget.Desktop.Features.CurrentStatus;
 /// <summary>Reconfigures existing elements only when display inputs change; ordinary ticks only update text.</summary>
 public partial class CurrentStatusHeaderView : UserControl
 {
+    private FontLibrary _fonts = FontLibrary.LocalOnly;
+    public FontLibrary Fonts
+    {
+        get => _fonts;
+        set
+        {
+            WeakEventManager<FontLibrary, EventArgs>.RemoveHandler(_fonts, nameof(FontLibrary.Changed), FontsChanged);
+            _fonts = value;
+            WeakEventManager<FontLibrary, EventArgs>.AddHandler(_fonts, nameof(FontLibrary.Changed), FontsChanged);
+            Configure();
+        }
+    }
+    private void FontsChanged(object? sender, EventArgs e) => Configure();
     public CurrentStatusHeaderView()
     {
         InitializeComponent();
@@ -96,9 +109,9 @@ public partial class CurrentStatusHeaderView : UserControl
         if (Window.GetWindow(this) is { IsLoaded: true } window) WindowContentMinimum.Refresh(window);
     }
     private static Visibility Visible(bool value) => value ? Visibility.Visible : Visibility.Collapsed;
-    private static void ApplyType(TextBlock block, ElementTypography type)
+    private void ApplyType(TextBlock block, ElementTypography type)
     {
-        block.FontFamily = SystemFontCatalog.Current.Resolve(type.Font);
+        block.FontFamily = Fonts.Resolve(type.Font);
         block.FontSize = type.Size;
         block.FontWeight = SystemFontCatalog.Weight(type.Weight);
         block.FontStyle = SystemFontCatalog.Style(type.Style);

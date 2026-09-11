@@ -1357,3 +1357,14 @@ The existing session Cancel fallback also runs if construction/presentation fail
 are not swallowed. RuntimeDisplaySettings still rejects multiple active session owners.
 The optional presentation callback supports unshown WPF command/lifecycle regression tests;
 native activation, keyboard and modal-loop behavior require separate Windows evidence.
+
+## Font catalog and private resolution — 2026-09-11
+
+[ADR 0016](adr/0016-bundled-and-downloaded-fonts.md) supersedes the corresponding PLANNED font entries.
+Features/Fonts owns static metadata and identity; Infrastructure/Fonts owns HTTPS/atomic local cache;
+Infrastructure/Windows/FontLibrary owns WPF private resource/local-file resolution and fallback. App injects
+one library into RuntimeDisplaySettings and the header; TEMP/dev profile selection isolates the cache too.
+No font responsibilities enter Core or clock/tick code. Per-element picker candidate, canonical Draft,
+committed display/library and cache side effects remain distinct. Preset selection resolves stable IDs into
+one choice snapshot per library revision, excluding transient WPF collection-reset nulls from editing.
+Schema v4 and strict older readers preserve whole-profile commit ownership. [Details/evidence](FONT-CATALOG.md).

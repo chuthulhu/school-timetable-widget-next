@@ -24,9 +24,30 @@ public sealed class DisplaySettingsSession : ObservableObject
     public UserDisplayPresetLibrary Presets { get; private set; }
     public bool CanManageSelected => !IsClosed && Preset.UserId is not null;
     public bool HasUserPresets => !IsClosed && Presets.Items.Count > 0;
-    public IReadOnlyList<DisplayChoice<DisplayPresetReference>> PresetChoices =>
-        DisplayChoices.Presets.Select(p => new DisplayChoice<DisplayPresetReference>(p.Value, "기본 제공 · " + p.Label))
-            .Concat(Presets.Items.Select(p => new DisplayChoice<DisplayPresetReference>(DisplayPresetReference.User(p.Id), "내 프리셋 · " + p.Name))).ToArray();
+    private UserDisplayPresetLibrary? _choicesLibrary;
+    private IReadOnlyList<DisplayChoice<DisplayPresetReference>> _presetChoices = [];
+    public IReadOnlyList<DisplayChoice<DisplayPresetReference>> PresetChoices
+    {
+        get
+        {
+            // A stable snapshot per immutable library revision avoids resetting WPF ItemsSource
+            // for unrelated format/typography notifications or repeated reads.
+            if (!ReferenceEquals(_choicesLibrary, Presets))
+            {
+                _presetChoices = DisplayChoices.Presets.Select(p =>
+                    new DisplayChoice<DisplayPresetReference>(p.Value, "기본 제공 · " + p.Label))
+                    .Concat(Presets.Items.Select(p => new DisplayChoice<DisplayPresetReference>(
+                        DisplayPresetReference.User(p.Id), "내 프리셋 · " + p.Name))).ToArray();
+                _choicesLibrary = Presets;
+            }
+            return _presetChoices;
+        }
+    }
+    // Resolve the stable reference against the current choices, including a renamed/rebuilt item.
+    public DisplayChoice<DisplayPresetReference>? SelectedPresetChoice
+    {
+        get => PresetChoices.FirstOrDefault(p => p.Value == Preset);
+    }
     public bool Use24Hour { get => _configuration.Use24Hour; set => Change(_configuration with { Use24Hour = value }); }
     public bool ShowSeconds { get => _configuration.ShowSeconds; set => Change(_configuration with { ShowSeconds = value }); }
     public bool ShowDate { get => _configuration.ShowDate; set => Change(_configuration with { ShowDate = value }); }
@@ -38,6 +59,13 @@ public sealed class DisplaySettingsSession : ObservableObject
     public bool TryApply()
     {
         if (IsClosed || !TryCandidate(out var candidate)) return false;
+        var persistedFonts = FontsOf(_owner.Committed).Concat(_owner.CommittedPresets.Items.SelectMany(p => FontsOf(p.Display)));
+        if (FontsOf(candidate!).Any(f => f.Source == FontSourceKind.OnlineDownloaded &&
+            !persistedFonts.Contains(f) && !_owner.Fonts.IsAvailable(f)))
+        {
+            ErrorText = "새로 선택한 온라인 글꼴을 먼저 다운로드해 주세요.";
+            return false;
+        }
         var error = _owner.Commit(candidate!, Presets);
         if (error is not null) { ErrorText = error; return false; }
         _baseline = candidate!;
@@ -49,6 +77,7 @@ public sealed class DisplaySettingsSession : ObservableObject
     {
         if (!TryApply()) return false;
         IsClosed = true;
+        foreach (var element in _elements) element.Dispose();
         return true;
     }
     public void Cancel()
@@ -57,6 +86,7 @@ public sealed class DisplaySettingsSession : ObservableObject
         Presets = _baselinePresets;
         Load(_baseline);
         IsClosed = true;
+        foreach (var element in _elements) element.Dispose();
     }
     public bool TrySaveAs(string name) => EditLibrary(() =>
     {
@@ -100,6 +130,10 @@ public sealed class DisplaySettingsSession : ObservableObject
             ErrorText = "";
             OnPropertyChanged(nameof(Presets));
             OnPropertyChanged(nameof(PresetChoices));
+            // ItemsSource may clear the control selection while its value binding is updating.
+            // Reassert the canonical stable ID after publishing the matching collection.
+            OnPropertyChanged(nameof(Preset));
+            OnPropertyChanged(nameof(SelectedPresetChoice));
             OnPropertyChanged(nameof(CanManageSelected));
             OnPropertyChanged(nameof(HasUserPresets));
             return true;
@@ -108,12 +142,14 @@ public sealed class DisplaySettingsSession : ObservableObject
     }
     private void Load(DisplayConfiguration value)
     {
-        foreach (var element in _elements) element.PropertyChanged -= ElementChanged;
+        foreach (var element in _elements) { element.PropertyChanged -= ElementChanged; element.Dispose(); }
         _configuration = value;
-        _elements = [new("시간", value.Time), new("날짜", value.Date), new("요일", value.Weekday), new("상태", value.Status)];
+        _elements = [new("시간", value.Time, _owner.Fonts), new("날짜", value.Date, _owner.Fonts), new("요일", value.Weekday, _owner.Fonts), new("상태", value.Status, _owner.Fonts)];
         foreach (var element in _elements) element.PropertyChanged += ElementChanged;
         Preview();
         OnPropertyChanged(string.Empty);
+        OnPropertyChanged(nameof(Preset));
+        OnPropertyChanged(nameof(SelectedPresetChoice));
     }
     private void Change(DisplayConfiguration value)
     {
@@ -124,6 +160,8 @@ public sealed class DisplaySettingsSession : ObservableObject
     }
     private void ElementChanged(object? sender, PropertyChangedEventArgs e) { if (!IsClosed) Preview(); }
     private void Preview() { if (TryCandidate(out var candidate)) _owner.Preview(candidate!); }
+    private static IEnumerable<FontSelection> FontsOf(DisplayConfiguration value) =>
+        [value.Time.Font, value.Date.Font, value.Weekday.Font, value.Status.Font];
     private bool TryCandidate(out DisplayConfiguration? candidate)
     {
         candidate = null;

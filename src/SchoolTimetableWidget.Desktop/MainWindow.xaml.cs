@@ -17,6 +17,7 @@ public partial class MainWindow : Window
         InitializeComponent();
         PersistenceNotice.Text = persistenceNotice;
         PersistenceNotice.Visibility = persistenceNotice.Length == 0 ? Visibility.Collapsed : Visibility.Visible;
+        if (display is not null) StatusHeader.Fonts = display.Fonts;
         StatusHeader.DataContext = headerViewModel;
         Timetable.DataContext = timetableViewModel;
         Timetable.ScheduleEditor = scheduleEditor;

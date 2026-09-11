@@ -1,3 +1,4 @@
+using SchoolTimetableWidget.Desktop.Infrastructure.Windows;
 using SchoolTimetableWidget.Desktop.Features.DisplaySettings;
 using SchoolTimetableWidget.Core.Features.SchoolDays;
 using SchoolTimetableWidget.Desktop.Features.DateOverrides;
@@ -9,11 +10,11 @@ namespace SchoolTimetableWidget.Desktop.Features.Persistence;
 /// <summary>Composes existing feature owners with the same durable transaction callbacks.</summary>
 public sealed class ProfileRuntime
 {
-    public ProfileRuntime(ProfileSession session, Action refresh, Action<DateOnly> refreshDate)
+    public ProfileRuntime(ProfileSession session, Action refresh, Action<DateOnly> refreshDate, FontLibrary? fonts = null)
     {
         Session = session;
         var initial = session.Current;
-        Display = new(initial.Display, initial.DisplayPresets, session.SaveDisplay);
+        Display = new(initial.Display, initial.DisplayPresets, session.SaveDisplay, fonts);
         Timetable = new(initial.Timetable, session.SaveTimetable);
         Schedule = new(initial.Schedule, session.SaveSchedule);
         Overrides = new(initial.Overrides, session.SaveOverrides);

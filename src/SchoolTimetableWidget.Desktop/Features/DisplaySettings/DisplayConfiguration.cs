@@ -2,11 +2,14 @@ namespace SchoolTimetableWidget.Desktop.Features.DisplaySettings;
 
 public enum DisplayPreset { Standard, Digital, Compact, Minimal }
 public enum DisplayLayout { Standard, Digital, Inline }
-// Additional source kinds can be introduced with their own resolver and schema support.
-public enum FontSourceKind { System }
+public enum FontSourceKind { System, Bundled, OnlineDownloaded }
 public enum DisplayFontWeight { Thin, Normal, Medium, Bold }
 public enum DisplayFontStyle { Normal, Italic }
-public sealed record FontSelection(FontSourceKind Source, string Family);
+public sealed record FontSelection(FontSourceKind Source, string Family, string FamilyId)
+{
+    // Installed family names are Windows' portable logical identity, never a file path.
+    public FontSelection(FontSourceKind source, string family) : this(source, family, family) { }
+}
 public sealed record ElementTypography(FontSelection Font, double Size, DisplayFontWeight Weight, DisplayFontStyle Style);
 
 /// <summary>Immutable Desktop display inputs, independent of WPF and storage DTOs.</summary>
@@ -29,6 +32,9 @@ public sealed record DisplayConfiguration(DisplayPresetReference Preset, Display
             string.IsNullOrWhiteSpace(font.Family) || font.Family.Length > 200 ||
             font.Family.IndexOfAny(['/', '\\', ':', '#']) >= 0 || font.Family.Any(char.IsControl))
             throw new ArgumentException("사용할 글꼴 이름을 확인해 주세요.");
+        if (font.Source == FontSourceKind.System ? font.FamilyId != font.Family :
+            !Fonts.FontCatalog.Contains(font))
+            throw new ArgumentException("등록된 글꼴을 선택해 주세요.");
         if (!double.IsFinite(element.Size) || element.Size < min || element.Size > max)
             throw new ArgumentException($"글자 크기는 {min}~{max} 사이로 입력해 주세요.");
         if (!Enum.IsDefined(element.Weight) || !Enum.IsDefined(element.Style))

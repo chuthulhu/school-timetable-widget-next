@@ -31,12 +31,14 @@ public class UserPresetPersistenceTests
             var builtIn = sourceDisplay["preset"]!.GetValue<string>(); sourceDisplay.Remove("preset");
             var actual = JsonNode.Parse(ProfileJson.Serialize(profile.Current))!["profile"]!["display"]!;
             Assert.Equal(builtIn, actual["preset"]!["builtIn"]!.GetValue<string>());
+            foreach (var key in new[] { "time", "date", "weekday", "status" })
+                sourceDisplay[key]!["font"]!["familyId"] = sourceDisplay[key]!["font"]!["family"]!.DeepClone();
             Assert.True(JsonNode.DeepEquals(sourceDisplay, actual["settings"]));
         }
         expected.Remove("display");
         Assert.Null(profile.SaveLunch(profile.Current.ShowLunch));
         var saved = JsonNode.Parse(File.ReadAllBytes(temp.File))!;
-        Assert.Equal(3, saved["schemaVersion"]!.GetValue<int>());
+        Assert.Equal(4, saved["schemaVersion"]!.GetValue<int>());
         var actualProfile = saved["profile"]!.AsObject(); actualProfile.Remove("display"); actualProfile.Remove("displayPresets");
         Assert.True(JsonNode.DeepEquals(expected, actualProfile));
     }

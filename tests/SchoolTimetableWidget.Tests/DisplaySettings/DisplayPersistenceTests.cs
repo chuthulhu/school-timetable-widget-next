@@ -20,7 +20,7 @@ public class DisplayPersistenceTests
     }
 
     [Fact]
-    public void V1LoadsAllInputsExactlyWithoutRewriteOrDegradationAndNextSaveWritesV3()
+    public void V1LoadsAllInputsExactlyWithoutRewriteOrDegradationAndNextSaveWritesV4()
     {
         using var temp = new TempProfile();
         var original = V1(); File.WriteAllBytes(temp.File, original);
@@ -39,7 +39,7 @@ public class DisplayPersistenceTests
             Assert.Equal(original, File.ReadAllBytes(temp.File)); Assert.Equal(modified, File.GetLastWriteTimeUtc(temp.File));
             Assert.Null(profile.SaveDisplay(DisplayPresets.Create(DisplayPreset.Digital)));
             var saved = JsonNode.Parse(File.ReadAllBytes(temp.File))!;
-            Assert.Equal(3, saved["schemaVersion"]!.GetValue<int>());
+            Assert.Equal(4, saved["schemaVersion"]!.GetValue<int>());
             saved["profile"]!.AsObject().Remove("display");
             saved["profile"]!.AsObject().Remove("displayPresets");
             Assert.True(JsonNode.DeepEquals(expected, saved["profile"]));
@@ -51,7 +51,7 @@ public class DisplayPersistenceTests
     [Theory]
     [InlineData(DisplayPreset.Standard)] [InlineData(DisplayPreset.Digital)]
     [InlineData(DisplayPreset.Compact)] [InlineData(DisplayPreset.Minimal)]
-    public void V3RoundTripPreservesAllOverridesAndLogicalMissingFont(DisplayPreset preset)
+    public void V4RoundTripPreservesAllOverridesAndLogicalMissingFont(DisplayPreset preset)
     {
         var sample = ProfileStorageTests.Sample();
         var display = DisplayPresets.Create(preset);
@@ -103,7 +103,7 @@ public class DisplayPersistenceTests
 
     [Theory]
     [MemberData(nameof(InvalidDisplay))]
-    public void InvalidV3FailsClosedWithoutPartialLoadOrOverwrite(string name, string json)
+    public void InvalidV4FailsClosedWithoutPartialLoadOrOverwrite(string name, string json)
     {
         Assert.NotEmpty(name);
         using var temp = new TempProfile(); File.WriteAllText(temp.File, json);

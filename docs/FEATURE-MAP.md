@@ -299,3 +299,17 @@ This supersedes prior named-preset PLANNED and current-writer-v2 entries.
 | Online font catalog | PLANNED | No network/download/cache |
 
 [ADR 0015](adr/0015-user-display-presets-and-schema-v3.md), [evidence](DISPLAY-SETTINGS.md).
+
+## Bundled + online fonts — current 2026-09-11
+
+| Feature | Current status | Boundary |
+| --- | --- | --- |
+| Bundled catalog | IMPLEMENTED — NATIVE UX APPROVED | Pretendard, DSEG7 Modern/Classic, licensed WPF resources |
+| Online catalog | IMPLEMENTED — NATIVE UX APPROVED | Orbitron, IBM Plex Mono, explicit pinned HTTPS download |
+| Private local resolution / fallback | IMPLEMENTED — VERIFIED — NATIVE UX APPROVED | Exact hash, isolated cache, missing identity preserved |
+| Mixed fonts and user presets | IMPLEMENTED — VERIFIED — NATIVE UX APPROVED | Time/Date/Weekday/Status, schema v4; strict v1/v2/v3 readers |
+| Save As selector P2 | FIXED — VERIFIED — NATIVE UX APPROVED | Stable-ID matching, collection refresh/rename/Apply/Cancel/reopen |
+| Local font import / full cache UI / preset import-export / themes | PLANNED | Outside current scope |
+
+This current section supersedes earlier no-assets/no-network/PLANNED entries for the implemented font scope.
+License provenance, final validation and native approval: [Font Catalog](FONT-CATALOG.md).

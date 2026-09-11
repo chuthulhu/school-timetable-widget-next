@@ -27,4 +27,9 @@
   </ItemGroup>
 
   <ItemGroup><EmbeddedResource Include="DisplaySettings\profile-v1.json" /><EmbeddedResource Include="DisplaySettings\profile-v2.json" /></ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="DisplaySettings\profile-v3.json" />
+    <EmbeddedResource Include="Fonts\Orbitron-Light.ttf" />
+    <None Include="..\..\src\SchoolTimetableWidget.Desktop\Assets\Fonts\Orbitron-LICENSE.txt" Link="Fonts\Orbitron-LICENSE.txt" CopyToOutputDirectory="PreserveNewest" />
+  </ItemGroup>
 </Project>

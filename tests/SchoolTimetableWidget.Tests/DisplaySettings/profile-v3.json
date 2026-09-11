@@ -1,0 +1,533 @@
+{
+  "schemaVersion": 3,
+  "profile": {
+    "timetable": [
+      {
+        "schoolDay": "Monday",
+        "periodNumber": 1,
+        "subjectText": "",
+        "classText": " 1-1 "
+      },
+      {
+        "schoolDay": "Tuesday",
+        "periodNumber": 1,
+        "subjectText": "",
+        "classText": " 1-1 "
+      },
+      {
+        "schoolDay": "Wednesday",
+        "periodNumber": 1,
+        "subjectText": "",
+        "classText": " 1-1 "
+      },
+      {
+        "schoolDay": "Thursday",
+        "periodNumber": 1,
+        "subjectText": "",
+        "classText": " 1-1 "
+      },
+      {
+        "schoolDay": "Friday",
+        "periodNumber": 1,
+        "subjectText": "",
+        "classText": " 1-1 "
+      },
+      {
+        "schoolDay": "Monday",
+        "periodNumber": 2,
+        "subjectText": "물리",
+        "classText": " 2-1 "
+      },
+      {
+        "schoolDay": "Tuesday",
+        "periodNumber": 2,
+        "subjectText": "물리",
+        "classText": " 2-1 "
+      },
+      {
+        "schoolDay": "Wednesday",
+        "periodNumber": 2,
+        "subjectText": "물리",
+        "classText": " 2-1 "
+      },
+      {
+        "schoolDay": "Thursday",
+        "periodNumber": 2,
+        "subjectText": "물리",
+        "classText": " 2-1 "
+      },
+      {
+        "schoolDay": "Friday",
+        "periodNumber": 2,
+        "subjectText": "물리",
+        "classText": " 2-1 "
+      },
+      {
+        "schoolDay": "Monday",
+        "periodNumber": 3,
+        "subjectText": " 앞뒤 공백 ",
+        "classText": " 3-1 "
+      },
+      {
+        "schoolDay": "Tuesday",
+        "periodNumber": 3,
+        "subjectText": " 앞뒤 공백 ",
+        "classText": " 3-1 "
+      },
+      {
+        "schoolDay": "Wednesday",
+        "periodNumber": 3,
+        "subjectText": " 앞뒤 공백 ",
+        "classText": " 3-1 "
+      },
+      {
+        "schoolDay": "Thursday",
+        "periodNumber": 3,
+        "subjectText": " 앞뒤 공백 ",
+        "classText": " 3-1 "
+      },
+      {
+        "schoolDay": "Friday",
+        "periodNumber": 3,
+        "subjectText": " 앞뒤 공백 ",
+        "classText": " 3-1 "
+      },
+      {
+        "schoolDay": "Monday",
+        "periodNumber": 4,
+        "subjectText": "줄1\n줄2",
+        "classText": " 4-1 "
+      },
+      {
+        "schoolDay": "Tuesday",
+        "periodNumber": 4,
+        "subjectText": "줄1\n줄2",
+        "classText": " 4-1 "
+      },
+      {
+        "schoolDay": "Wednesday",
+        "periodNumber": 4,
+        "subjectText": "줄1\n줄2",
+        "classText": " 4-1 "
+      },
+      {
+        "schoolDay": "Thursday",
+        "periodNumber": 4,
+        "subjectText": "줄1\n줄2",
+        "classText": " 4-1 "
+      },
+      {
+        "schoolDay": "Friday",
+        "periodNumber": 4,
+        "subjectText": "줄1\n줄2",
+        "classText": " 4-1 "
+      },
+      {
+        "schoolDay": "Monday",
+        "periodNumber": 5,
+        "subjectText": " \t ",
+        "classText": " 5-1 "
+      },
+      {
+        "schoolDay": "Tuesday",
+        "periodNumber": 5,
+        "subjectText": " \t ",
+        "classText": " 5-1 "
+      },
+      {
+        "schoolDay": "Wednesday",
+        "periodNumber": 5,
+        "subjectText": " \t ",
+        "classText": " 5-1 "
+      },
+      {
+        "schoolDay": "Thursday",
+        "periodNumber": 5,
+        "subjectText": " \t ",
+        "classText": " 5-1 "
+      },
+      {
+        "schoolDay": "Friday",
+        "periodNumber": 5,
+        "subjectText": " \t ",
+        "classText": " 5-1 "
+      },
+      {
+        "schoolDay": "Monday",
+        "periodNumber": 6,
+        "subjectText": "한글 😀",
+        "classText": " 6-1 "
+      },
+      {
+        "schoolDay": "Tuesday",
+        "periodNumber": 6,
+        "subjectText": "한글 😀",
+        "classText": " 6-1 "
+      },
+      {
+        "schoolDay": "Wednesday",
+        "periodNumber": 6,
+        "subjectText": "한글 😀",
+        "classText": " 6-1 "
+      },
+      {
+        "schoolDay": "Thursday",
+        "periodNumber": 6,
+        "subjectText": "한글 😀",
+        "classText": " 6-1 "
+      },
+      {
+        "schoolDay": "Friday",
+        "periodNumber": 6,
+        "subjectText": "한글 😀",
+        "classText": " 6-1 "
+      },
+      {
+        "schoolDay": "Monday",
+        "periodNumber": 7,
+        "subjectText": "반",
+        "classText": " 7-1 "
+      },
+      {
+        "schoolDay": "Tuesday",
+        "periodNumber": 7,
+        "subjectText": "반",
+        "classText": " 7-1 "
+      },
+      {
+        "schoolDay": "Wednesday",
+        "periodNumber": 7,
+        "subjectText": "반",
+        "classText": " 7-1 "
+      },
+      {
+        "schoolDay": "Thursday",
+        "periodNumber": 7,
+        "subjectText": "반",
+        "classText": " 7-1 "
+      },
+      {
+        "schoolDay": "Friday",
+        "periodNumber": 7,
+        "subjectText": "반",
+        "classText": " 7-1 "
+      }
+    ],
+    "periodSchedule": [
+      {
+        "periodNumber": 1,
+        "start": "09:00:00.0000123",
+        "end": "09:50:00.0000456"
+      },
+      {
+        "periodNumber": 2,
+        "start": "10:00:00.0000123",
+        "end": "10:50:00.0000456"
+      },
+      {
+        "periodNumber": 3,
+        "start": "11:00:00.0000123",
+        "end": "11:50:00.0000456"
+      },
+      {
+        "periodNumber": 4,
+        "start": "12:00:00.0000123",
+        "end": "12:50:00.0000456"
+      },
+      {
+        "periodNumber": 5,
+        "start": "14:00:00.0000123",
+        "end": "14:50:00.0000456"
+      },
+      {
+        "periodNumber": 6,
+        "start": "15:00:00.0000123",
+        "end": "15:50:00.0000456"
+      },
+      {
+        "periodNumber": 7,
+        "start": "16:00:00.0000123",
+        "end": "16:50:00.0000456"
+      }
+    ],
+    "dateOverrides": [
+      {
+        "date": "2026-09-07",
+        "timetable": [
+          {
+            "schoolDay": "Monday",
+            "periodNumber": 1,
+            "subjectText": "날짜 교과 1",
+            "classText": " 날짜 반 1 "
+          },
+          {
+            "schoolDay": "Monday",
+            "periodNumber": 2,
+            "subjectText": "날짜 교과 2",
+            "classText": " 날짜 반 2 "
+          },
+          {
+            "schoolDay": "Monday",
+            "periodNumber": 3,
+            "subjectText": "날짜 교과 3",
+            "classText": " 날짜 반 3 "
+          },
+          {
+            "schoolDay": "Monday",
+            "periodNumber": 4,
+            "subjectText": "날짜 교과 4",
+            "classText": " 날짜 반 4 "
+          },
+          {
+            "schoolDay": "Monday",
+            "periodNumber": 5,
+            "subjectText": "날짜 교과 5",
+            "classText": " 날짜 반 5 "
+          },
+          {
+            "schoolDay": "Monday",
+            "periodNumber": 6,
+            "subjectText": "날짜 교과 6",
+            "classText": " 날짜 반 6 "
+          },
+          {
+            "schoolDay": "Monday",
+            "periodNumber": 7,
+            "subjectText": "날짜 교과 7",
+            "classText": " 날짜 반 7 "
+          }
+        ],
+        "periodSchedule": null
+      },
+      {
+        "date": "2026-09-08",
+        "timetable": null,
+        "periodSchedule": [
+          {
+            "periodNumber": 1,
+            "start": "09:00:00.0000123",
+            "end": "09:50:00.0000456"
+          },
+          {
+            "periodNumber": 2,
+            "start": "10:00:00.0000123",
+            "end": "10:50:00.0000456"
+          },
+          {
+            "periodNumber": 3,
+            "start": "11:00:00.0000123",
+            "end": "11:50:00.0000456"
+          },
+          {
+            "periodNumber": 4,
+            "start": "12:00:00.0000123",
+            "end": "12:50:00.0000456"
+          },
+          {
+            "periodNumber": 5,
+            "start": "14:00:00.0000123",
+            "end": "14:50:00.0000456"
+          },
+          {
+            "periodNumber": 6,
+            "start": "15:00:00.0000123",
+            "end": "15:50:00.0000456"
+          },
+          {
+            "periodNumber": 7,
+            "start": "16:00:00.0000123",
+            "end": "16:50:00.0000456"
+          }
+        ]
+      },
+      {
+        "date": "2026-09-09",
+        "timetable": [
+          {
+            "schoolDay": "Wednesday",
+            "periodNumber": 1,
+            "subjectText": "날짜 교과 1",
+            "classText": " 날짜 반 1 "
+          },
+          {
+            "schoolDay": "Wednesday",
+            "periodNumber": 2,
+            "subjectText": "날짜 교과 2",
+            "classText": " 날짜 반 2 "
+          },
+          {
+            "schoolDay": "Wednesday",
+            "periodNumber": 3,
+            "subjectText": "날짜 교과 3",
+            "classText": " 날짜 반 3 "
+          },
+          {
+            "schoolDay": "Wednesday",
+            "periodNumber": 4,
+            "subjectText": "날짜 교과 4",
+            "classText": " 날짜 반 4 "
+          },
+          {
+            "schoolDay": "Wednesday",
+            "periodNumber": 5,
+            "subjectText": "날짜 교과 5",
+            "classText": " 날짜 반 5 "
+          },
+          {
+            "schoolDay": "Wednesday",
+            "periodNumber": 6,
+            "subjectText": "날짜 교과 6",
+            "classText": " 날짜 반 6 "
+          },
+          {
+            "schoolDay": "Wednesday",
+            "periodNumber": 7,
+            "subjectText": "날짜 교과 7",
+            "classText": " 날짜 반 7 "
+          }
+        ],
+        "periodSchedule": [
+          {
+            "periodNumber": 1,
+            "start": "09:00:00.0000123",
+            "end": "09:50:00.0000456"
+          },
+          {
+            "periodNumber": 2,
+            "start": "10:00:00.0000123",
+            "end": "10:50:00.0000456"
+          },
+          {
+            "periodNumber": 3,
+            "start": "11:00:00.0000123",
+            "end": "11:50:00.0000456"
+          },
+          {
+            "periodNumber": 4,
+            "start": "12:00:00.0000123",
+            "end": "12:50:00.0000456"
+          },
+          {
+            "periodNumber": 5,
+            "start": "14:00:00.0000123",
+            "end": "14:50:00.0000456"
+          },
+          {
+            "periodNumber": 6,
+            "start": "15:00:00.0000123",
+            "end": "15:50:00.0000456"
+          },
+          {
+            "periodNumber": 7,
+            "start": "16:00:00.0000123",
+            "end": "16:50:00.0000456"
+          }
+        ]
+      }
+    ],
+    "presentation": {
+      "showLunchBetweenPeriods4And5": true
+    },
+    "display": {
+      "preset": {
+        "kind": "User",
+        "builtIn": null,
+        "userId": "d82cfac1-a751-40f2-a242-0a065d973945"
+      },
+      "settings": {
+        "layout": "Digital",
+        "time": {
+          "font": {
+            "source": "System",
+            "family": "Missing Portable Family"
+          },
+          "size": 56,
+          "weight": "Bold",
+          "style": "Italic"
+        },
+        "date": {
+          "font": {
+            "source": "System",
+            "family": "Segoe UI"
+          },
+          "size": 19,
+          "weight": "Normal",
+          "style": "Normal"
+        },
+        "weekday": {
+          "font": {
+            "source": "System",
+            "family": "Malgun Gothic"
+          },
+          "size": 21,
+          "weight": "Thin",
+          "style": "Normal"
+        },
+        "status": {
+          "font": {
+            "source": "System",
+            "family": "Segoe UI"
+          },
+          "size": 17,
+          "weight": "Medium",
+          "style": "Normal"
+        },
+        "use24Hour": false,
+        "showSeconds": false,
+        "showDate": true,
+        "showWeekday": true,
+        "showStatus": false
+      }
+    },
+    "displayPresets": [
+      {
+        "id": "d82cfac1-a751-40f2-a242-0a065d973945",
+        "name": "기존 교무실 시계",
+        "settings": {
+          "layout": "Digital",
+          "time": {
+            "font": {
+              "source": "System",
+              "family": "Missing Portable Family"
+            },
+            "size": 56,
+            "weight": "Bold",
+            "style": "Italic"
+          },
+          "date": {
+            "font": {
+              "source": "System",
+              "family": "Segoe UI"
+            },
+            "size": 19,
+            "weight": "Normal",
+            "style": "Normal"
+          },
+          "weekday": {
+            "font": {
+              "source": "System",
+              "family": "Malgun Gothic"
+            },
+            "size": 21,
+            "weight": "Thin",
+            "style": "Normal"
+          },
+          "status": {
+            "font": {
+              "source": "System",
+              "family": "Segoe UI"
+            },
+            "size": 17,
+            "weight": "Medium",
+            "style": "Normal"
+          },
+          "use24Hour": false,
+          "showSeconds": false,
+          "showDate": true,
+          "showWeekday": true,
+          "showStatus": false
+        }
+      }
+    ]
+  }
+}

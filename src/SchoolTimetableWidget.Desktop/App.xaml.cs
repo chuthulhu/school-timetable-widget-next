@@ -1,3 +1,4 @@
+using SchoolTimetableWidget.Desktop.Infrastructure.Fonts;
 using System.IO;
 using SchoolTimetableWidget.Desktop.Features.Persistence;
 using SchoolTimetableWidget.Desktop.Infrastructure.Persistence;
@@ -32,11 +33,13 @@ public partial class App : Application
         if (periodPreview) ApplicationClock = new PeriodSchedulePreviewClock();
         var headerViewModel = new CurrentStatusHeaderViewModel();
         ProfileSession profile;
+        var fonts = FontLibrary.LocalOnly;
         try
         {
             var directory = DevelopmentProfileLocation.FromArguments(e.Args) ??
                 (preview ? DevelopmentProfileLocation.CreateTemporary() : ProfileLocation.ForCurrentUser());
             _profileStore = new JsonProfileStore(directory);
+            fonts = new FontLibrary(new DownloadedFontCache(directory));
             var seed = preview ? new ProfileSnapshot(TimetablePreviewData.Create(), new(DefaultPeriodSchedule.Periods), [], false) : null;
             profile = new ProfileSession(_profileStore, seed);
         }
@@ -48,7 +51,7 @@ public partial class App : Application
         var runtime = new ProfileRuntime(profile, () => _statusRefreshLoop!.RefreshNow(), date =>
         {
             if (_statusRefreshLoop!.CurrentDate == date) _statusRefreshLoop.RefreshNow();
-        });
+        }, fonts);
         headerViewModel.SetDisplay(runtime.Display.Current);
         runtime.Display.Changed += (_, _) => headerViewModel.SetDisplay(runtime.Display.Current);
         var timetableViewModel = runtime.Timetable;

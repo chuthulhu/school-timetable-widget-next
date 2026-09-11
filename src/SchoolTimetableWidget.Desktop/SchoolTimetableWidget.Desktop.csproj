@@ -13,4 +13,10 @@
     <UseWPF>true</UseWPF>
   </PropertyGroup>
 
+  <ItemGroup>
+    <Resource Include="Assets\Fonts\**\*.ttf" />
+    <EmbeddedResource Include="Assets\Fonts\catalog.json" />
+    <Content Include="Assets\Fonts\*-LICENSE.txt" CopyToOutputDirectory="PreserveNewest" CopyToPublishDirectory="PreserveNewest" />
+    <Content Include="Assets\Fonts\catalog.json" CopyToOutputDirectory="PreserveNewest" CopyToPublishDirectory="PreserveNewest" />
+  </ItemGroup>
 </Project>

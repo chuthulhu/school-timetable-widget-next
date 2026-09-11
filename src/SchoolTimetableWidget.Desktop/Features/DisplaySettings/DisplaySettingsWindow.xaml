@@ -6,7 +6,7 @@
         Title="표시 설정" Width="730" Height="640" MinWidth="640" MinHeight="420"
         WindowStartupLocation="CenterOwner" ShowInTaskbar="False" FontSize="14">
     <Window.Resources>
-        <local:MissingFontMessageConverter x:Key="MissingFontMessage"/>
+        <BooleanToVisibilityConverter x:Key="BooleanVisibility"/>
         <Style TargetType="Button">
             <Setter Property="Padding" Value="16,7"/>
             <Setter Property="MinWidth" Value="76"/>
@@ -38,7 +38,7 @@
                     <Label Content="표시 스타일" Target="{Binding ElementName=PresetSelector}" VerticalAlignment="Center" Width="100"/>
                     <ComboBox x:Name="PresetSelector" ItemsSource="{Binding PresetChoices}"
                               SelectedValuePath="Value" DisplayMemberPath="Label"
-                              SelectedValue="{Binding Preset, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                              SelectedItem="{Binding SelectedPresetChoice, Mode=OneWay}" SelectionChanged="PresetSelectionChanged"
                               AutomationProperties.Name="표시 스타일"/>
                 </DockPanel>
                 <WrapPanel Margin="0,0,0,10">
@@ -68,12 +68,16 @@
                                             <ColumnDefinition Width="94"/>
                                         </Grid.ColumnDefinitions>
                                         <Grid.RowDefinitions><RowDefinition Height="Auto"/><RowDefinition Height="Auto"/></Grid.RowDefinitions>
-                                        <TextBlock Text="글꼴" Margin="0,0,0,5"/>
+                                        <StackPanel Orientation="Horizontal" Margin="0,0,0,5">
+                                            <ComboBox x:Name="FontSourceSelector" Width="140"
+                                                      ItemsSource="{x:Static local:DisplayChoices.FontSources}" DisplayMemberPath="Label" SelectedValuePath="Value"
+                                                      SelectedValue="{Binding Source, Mode=TwoWay}" AutomationProperties.Name="{Binding Label, StringFormat={}{0} 글꼴 종류}"/>
+                                        </StackPanel>
                                         <TextBlock Grid.Column="1" Text="글자 크기" Margin="8,0,0,5"/>
                                         <TextBlock Grid.Column="2" Text="굵기" Margin="8,0,0,5"/>
                                         <TextBlock Grid.Column="3" Text="글자 모양" Margin="8,0,0,5"/>
-                                        <ComboBox x:Name="FontSelector" Grid.Row="1" IsEditable="True" IsTextSearchEnabled="True"
-                                                  ItemsSource="{Binding Families, Source={x:Static windows:SystemFontCatalog.Current}}"
+                                        <ComboBox x:Name="FontSelector" Grid.Row="1" IsEditable="{Binding IsSystem}" IsTextSearchEnabled="True"
+                                                  ItemsSource="{Binding Families}"
                                                   Text="{Binding Family, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
                                                   AutomationProperties.Name="{Binding Label, StringFormat={}{0} 글꼴}"/>
                                         <TextBox x:Name="SizeInput" Grid.Row="1" Grid.Column="1" Margin="8,0,0,0" Padding="6,4"
@@ -88,8 +92,15 @@
                                                   SelectedValue="{Binding Style, Mode=TwoWay}"
                                                   AutomationProperties.Name="{Binding Label, StringFormat={}{0} 글자 모양}"/>
                                     </Grid>
-                                    <TextBlock Text="{Binding Family, Converter={StaticResource MissingFontMessage}}"
-                                               Foreground="#755000" FontSize="12" TextWrapping="Wrap"/>
+                                    <DockPanel Margin="0,6,0,0">
+                                        <Button x:Name="DownloadFontButton" DockPanel.Dock="Right" Content="{Binding DownloadLabel}"
+                                                IsEnabled="{Binding CanDownload}" Click="DownloadFont_Click"
+                                                Visibility="{Binding IsOnline, Converter={StaticResource BooleanVisibility}}"/>
+                                        <TextBlock Text="{Binding FontStatus}" Foreground="#755000" FontSize="12" TextWrapping="Wrap" VerticalAlignment="Center"/>
+                                    </DockPanel>
+                                    <Expander Header="글꼴 정보 / 라이선스" FontSize="12" Margin="0,4,0,0">
+                                        <TextBlock Text="{Binding FontInformation}" TextWrapping="Wrap" Foreground="#555555"/>
+                                    </Expander>
                                 </StackPanel>
                             </GroupBox>
                         </DataTemplate>
