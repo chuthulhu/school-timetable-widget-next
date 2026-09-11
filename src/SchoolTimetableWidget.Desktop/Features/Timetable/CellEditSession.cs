@@ -11,9 +11,11 @@ public sealed class CellEditSession : ObservableObject
     private string _classText;
     private string _errorText = "";
     private bool _applying;
+    private readonly Func<string?>? _getCommitError;
 
-    public CellEditSession(string targetLabel, TimetableCellValue initialValue, Func<TimetableCellValue, bool> tryCommit)
+    public CellEditSession(string targetLabel, TimetableCellValue initialValue, Func<TimetableCellValue, bool> tryCommit, Func<string?>? getCommitError = null)
     {
+        _getCommitError = getCommitError;
         ArgumentNullException.ThrowIfNull(targetLabel);
         ArgumentNullException.ThrowIfNull(initialValue);
         ArgumentNullException.ThrowIfNull(tryCommit);
@@ -58,7 +60,7 @@ public sealed class CellEditSession : ObservableObject
             var candidate = new TimetableCellValue(SubjectText, ClassText);
             if (!_tryCommit!(candidate))
             {
-                SetProperty(ref _errorText, "편집 대상이 변경되어 적용하지 못했습니다. 취소 후 다시 열어 주세요.", nameof(ErrorText));
+                SetProperty(ref _errorText, _getCommitError?.Invoke() ?? "편집 대상이 변경되어 적용하지 못했습니다. 취소 후 다시 열어 주세요.", nameof(ErrorText));
                 return false;
             }
             IsApplied = true;

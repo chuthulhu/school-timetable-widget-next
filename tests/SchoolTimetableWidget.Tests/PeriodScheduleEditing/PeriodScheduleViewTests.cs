@@ -96,7 +96,7 @@ public class PeriodScheduleViewTests
         try
         {
             var root = (Grid)main.Content;
-            var view = (WeeklyTimetableView)root.Children[1];
+            var view = (WeeklyTimetableView)main.FindName("Timetable");
             Assert.Same(editor, view.ScheduleEditor);
             var menu = Assert.Single(view.ContextMenu.Items.OfType<MenuItem>(), item => Equals(item.Header, "일과 시간 편집..."));
             Assert.Same(PeriodScheduleCommands.Edit, menu.Command);
@@ -123,7 +123,7 @@ public class PeriodScheduleViewTests
                 Layout(root);
                 Assert.True(session.IsApplied);
                 Assert.Same(root, main.Content);
-                Assert.Same(view, root.Children[1]);
+                Assert.Same(view, main.FindName("Timetable"));
                 Assert.Same(week, timetable.CommittedTimetable);
                 Assert.Equal(rectangles, bodies.Select(b => new Rect(b.TranslatePoint(new Point(), root), b.RenderSize)));
                 Assert.Equal("5교시 · 종료까지 40분", header.StatusText);

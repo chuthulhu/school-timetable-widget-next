@@ -4,15 +4,18 @@ using SchoolTimetableWidget.Core.Features.Timetable;
 
 namespace SchoolTimetableWidget.Desktop.Features.Timetable;
 
-/// <summary>Owns the accepted in-memory week and its stable cell presentations.</summary>
+/// <summary>Owns the accepted week and stable cells; a durable callback may gate each commit.</summary>
 public sealed class WeeklyTimetableViewModel
 {
     private readonly Dictionary<(SchoolDay Day, int PeriodNumber), TimetableCellViewModel> _cellsBySlot;
     private TimetableCellViewModel? _currentCell;
     private bool _publishing;
+    private readonly Func<WeeklyTimetable, string?>? _persist;
+    public string? CommitError { get; private set; }
 
-    public WeeklyTimetableViewModel(WeeklyTimetable timetable)
+    public WeeklyTimetableViewModel(WeeklyTimetable timetable, Func<WeeklyTimetable, string?>? persist = null)
     {
+        _persist = persist;
         ArgumentNullException.ThrowIfNull(timetable);
         CommittedTimetable = timetable;
         var cells = timetable.Cells.Select(cell => new TimetableCellViewModel(
@@ -53,8 +56,10 @@ public sealed class WeeklyTimetableViewModel
 
     internal bool TryCommitCell(TimetableCell baseline, TimetableCellValue value)
     {
+        CommitError = null;
         if (_publishing || !ReferenceEquals(CommittedTimetable[baseline.Day, baseline.PeriodNumber], baseline)) return false;
         var next = CommittedTimetable.WithCellValue(baseline.Day, baseline.PeriodNumber, value);
+        if ((CommitError = _persist?.Invoke(next)) is not null) return false;
         Publish(EffectiveDayResolver.ProjectTimetable(next, DisplayedOverride), () => CommittedTimetable = next);
         return true;
     }
@@ -62,9 +67,11 @@ public sealed class WeeklyTimetableViewModel
     /// <summary>UI-dispatcher transaction: prepare every projection before a single accepted-week swap.</summary>
     public bool TryReplaceTimetable(WeeklyTimetable baseline, WeeklyTimetable replacement)
     {
+        CommitError = null;
         ArgumentNullException.ThrowIfNull(baseline);
         ArgumentNullException.ThrowIfNull(replacement);
         if (_publishing || Editor.ActiveSession is not null || !ReferenceEquals(CommittedTimetable, baseline)) return false;
+        if ((CommitError = _persist?.Invoke(replacement)) is not null) return false;
         Publish(EffectiveDayResolver.ProjectTimetable(replacement, DisplayedOverride), () => CommittedTimetable = replacement);
         return true;
     }

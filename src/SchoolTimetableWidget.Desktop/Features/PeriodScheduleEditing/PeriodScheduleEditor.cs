@@ -13,7 +13,7 @@ public sealed class PeriodScheduleEditor(RuntimePeriodSchedule target, Action re
             if (!target.TryReplace(baseline, candidate)) return false;
             refreshAfterApply();
             return true;
-        });
+        }, () => target.CommitError);
     }
 
     public void ShowEditor(Window owner)

@@ -69,3 +69,12 @@ OS adapter 보상/재시도 상세, Reset UI 및 큰 minimum의 overflow UX.
 이 ADR을 별도로 만든 이유는 성공 Apply baseline, 실패, Cancel/Theme/Reset 관계를 하나의 검토 단위로
 참조하기 위해서다. P2 승인에 따라 Accepted로 변경했으며 Product Contract와 함께 일관성을 유지한다.
 저장 format이나 OS adapter 상세까지 승인된 것으로 확대하지 않는다.
+
+## Native persistence follow-up — 2026-09-11
+
+[ADR 0012](0012-native-local-profile-persistence.md) resolves native v1 storage technology,
+whole-profile save ordering, writer exclusion and the user's approved A startup-failure
+policy. Corrupt/unsupported profiles remain untouched; temporary defaults are labeled and
+all commits blocked. No automatic recovery. The original DEFERRED crash-recovery entry
+continues to apply to future backup/restore and broader durability design, not to this
+now-approved native load-failure UX. Settings P2 behavior remains unchanged.

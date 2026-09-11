@@ -27,7 +27,7 @@
             <Button x:Name="ReadClipboardButton" DockPanel.Dock="Right" Content="클립보드 다시 읽기" Padding="12,6" Click="ReadClipboard_Click" />
             <TextBlock Text="{Binding ModeLabel}" FontSize="22" FontWeight="SemiBold" VerticalAlignment="Center" />
         </DockPanel>
-        <TextBlock Grid.Row="1" Text="편집 대상: 기본 시간표. 적용하면 기본 35셀 전체가 바뀌며 날짜별 예외는 유지됩니다. 변경 내용은 앱을 종료할 때까지 유지됩니다."
+        <TextBlock Grid.Row="1" Text="편집 대상: 기본 시간표. 적용하면 기본 35셀 전체가 바뀌며 날짜별 예외는 유지됩니다. 적용에 성공한 변경은 저장되어 앱을 다시 실행해도 유지됩니다."
                    TextWrapping="Wrap" Margin="0,0,0,12" />
         <DockPanel Grid.Row="2" Margin="0,0,0,8">
             <Label Content="가져올 후보" Target="{Binding ElementName=CandidateSelector}" />

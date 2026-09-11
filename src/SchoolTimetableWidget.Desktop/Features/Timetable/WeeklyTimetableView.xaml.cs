@@ -32,7 +32,12 @@ public partial class WeeklyTimetableView : UserControl
     private void Lunch_Executed(object sender, ExecutedRoutedEventArgs e)
     {
         e.Handled = true;
-        if (LunchOption is not null) LunchOption.Enabled = !LunchOption.Enabled;
+        if (LunchOption is not null)
+        {
+            LunchOption.Enabled = !LunchOption.Enabled;
+            if (LunchOption.ErrorText.Length != 0 && Window.GetWindow(this) is { IsVisible: true } owner)
+                MessageBox.Show(owner, LunchOption.ErrorText, "저장 불가", MessageBoxButton.OK, MessageBoxImage.Warning);
+        }
     }
 
     public PeriodScheduleEditor? ScheduleEditor { get; set; }

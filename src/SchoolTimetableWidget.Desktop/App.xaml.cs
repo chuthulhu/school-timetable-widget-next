@@ -1,11 +1,10 @@
-using SchoolTimetableWidget.Desktop.Features.PeriodScheduleEditing;
+using System.IO;
+using SchoolTimetableWidget.Desktop.Features.Persistence;
+using SchoolTimetableWidget.Desktop.Infrastructure.Persistence;
 using SchoolTimetableWidget.Desktop.Features.TimetableImport;
 using SchoolTimetableWidget.Desktop.Infrastructure.Windows;
 using System.Windows;
-using SchoolTimetableWidget.Core.Features.SchoolDays;
-using SchoolTimetableWidget.Desktop.Features.DateOverrides;
 using SchoolTimetableWidget.Core.Features.Periods;
-using SchoolTimetableWidget.Core.Features.Timetable;
 using SchoolTimetableWidget.Core.Time;
 using SchoolTimetableWidget.Desktop.Development;
 using SchoolTimetableWidget.Desktop.Features.CurrentStatus;
@@ -19,6 +18,7 @@ public partial class App : Application
 {
     internal IApplicationClock ApplicationClock { get; private set; } = new PcFallbackApplicationClock();
     private CurrentStatusRefreshLoop? _statusRefreshLoop;
+    private JsonProfileStore? _profileStore;
 
     protected override void OnStartup(StartupEventArgs e)
     {
@@ -31,28 +31,35 @@ public partial class App : Application
         if (highlightPreview) ApplicationClock = new HighlightPreviewClock();
         if (periodPreview) ApplicationClock = new PeriodSchedulePreviewClock();
         var headerViewModel = new CurrentStatusHeaderViewModel();
-        var timetable = preview ? TimetablePreviewData.Create() : WeeklyTimetable.Empty();
-        var timetableViewModel = new WeeklyTimetableViewModel(timetable);
-        var baseSchedule = new RuntimePeriodSchedule(new PeriodSchedule(DefaultPeriodSchedule.Periods));
-        var overrides = new RuntimeDateOverrides();
-        var lunch = new LunchPresentationOption(() => _statusRefreshLoop!.RefreshNow());
+        ProfileSession profile;
+        try
+        {
+            var directory = DevelopmentProfileLocation.FromArguments(e.Args) ??
+                (preview ? DevelopmentProfileLocation.CreateTemporary() : ProfileLocation.ForCurrentUser());
+            _profileStore = new JsonProfileStore(directory);
+            var seed = preview ? new ProfileSnapshot(TimetablePreviewData.Create(), new(DefaultPeriodSchedule.Periods), [], false) : null;
+            profile = new ProfileSession(_profileStore, seed);
+        }
+        catch (Exception error) when (error is IOException or UnauthorizedAccessException or ArgumentException or System.Security.SecurityException)
+        {
+            System.Diagnostics.Debug.WriteLine(error);
+            profile = ProfileSession.Unavailable("사용자 데이터 경로를 확인할 수 없습니다.");
+        }
+        var runtime = new ProfileRuntime(profile, () => _statusRefreshLoop!.RefreshNow(), date =>
+        {
+            if (_statusRefreshLoop!.CurrentDate == date) _statusRefreshLoop.RefreshNow();
+        });
+        var timetableViewModel = runtime.Timetable;
         _statusRefreshLoop = new CurrentStatusRefreshLoop(ApplicationClock,
-            date => EffectiveDayResolver.Resolve(date, timetableViewModel.CommittedTimetable, baseSchedule.Current, overrides.Get(date)),
-            headerViewModel, timetableViewModel, () => lunch.Enabled);
-        var dateEditor = new DateOverrideEditor(overrides, () => timetableViewModel.CommittedTimetable,
-            () => baseSchedule.Current, date =>
-            {
-                if (_statusRefreshLoop.CurrentDate == date) _statusRefreshLoop.RefreshNow();
-            });
-        timetableViewModel.Editor.DateEditor = dateEditor;
+            runtime.Resolve, headerViewModel, timetableViewModel, () => runtime.Lunch.Enabled);
         try
         {
             MainWindow = new MainWindow(headerViewModel, timetableViewModel,
-                new PeriodScheduleEditor(baseSchedule, _statusRefreshLoop.RefreshNow));
+                runtime.ScheduleEditor, profile.LoadResult.Notice);
             var timetableView = (WeeklyTimetableView)MainWindow.FindName("Timetable");
-            timetableView.DateEditor = dateEditor;
+            timetableView.DateEditor = runtime.DateEditor;
             timetableView.GetCurrentDate = () => _statusRefreshLoop.CurrentDate;
-            timetableView.LunchOption = lunch;
+            timetableView.LunchOption = runtime.Lunch;
             timetableViewModel.ContentChanged += (_, _) => WindowContentMinimum.Refresh(MainWindow);
             if (bulkPreview)
             {
@@ -71,6 +78,7 @@ public partial class App : Application
         catch
         {
             _statusRefreshLoop.Dispose();
+            _profileStore?.Dispose();
             throw;
         }
     }
@@ -78,6 +86,6 @@ public partial class App : Application
     protected override void OnExit(ExitEventArgs e)
     {
         try { _statusRefreshLoop?.Dispose(); }
-        finally { base.OnExit(e); }
+        finally { _profileStore?.Dispose(); base.OnExit(e); }
     }
 }

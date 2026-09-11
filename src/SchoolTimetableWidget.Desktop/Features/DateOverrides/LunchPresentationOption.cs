@@ -1,13 +1,21 @@
 using CommunityToolkit.Mvvm.ComponentModel;
 namespace SchoolTimetableWidget.Desktop.Features.DateOverrides;
 
-/// <summary>Run-local, default-OFF preference. No Settings/persistence contract.</summary>
-public sealed class LunchPresentationOption(Action refresh) : ObservableObject
+/// <summary>Default-OFF presentation preference; optional durable callback precedes publication.</summary>
+public sealed class LunchPresentationOption(Action refresh, bool initial = false, Func<bool, string?>? persist = null) : ObservableObject
 {
-    private bool _enabled;
+    private bool _enabled = initial;
+    private string _errorText = "";
+    public string ErrorText { get => _errorText; private set => SetProperty(ref _errorText, value); }
     public bool Enabled
     {
         get => _enabled;
-        set { if (SetProperty(ref _enabled, value)) refresh(); }
+        set
+        {
+            if (_enabled == value) return;
+            ErrorText = persist?.Invoke(value) ?? "";
+            if (ErrorText.Length != 0) { OnPropertyChanged(nameof(Enabled)); return; }
+            if (SetProperty(ref _enabled, value)) refresh();
+        }
     }
 }

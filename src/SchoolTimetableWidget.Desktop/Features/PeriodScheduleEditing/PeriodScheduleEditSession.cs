@@ -10,9 +10,11 @@ public sealed class PeriodScheduleEditSession : ObservableObject
 {
     private readonly Func<PeriodSchedule, bool> _tryCommit;
     private string _errorText = string.Empty;
+    private readonly Func<string?>? _getCommitError;
 
-    public PeriodScheduleEditSession(PeriodSchedule baseline, Func<PeriodSchedule, bool> tryCommit)
+    public PeriodScheduleEditSession(PeriodSchedule baseline, Func<PeriodSchedule, bool> tryCommit, Func<string?>? getCommitError = null)
     {
+        _getCommitError = getCommitError;
         ArgumentNullException.ThrowIfNull(baseline);
         ArgumentNullException.ThrowIfNull(tryCommit);
         _tryCommit = tryCommit;
@@ -29,7 +31,7 @@ public sealed class PeriodScheduleEditSession : ObservableObject
         if (IsClosed) return false;
         if (!TryCreateCandidate(out var candidate)) return false;
         if (!_tryCommit(candidate!))
-            return Reject("일과 시간이 다른 편집에서 변경되었습니다. 취소 후 다시 열어 주세요.");
+            return Reject(_getCommitError?.Invoke() ?? "일과 시간이 다른 편집에서 변경되었습니다. 취소 후 다시 열어 주세요.");
         IsApplied = true;
         IsClosed = true;
         ErrorText = string.Empty;

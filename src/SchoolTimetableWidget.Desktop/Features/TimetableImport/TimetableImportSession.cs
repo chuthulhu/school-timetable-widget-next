@@ -16,9 +16,11 @@ public sealed class TimetableImportSession : ObservableObject
     private string _errorText = "";
     private bool _mappingConfirmed;
     private bool _applying;
+    private readonly Func<string?>? _getCommitError;
 
-    public TimetableImportSession(TimetableImportMode mode, Func<WeeklyTimetable, bool> tryCommit)
+    public TimetableImportSession(TimetableImportMode mode, Func<WeeklyTimetable, bool> tryCommit, Func<string?>? getCommitError = null)
     {
+        _getCommitError = getCommitError;
         if (!Enum.IsDefined(mode)) throw new ArgumentOutOfRangeException(nameof(mode));
         ArgumentNullException.ThrowIfNull(tryCommit);
         Mode = mode;
@@ -96,7 +98,7 @@ public sealed class TimetableImportSession : ObservableObject
         {
             if (!_tryCommit!(SelectedCandidate!.Timetable))
             {
-                SetProperty(ref _errorText, "현재 시간표가 변경되었거나 셀 편집 중입니다. 취소 후 다시 가져와 주세요.", nameof(ErrorText));
+                SetProperty(ref _errorText, _getCommitError?.Invoke() ?? "현재 시간표가 변경되었거나 셀 편집 중입니다. 취소 후 다시 가져와 주세요.", nameof(ErrorText));
                 return false;
             }
             IsApplied = true;

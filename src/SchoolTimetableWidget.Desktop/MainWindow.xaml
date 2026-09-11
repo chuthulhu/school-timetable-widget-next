@@ -9,9 +9,11 @@
     <Grid MinWidth="{Binding MinWidth, ElementName=Timetable}">
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto" />
+            <RowDefinition Height="Auto" />
             <RowDefinition Height="*" />
         </Grid.RowDefinitions>
         <currentStatus:CurrentStatusHeaderView x:Name="StatusHeader" />
-        <timetable:WeeklyTimetableView x:Name="Timetable" Grid.Row="1" />
+        <TextBlock x:Name="PersistenceNotice" Grid.Row="1" TextWrapping="Wrap" Padding="10" Background="#FFF4D6" Foreground="#573900" Visibility="Collapsed" />
+        <timetable:WeeklyTimetableView x:Name="Timetable" Grid.Row="2" />
     </Grid>
 </Window>

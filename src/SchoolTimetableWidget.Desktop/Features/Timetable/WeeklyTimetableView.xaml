@@ -121,7 +121,7 @@
             <ItemsControl.ItemTemplate>
                 <DataTemplate>
                     <local:TimetableCellControl EditRequested="Cell_EditRequested"
-                                                ToolTip="더블클릭/F2로 표시된 대상 편집 · 우클릭으로 가져오기/일과/날짜별 예외 · Ctrl+V 학교 양식 · 실행 중에만 유지"
+                                                ToolTip="더블클릭/F2로 표시된 대상 편집 · 우클릭으로 가져오기/일과/날짜별 예외 · Ctrl+V 학교 양식 · 적용 성공 시 저장"
                                                 AutomationProperties.Name="{Binding SlotLabel}">
                         <Border Style="{StaticResource BodySlotBorder}" MinHeight="44">
                             <TextBlock Text="{Binding DisplayText, Mode=OneWay}"

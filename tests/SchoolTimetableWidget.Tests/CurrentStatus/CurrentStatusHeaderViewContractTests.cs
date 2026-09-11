@@ -98,16 +98,18 @@ public class CurrentStatusHeaderViewContractTests
         try
         {
             var grid = Assert.IsType<Grid>(window.Content);
-            Assert.Equal(2, grid.Children.Count);
-            var header = Assert.IsType<CurrentStatusHeaderView>(grid.Children[0]);
-            var timetable = Assert.IsType<WeeklyTimetableView>(grid.Children[1]);
+            Assert.Equal(3, grid.Children.Count);
+            Assert.Equal(Visibility.Collapsed, ((TextBlock)window.FindName("PersistenceNotice")).Visibility);
+            var header = Assert.IsType<CurrentStatusHeaderView>(window.FindName("StatusHeader"));
+            var timetable = Assert.IsType<WeeklyTimetableView>(window.FindName("Timetable"));
             Assert.Same(timetableModel, timetable.DataContext);
-            Assert.Equal(1, Grid.GetRow(timetable));
+            Assert.Equal(2, Grid.GetRow(timetable));
             Assert.Same(model, header.DataContext);
             Assert.Equal(0, Grid.GetRow(header));
-            Assert.Equal(2, grid.RowDefinitions.Count);
+            Assert.Equal(3, grid.RowDefinitions.Count);
             Assert.True(grid.RowDefinitions[0].Height.IsAuto);
-            Assert.True(grid.RowDefinitions[1].Height.IsStar);
+            Assert.True(grid.RowDefinitions[1].Height.IsAuto);
+            Assert.True(grid.RowDefinitions[2].Height.IsStar);
             Assert.Equal(SizeToContent.Manual, window.SizeToContent);
             Assert.False(window.IsVisible);
         }

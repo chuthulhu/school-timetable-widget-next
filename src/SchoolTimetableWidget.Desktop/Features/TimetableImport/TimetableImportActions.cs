@@ -11,7 +11,7 @@ public sealed class TimetableImportActions(ISpreadsheetClipboard clipboard, Func
     public TimetableImportSession CreateSession(WeeklyTimetableViewModel target, TimetableImportMode mode)
     {
         var baseline = target.CommittedTimetable;
-        return new(mode, next => target.TryReplaceTimetable(baseline, next));
+        return new(mode, next => target.TryReplaceTimetable(baseline, next), () => target.CommitError);
     }
 
     public void ReadClipboard(TimetableImportSession session)

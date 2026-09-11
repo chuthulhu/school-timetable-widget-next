@@ -198,3 +198,47 @@ These statuses supersede earlier future/exclusion rows for the same features.
 [ADR 0011](adr/0011-effective-day-and-date-overrides.md), [verification](DATE-OVERRIDES.md).
 
 Native acceptance scope and restart evidence are recorded in [Date Overrides](DATE-OVERRIDES.md); automated coverage is broader than the observed native scenarios.
+
+## Local Persistence Foundation — 2026-09-11
+
+Current status supersedes earlier persistence exclusions; user native review accepted on 2026-09-11. Evidence limits are recorded in PERSISTENCE.md.
+
+| Feature | Status | Boundary |
+| --- | --- | --- |
+| Native profile persistence | IMPLEMENTED — AUTOMATED VERIFIED / USER NATIVE REVIEW ACCEPTED | schema 1, per-user profile.json, full validation and atomic save |
+| Base timetable persistence | IMPLEMENTED — AUTOMATED VERIFIED / USER NATIVE REVIEW ACCEPTED | independent 35 SubjectText/ClassText pairs |
+| Base period schedule persistence | IMPLEMENTED — AUTOMATED VERIFIED / USER NATIVE REVIEW ACCEPTED | complete chronological seven periods |
+| Date override persistence | IMPLEMENTED — AUTOMATED VERIFIED / USER NATIVE REVIEW ACCEPTED | independent complete day/schedule components; one logical save |
+| Lunch option persistence | IMPLEMENTED — AUTOMATED VERIFIED / USER NATIVE REVIEW ACCEPTED | boolean only; interval remains derived |
+| Load failure A policy | IMPLEMENTED — AUTOMATED / OBJECT VERIFIED | original untouched, temporary defaults, all commits blocked, visible notice |
+| Full Backup/Restore | PLANNED | no automatic repair/restore or backup UI |
+| Legacy Migration | PLANNED | no legacy reads or writes |
+| Multi-profile / Groups | PLANNED | profile envelope may evolve through schema migration |
+| Semester Sets | PLANNED | no model/UI/import added |
+| Single-instance activation UX | PLANNED | persistence already excludes a second cooperating writer |
+
+[ADR 0012](adr/0012-native-local-profile-persistence.md), [verification](PERSISTENCE.md).
+
+## Future Week Navigation / Date Header — 2026-09-11
+
+사용자 추가 future UI requirement. 아래 항목은 **PLANNED — NOT IMPLEMENTED**이며,
+현재 Persistence milestone의 구현/저장 범위를 확대하지 않는다. 기존 CurrentDateText는
+실제 오늘 날짜 표시이고, 아래 column별 Date Header와 별개다.
+
+| Feature | Status | Requirement / boundary |
+| --- | --- | --- |
+| Week Navigation | PLANNED | 시작 시 실제 현재 주 Monday–Friday; 왼쪽/오른쪽 화살표로 정확히 −7/+7일 이동; weekday 5 columns 유지 |
+| Date Header | PLANNED | 각 요일 위에 대응하는 실제 DateOnly 표시; compact 후보 M/d, zero-padding 필수 아님; customization은 future Display Settings |
+| Effective timetable per column | PLANNED | 표시 주의 각 날짜를 독립 resolve; 그 날짜의 complete 7-cell override 우선, 없으면 해당 Base weekday |
+| Browsing / actual status separation | PLANNED | 다른 주를 보더라도 CurrentDateText/CurrentTimeText/Status/Countdown은 실제 clock 및 오늘 effective schedule 유지 |
+| Date-aware Current Highlight | PLANNED | 실제 오늘이 표시 주에 있을 때만 오늘의 current period 강조; 다른 주의 동일 weekday/period 강조 금지 |
+| Today header indication | PLANNED — presentation direction | 표시 주에 오늘이 있으면 date/weekday header에서 구분하는 방향; 정확한 색상/style은 future design |
+| Editing while browsing | PLANNED | displayed date의 명시적 Base/date provenance에 따라 F2/double-click; 열린 target 고정; 문자열로 source 추측 금지 |
+| School / Canonical Bulk Import target | EXISTING DECISION RETAINED | 항상 Base WeeklyTimetable 전용; browsing 중인 날짜로 자동 변경하지 않음 |
+| Viewed-week persistence | OUT OF CURRENT SCOPE | 현재 profile.json 저장 대상에 추가하지 않음; future View도 기본 재시작 시 현재 주로 복귀 |
+| Today button / return-to-current-week action / date click / week calendar | FUTURE CANDIDATES — NOT DECIDED | 이번 요구에서 확정하거나 구현하지 않음 |
+| Remember last viewed week | FUTURE CANDIDATE — NOT DECIDED | 향후 명시적 사용자 설정으로 검토 가능; 현재 저장 schema/UI에는 없음 |
+
+상세 의미와 future 검증 기준은
+[Architecture — Future Week Navigation / Date Header](ARCHITECTURE.md#future-week-navigation--date-header--2026-09-11)를 따른다.
+이 문서 추가는 현재 Persistence의 automated/native 완료 상태나 commit/push 승인 상태를 바꾸지 않는다.

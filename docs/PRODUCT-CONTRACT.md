@@ -595,7 +595,7 @@ I15–I20은 A4/A5의 새 APPROVED invariant다. 구현 acceptance 기준이며 
 | --- | --- | --- |
 | A1/P1/P7 | DEFERRED | installer technology, 권한 실증, OS 지원 범위, runtime 배포, uninstall 데이터 정책 |
 | P1/R22 | DEFERRED | updater 범위/library, version identity 구현, update 검증/복구 |
-| P2/P8/P9 | DEFERRED | persistence schema/technology, revision/동시성, crash recovery, source provenance 형식 |
+| P2/P8/P9 | PARTLY RESOLVED | Native v1 schema/storage/write exclusion/load-failure A policy: ADR 0012. Full backup/restore recovery, migration provenance 및 후속 revision/동시성은 DEFERRED |
 | P3/P6 | DEFERRED | 화면보다 큰 minimum overflow UX, main close 의미, z-order, monitor 제거 배치 |
 | P4/P5 | DEFERRED | time validation 세부, clock/resume 갱신 지연, 알림 빈 수업 판정 및 delivery adapter |
 | P9/P10 | DEFERRED | backup manifest/schema/checksum/naming, sharing format와 부분 적용 UX |
@@ -790,3 +790,34 @@ This section supersedes earlier future/exclusion statements for this milestone o
   semester sets, font customization and durable Settings remain PLANNED.
 
 Verification/evidence scope: [Date Overrides](DATE-OVERRIDES.md).
+
+## Native local profile persistence — 2026-09-11
+
+**IMPLEMENTED — AUTOMATED VERIFIED / USER NATIVE REVIEW ACCEPTED (limited scope).** [ADR 0012](adr/0012-native-local-profile-persistence.md)
+resolves this milestone's storage and approved A load-failure policy. Prior in-memory
+milestone statements are historical and are superseded for the six durable inputs below.
+
+앱을 종료했다 다시 실행해도 기본 시간표(교과/반), 기본 일과, 날짜별 시간표/일과 예외,
+점심 표시 옵션이 유지된다. 성공한 적용은 전체 profile 저장 성공 후 runtime에 반영한다.
+저장 실패 시 기존 runtime을 유지하고 오류와 Draft를 남긴다. Cancel/Preview/refresh/종료는
+저장하지 않는다. CurrentStatus/Highlight/Countdown/날짜·시각/EffectiveDay는 저장하지 않는다.
+
+Missing file means normal first run (empty week, default seven periods, no overrides,
+lunch OFF) and permits saving. Supported valid files restore completely before the
+first window is constructed. Corrupt JSON, semantic invalidity and unsupported schema
+preserve the original without modification/rename/delete/overwrite and block all saves.
+The app runs with explicitly labeled temporary defaults; Apply/remove and lunch changes
+cannot publish. The notice includes load failure, temporary defaults, original unchanged,
+saving unavailable and the profile path. No partial load or automatic recovery occurs.
+Access/path failures also fail closed with understandable presentation, not stack traces.
+
+Production uses per-user LocalApplicationData/SchoolTimetableWidget/profile.json,
+UTF-8 schema 1, with a logical profile object and complete validation. No user data lives
+in the repository/executable/CWD. Same-directory complete temporary write, Flush(true),
+close and final rename precede publication; a leased lock prevents cooperating second
+writers. Minimal writer exclusion does not implement P6 second-instance activation UX.
+
+P8 Legacy Migration, P9 Full Backup/Restore, teacher profiles/groups, semester sets,
+Settings/font/clock customization and other excluded features remain PLANNED.
+No previous-file restore/repair/recovery UI is added. Verification and native scope:
+[Persistence](PERSISTENCE.md).

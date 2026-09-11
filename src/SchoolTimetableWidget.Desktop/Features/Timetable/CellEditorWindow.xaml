@@ -15,7 +15,7 @@
             <RowDefinition Height="Auto" />
         </Grid.RowDefinitions>
         <TextBlock Text="{Binding TargetLabel}" FontWeight="SemiBold" Margin="0,0,0,8" />
-        <TextBlock Grid.Row="1" Text="변경 내용은 앱을 종료할 때까지 유지됩니다."
+        <TextBlock Grid.Row="1" Text="적용에 성공한 변경은 저장되어 앱을 다시 실행해도 유지됩니다."
                    TextWrapping="Wrap" FontSize="13" Margin="0,0,0,12" />
         <Label Grid.Row="2" Content="교과" Target="{Binding ElementName=SubjectInput}" Padding="0,0,0,4" />
         <TextBox x:Name="SubjectInput" Grid.Row="3"

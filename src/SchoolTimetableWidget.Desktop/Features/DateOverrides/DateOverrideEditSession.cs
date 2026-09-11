@@ -16,10 +16,12 @@ public sealed class DateOverrideEditSession : ObservableObject
     private bool _useSchedule;
     private bool _applying;
     private string _error = "";
+    private readonly Func<string?>? _getCommitError;
 
     public DateOverrideEditSession(DateOnly date, WeeklyTimetable baseWeek, PeriodSchedule baseSchedule,
-        DateSpecificOverride? baseline, Func<DateSpecificOverride?, bool> tryCommit)
+        DateSpecificOverride? baseline, Func<DateSpecificOverride?, bool> tryCommit, Func<string?>? getCommitError = null)
     {
+        _getCommitError = getCommitError;
         if (date.DayOfWeek is DayOfWeek.Saturday or DayOfWeek.Sunday)
             throw new ArgumentException("Weekend overrides are not supported.", nameof(date));
         if (baseline is not null && baseline.Date != date) throw new ArgumentException("Wrong baseline date.");
@@ -59,7 +61,7 @@ public sealed class DateOverrideEditSession : ObservableObject
             if (UseSchedule && !ScheduleDraft.TryCreateCandidate(out schedule))
                 return Reject(ScheduleDraft.ErrorText);
             var candidate = timetable is null && schedule is null ? null : new DateSpecificOverride(Date, timetable, schedule);
-            if (!_tryCommit(candidate)) return Reject("이 날짜의 예외 설정이 변경되었습니다. 취소 후 다시 열어 주세요.");
+            if (!_tryCommit(candidate)) return Reject(_getCommitError?.Invoke() ?? "이 날짜의 예외 설정이 변경되었습니다. 취소 후 다시 열어 주세요.");
             IsApplied = true;
             IsClosed = true;
             ErrorText = "";

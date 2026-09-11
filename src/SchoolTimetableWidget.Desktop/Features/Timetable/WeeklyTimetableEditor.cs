@@ -28,7 +28,7 @@ public sealed class WeeklyTimetableEditor
         {
             var baseline = _owner.CommittedTimetable[slot.Day, slot.PeriodNumber];
             session = new CellEditSession($"편집 대상: 기본 시간표\n{label}", baseline.Value,
-                value => _owner.TryCommitCell(baseline, value));
+                value => _owner.TryCommitCell(baseline, value), () => _owner.CommitError);
         }
         ActiveSession = session;
         session.Completed += OnCompleted;

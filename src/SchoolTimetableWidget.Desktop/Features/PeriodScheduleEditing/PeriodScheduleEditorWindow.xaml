@@ -11,7 +11,7 @@
             <RowDefinition Height="Auto" />
             <RowDefinition Height="Auto" />
         </Grid.RowDefinitions>
-        <TextBlock Text="24시간제 HH:mm · 변경은 앱을 종료할 때까지 유지됩니다."
+        <TextBlock Text="24시간제 HH:mm · 적용에 성공한 변경은 다시 실행해도 유지됩니다."
                    FontSize="13" TextWrapping="Wrap" Margin="0,0,0,16" />
         <Grid Grid.Row="1" Margin="0,0,0,8">
             <Grid.ColumnDefinitions>

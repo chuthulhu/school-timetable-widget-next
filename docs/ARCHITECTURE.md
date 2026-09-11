@@ -64,7 +64,7 @@ SDK는 `global.json`의 10.0.400 / `latestFeature` / stable-only 정책으로 �
 | --- | --- |
 | 세부 feature folder/namespace 및 type 배치 | DEFERRED — 실제 기능 코드 추가 시 |
 | DI container | 도입하지 않음; App에서 직접 소유하고 향후 소비자 constructor에 주입 |
-| Persistence technology/schema, concurrency 및 crash recovery | DEFERRED |
+| Native v1 persistence/schema/write exclusion/load failure | RESOLVED — ADR 0012; broader backup/restore recovery remains DEFERRED |
 | Installer/updater technology와 배포 상세 | DEFERRED |
 | Windows App SDK 사용 범위 | DEFERRED |
 
@@ -1171,3 +1171,111 @@ entry provides today's atomic editing boundary without fixing a future persisten
 schema. Profiles/groups, semester sets, date imports and persistence are PLANNED.
 
 See [Date Overrides verification](DATE-OVERRIDES.md) for tests, self-audit and native limits.
+
+## Native profile persistence — 2026-09-11
+
+**IMPLEMENTED — AUTOMATED VERIFIED / USER NATIVE REVIEW ACCEPTED (limited scope).** [ADR 0012](adr/0012-native-local-profile-persistence.md)
+and [Persistence](PERSISTENCE.md) supersede the native v1 persistence/recovery deferrals
+and prior run-local descriptions. Full backup/restore and migration remain future work.
+
+Desktop Features/Persistence contains only the immutable ProfileSnapshot, load outcome,
+ProfileSession save-before-publish boundary and ProfileRuntime composition of existing
+feature owners. Core values/invariants remain serialization- and UI-independent.
+Infrastructure/Persistence owns strict System.Text.Json DTO mapping and the leased
+JsonProfileStore; Infrastructure/Windows/ProfileLocation resolves per-user LocalAppData.
+No new project/package, generic filesystem layer, global AppState, background queue,
+Task.Run or DI framework. Future teacher/profile collections can migrate schema 1's
+profile envelope without giving WeeklyTimetable global identity.
+
+Existing owners accept optional typed persistence callbacks. Production ProfileRuntime
+always injects them; independent in-memory tests and import previews need no store.
+Callbacks build a full immutable candidate from the latest persisted snapshot. Stale
+feature baseline checks precede callback invocation. Save succeeds before owner reference
+replacement and notifications; editor sessions show the owner's precise save error.
+Date components/removal commit once. Lunch changes save before its property notification
+and shared refresh. Effective calculations remain on the single Application Clock.
+
+App loads/validates before MainWindow construction, composes all owners from the loaded
+snapshot, then starts shared refresh before Show. Degraded temporary defaults have a
+persistent notice and reject every durable callback. OnExit only disposes refresh and
+storage lease; it never saves. A DEBUG-only explicit --dev-profile-directory beneath
+TEMP enables restart smoke; existing preview modes select unique TEMP storage by default.
+Saved preview data wins over the sample seed on restart; production paths are not used.
+
+The store holds profile.lock exclusively for its lifetime, compares expected profile
+bytes before replacement, writes a unique same-directory temp, flushes/closes it and
+renames it over profile.json. Cleanup failure does not turn a successful rename into a
+failed transaction. Original corrupt/unsupported files and rejected external changes
+are never automatically repaired or replaced. No previous/history file is generated.
+Writer exclusion is storage safety only; P6 activation and tray remain PLANNED.
+
+## Future Week Navigation / Date Header — 2026-09-11
+
+**PLANNED — NOT IMPLEMENTED.** 사용자가 명시적으로 추가한 향후 Weekly Timetable View
+요구사항이다. 현재 Local Persistence Foundation의 구현·저장 schema·검증 범위를 확대하지
+않는다. 아래는 future presentation semantics이며 현재 View가 이미 주간 browsing이나
+다섯 날짜의 개별 effective projection을 제공한다는 뜻이 아니다.
+
+### Displayed week and date headers
+
+- 앱 시작 시 공통 Application Clock의 현재 날짜가 속한 주의 Monday–Friday를 표시한다.
+  weekday column은 계속 월–금 5개, 각 column의 교시는 기존 1–7을 유지한다.
+- 각 요일 헤더 위에 그 column에 대응하는 실제 `DateOnly`를 표시한다. 날짜 identity와
+  표시 문자열을 구분하며, compact 기본 format 후보는 zero-padding을 요구하지 않는
+  `M/d`다. 예: 2026-09-07 주의 `9/7`, `9/8`, `9/9`, `9/10`, `9/11`.
+  정확한 format customization은 future Display Settings에서 확장할 수 있다.
+- 왼쪽 화살표는 이전 주, 오른쪽 화살표는 다음 주로 이동한다. 이동 단위는 정확히
+  7일이다. 월/연도 경계에서도 weekday를 따로 추정하지 않고 이동한 실제 날짜를 사용한다.
+  버튼 배치·크기·색상 등 구체적 visual design은 이 요구에서 확정하지 않는다.
+- 표시 중인 주는 Desktop browsing state다. 현재 native profile snapshot/schema에
+  추가하지 않는다. 향후 이 View가 구현되어도 기본 재시작 동작은 현재 주로 돌아오는
+  것이다. `마지막으로 보던 주 기억`은 별도 future 설정 후보이며 승인된 기본 기능이 아니다.
+
+### Effective timetable per displayed date
+
+- 표시 주의 다섯 날짜를 각각 resolve한다. 각 column은 그 실제 날짜의 complete
+  seven-cell Date Timetable Override가 있으면 이를 사용하고, 없으면 Base WeeklyTimetable의
+  해당 weekday 값을 사용한다. 예: 2026-09-10 override는 그 날짜의 목요일 column에만 적용된다.
+  다른 주의 목요일이나 다른 날짜에 같은 override를 적용하지 않는다.
+- 현재 구현의 오늘 한 날짜 projection을 다섯 column 전체의 future 결과로 간주하지 않는다.
+  미래에는 열마다 DateOnly, 표시 값, Base/date provenance를 함께 일관되게 제공해야 한다.
+  정확한 ViewModel/type/cache/refresh 구조는 구현 milestone에서 정하며 지금 선제 추가하지 않는다.
+- Date Period Schedule Override는 timetable content와 독립적이다. 주간 browsing은 실제
+  오늘의 effective schedule/status 계산 대상을 바꾸지 않는다.
+
+### Actual current state, highlight and today indication
+
+- `CurrentDateText`, `CurrentTimeText`, Current Status, Countdown은 계속 실제 공통
+  Application Clock과 실제 오늘의 effective schedule을 기준으로 한다. 이전/다음 주를
+  보더라도 clock을 선택 날짜로 바꾸거나 Header를 browsing 날짜의 상태로 바꾸지 않는다.
+  Lunch presentation도 이 실제 현재 상태/effective schedule을 따른다.
+- Current Highlight는 실제 오늘 DateOnly의 current period cell만 의미한다. 표시 주에
+  오늘이 포함되고 현재 수업 중이면 해당 날짜/교시 cell을 강조한다. 오늘을 포함하지 않는
+  주에는 current timetable highlight가 없다. 같은 weekday/period라는 이유로 다른 주의
+  cell을 current로 강조하지 않는다. 기존 Break/Weekend 등의 no-current 원칙도 유지한다.
+- 표시 주에 오늘이 포함될 때 date/weekday header에서 오늘 column을 구분하는 방향을
+  고려한다. 이 today indicator는 현재 수업 cell 강조와 별개의 날짜 표시 의미다.
+  정확한 색상/style/도형은 future visual design에서 결정한다.
+
+### Editing provenance and import
+
+- F2/double-click은 해당 displayed date cell의 명시적 source를 따른다. Date Override에서
+  온 cell은 그 DateOnly override를 편집하고, Base에서 온 cell은 Base timetable을 편집한다.
+  문자열 일치/내용이나 다른 주의 동일 weekday로 source를 추측하지 않는다.
+- 기존 open-editor target capture, stale rejection 및 Apply/Cancel 규칙을 유지한다.
+  편집을 연 뒤 browsing 날짜나 실제 날짜가 바뀌어도 열린 Draft의 대상을 암묵적으로
+  바꾸지 않는다. Base 편집을 자동으로 date override 생성으로 바꾸지도 않는다.
+- School Timetable Import와 Canonical Template Import는 계속 Base WeeklyTimetable 전용이다.
+  표시 중인 주/날짜가 바뀌어도 Bulk Import target을 자동으로 date override로 바꾸지 않는다.
+
+### Unconfirmed UX candidates and later verification
+
+`오늘` 버튼, 오늘 주로 즉시 돌아가기, 날짜 클릭, 주 선택 calendar와 마지막으로 본 주 기억은
+**FUTURE CANDIDATES — NOT DECIDED / NOT IMPLEMENTED**다. 이번 requirement로 버튼이나
+calendar 동작을 확정하지 않는다.
+
+향후 검증 대상은 시작 주/정확한 ±7일 이동, 월·연도·윤일 경계, 다섯 날짜의 독립 override
+fallback/provenance, 다른 주 browsing 중 실제 Header/Countdown 유지, 오늘 포함 여부에 따른
+highlight/today indicator, 편집 대상 고정, Base-only import, 재시작 현재 주 복귀다.
+이는 미래 acceptance criteria이며 현재 585 tests/native smoke로 검증 완료했다고 주장하지 않는다.
+현재 구현과 Accepted ADR 0011/0012의 동작은 그대로이며 후속 구현 시 관련 계약/ADR을 함께 갱신한다.

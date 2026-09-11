@@ -79,7 +79,7 @@ public class CurrentDateHeaderContractTests
             {
                 var root = (Grid)window.Content;
                 var header = (CurrentStatusHeaderView)root.Children[0];
-                var timetable = (WeeklyTimetableView)root.Children[1];
+                var timetable = (WeeklyTimetableView)window.FindName("Timetable");
                 Rect[]? wideBaseline = null;
                 foreach (var width in new[] { 800d, 620d, 500d, 800d })
                 {

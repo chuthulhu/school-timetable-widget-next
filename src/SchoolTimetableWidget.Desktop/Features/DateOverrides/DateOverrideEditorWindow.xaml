@@ -7,7 +7,7 @@
   <Grid.RowDefinitions><RowDefinition Height="Auto"/><RowDefinition Height="Auto"/><RowDefinition Height="*"/><RowDefinition Height="Auto"/><RowDefinition Height="Auto"/></Grid.RowDefinitions>
   <StackPanel>
    <TextBlock Text="기본 시간표와 일과를 유지하면서 선택한 날짜만 변경합니다." TextWrapping="Wrap"/>
-   <TextBlock Text="변경 내용과 점심 표시 옵션은 앱을 종료할 때까지 유지됩니다." FontSize="13" Margin="0,4,0,12" TextWrapping="Wrap"/>
+   <TextBlock Text="적용에 성공한 변경과 점심 표시 옵션은 다시 실행해도 유지됩니다." FontSize="13" Margin="0,4,0,12" TextWrapping="Wrap"/>
    <StackPanel Orientation="Horizontal">
     <Label Content="날짜" Target="{Binding ElementName=DateInput}"/>
     <DatePicker x:Name="DateInput" Width="160" SelectedDateFormat="Short" AutomationProperties.Name="예외 설정 날짜"/>
