@@ -5,7 +5,7 @@ using SchoolTimetableWidget.Core.Features.Timetable;
 namespace SchoolTimetableWidget.Desktop.Features.Timetable;
 
 /// <summary>Owns the accepted week and stable cells; a durable callback may gate each commit.</summary>
-public sealed class WeeklyTimetableViewModel
+public sealed partial class WeeklyTimetableViewModel : CommunityToolkit.Mvvm.ComponentModel.ObservableObject
 {
     private readonly Dictionary<(SchoolDay Day, int PeriodNumber), TimetableCellViewModel> _cellsBySlot;
     private TimetableCellViewModel? _currentCell;
@@ -24,6 +24,8 @@ public sealed class WeeklyTimetableViewModel
         _cellsBySlot = timetable.Cells.Select((cell, index) => (cell, index))
             .ToDictionary(entry => (entry.cell.Day, entry.cell.PeriodNumber), entry => cells[entry.index]);
         Editor = new WeeklyTimetableEditor(this);
+        PreviousWeekCommand = new(() => Navigate(-7), () => CanNavigate(-7));
+        NextWeekCommand = new(() => Navigate(7), () => CanNavigate(7));
     }
 
     public ReadOnlyCollection<string> WeekdayHeaders { get; } =
@@ -35,15 +37,7 @@ public sealed class WeeklyTimetableViewModel
     public ReadOnlyCollection<TimetableCellViewModel> Cells { get; }
     public WeeklyTimetable CommittedTimetable { get; private set; }
     public WeeklyTimetableEditor Editor { get; }
-    public DateSpecificOverride? DisplayedOverride { get; private set; }
     public event EventHandler? ContentChanged;
-
-    public void ApplyEffectiveDay(EffectiveDayConfiguration effective)
-    {
-        ArgumentNullException.ThrowIfNull(effective);
-        if (_publishing) throw new InvalidOperationException("Cannot replace presentation during publication.");
-        Publish(effective.Timetable, () => DisplayedOverride = effective.DateOverride);
-    }
 
 
     internal (SchoolDay Day, int PeriodNumber) GetSlot(TimetableCellViewModel cell)
@@ -60,7 +54,7 @@ public sealed class WeeklyTimetableViewModel
         if (_publishing || !ReferenceEquals(CommittedTimetable[baseline.Day, baseline.PeriodNumber], baseline)) return false;
         var next = CommittedTimetable.WithCellValue(baseline.Day, baseline.PeriodNumber, value);
         if ((CommitError = _persist?.Invoke(next)) is not null) return false;
-        Publish(EffectiveDayResolver.ProjectTimetable(next, DisplayedOverride), () => CommittedTimetable = next);
+        Publish(ProjectViewedWeek(next), () => CommittedTimetable = next);
         return true;
     }
 
@@ -72,7 +66,7 @@ public sealed class WeeklyTimetableViewModel
         ArgumentNullException.ThrowIfNull(replacement);
         if (_publishing || Editor.ActiveSession is not null || !ReferenceEquals(CommittedTimetable, baseline)) return false;
         if ((CommitError = _persist?.Invoke(replacement)) is not null) return false;
-        Publish(EffectiveDayResolver.ProjectTimetable(replacement, DisplayedOverride), () => CommittedTimetable = replacement);
+        Publish(ProjectViewedWeek(replacement), () => CommittedTimetable = replacement);
         return true;
     }
 

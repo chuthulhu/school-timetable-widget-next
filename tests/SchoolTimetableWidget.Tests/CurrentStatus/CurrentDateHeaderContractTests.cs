@@ -64,8 +64,8 @@ public class CurrentDateHeaderContractTests
                 Assert.Equal(expected.CurrentDateText, Text(view, "CurrentDateTextBlock").Text);
                 Assert.Equal(expected.CurrentTimeText, Text(view, "CurrentTimeTextBlock").Text);
                 Assert.Equal(expected.StatusText, Text(view, "StatusTextBlock").Text);
-                if (i == 2) Assert.Same(timetable.Cells[0], Assert.Single(timetable.Cells, cell => cell.IsCurrent));
-                else Assert.DoesNotContain(timetable.Cells, cell => cell.IsCurrent);
+                // The viewed September 7 week stays fixed across the Monday clock jump.
+                Assert.DoesNotContain(timetable.Cells, cell => cell.IsCurrent);
             }
         });
 

@@ -78,6 +78,22 @@
                 </Setter.Value>
             </Setter>
         </Style>
+        <Style x:Key="DateHeaderBorder" TargetType="Border" BasedOn="{StaticResource SlotBorder}">
+            <Setter Property="Background" Value="{DynamicResource {x:Static SystemColors.ControlBrushKey}}" />
+            <Style.Triggers>
+                <DataTrigger Binding="{Binding IsToday}" Value="True">
+                    <Setter Property="Background" Value="#FFDCECF8" />
+                </DataTrigger>
+            </Style.Triggers>
+        </Style>
+        <DataTemplate x:Key="DateHeaderTemplate">
+            <Border Style="{StaticResource DateHeaderBorder}">
+                <StackPanel VerticalAlignment="Center">
+                    <TextBlock Text="{Binding DateText}" TextAlignment="Center" VerticalAlignment="Center" TextWrapping="NoWrap" />
+                    <TextBlock Text="{Binding WeekdayText}" TextAlignment="Center" VerticalAlignment="Center" TextWrapping="NoWrap" />
+                </StackPanel>
+            </Border>
+        </DataTemplate>
         <DataTemplate x:Key="HeaderTemplate">
             <Border Style="{StaticResource SlotBorder}"
                     Background="{DynamicResource {x:Static SystemColors.ControlBrushKey}}">
@@ -90,6 +106,7 @@
         <Grid.ColumnDefinitions>
             <ColumnDefinition Width="48" />
             <ColumnDefinition Width="*" />
+            <ColumnDefinition Width="32" />
         </Grid.ColumnDefinitions>
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto" />
@@ -97,15 +114,18 @@
         </Grid.RowDefinitions>
         <Border x:Name="CornerHeader" Style="{StaticResource SlotBorder}"
                 Background="{DynamicResource {x:Static SystemColors.ControlBrushKey}}">
-            <TextBlock Text="" TextAlignment="Center" VerticalAlignment="Center" />
+            <Button x:Name="PreviousWeekButton" Content="&lt;" Command="{Binding PreviousWeekCommand}"
+                    ToolTip="이전 주" AutomationProperties.Name="이전 주" Padding="0" MinHeight="28" />
         </Border>
         <ItemsControl x:Name="WeekdayHeaders" Grid.Column="1"
-                      ItemsSource="{Binding WeekdayHeaders, Mode=OneWay}"
-                      ItemTemplate="{StaticResource HeaderTemplate}">
+                      ItemsSource="{Binding Columns, Mode=OneWay}"
+                      ItemTemplate="{StaticResource DateHeaderTemplate}">
             <ItemsControl.ItemsPanel>
                 <ItemsPanelTemplate><UniformGrid Rows="1" Columns="5" /></ItemsPanelTemplate>
             </ItemsControl.ItemsPanel>
         </ItemsControl>
+        <Button x:Name="NextWeekButton" Grid.Column="2" Content="&gt;" Command="{Binding NextWeekCommand}"
+                ToolTip="다음 주" AutomationProperties.Name="다음 주" Margin="2,6" Padding="0" MinHeight="28" />
         <ItemsControl x:Name="PeriodHeaders" Grid.Row="1"
                       ItemsSource="{Binding PeriodHeaders, Mode=OneWay}"
                       ItemTemplate="{StaticResource HeaderTemplate}">

@@ -124,6 +124,7 @@ public class DateOverrideViewTests
     {
         var store = new RuntimeDateOverrides(); var week = DayFixtures.Week(); var vm = new WeeklyTimetableViewModel(week);
         var entry = new DateSpecificOverride(DayFixtures.Monday, DayFixtures.Day(), null); store.TryReplace(entry.Date, null, entry);
+        vm.ConfigureDateOverrides(store.Get);
         var clock = new FakeApplicationClock(DayFixtures.Time()); var header = new CurrentStatusHeaderViewModel();
         using var loop = new CurrentStatusRefreshLoop(clock, date => EffectiveDayResolver.Resolve(date, week, DayFixtures.Schedule(), store.Get(date)), header, vm, () => true);
         vm.Editor.DateEditor = new(store, () => week, DayFixtures.Schedule, _ => loop.RefreshNow());

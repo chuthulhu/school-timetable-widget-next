@@ -1279,3 +1279,35 @@ fallback/provenance, 다른 주 browsing 중 실제 Header/Countdown 유지, 오
 highlight/today indicator, 편집 대상 고정, Base-only import, 재시작 현재 주 복귀다.
 이는 미래 acceptance criteria이며 현재 585 tests/native smoke로 검증 완료했다고 주장하지 않는다.
 현재 구현과 Accepted ADR 0011/0012의 동작은 그대로이며 후속 구현 시 관련 계약/ADR을 함께 갱신한다.
+
+## Week Navigation implementation — 2026-09-11
+
+**IMPLEMENTED — AUTOMATED VERIFIED / USER NATIVE UX APPROVED.** This implements the future requirement above;
+its PLANNED statements are historical. [ADR 0013](adr/0013-viewed-week-and-date-header.md)
+and [Week Navigation](WEEK-NAVIGATION.md) define the current behavior/evidence boundary.
+
+WeeklyTimetableViewModel retains Base commitment and 35 stable cells. Its Navigation
+partial owns nullable pre-start ViewedWeekStart, two RelayCommands, displayed columns,
+actual date/slot facts and a configured date-map lookup. First refresh initializes the
+Monday before MainWindow.Show; no View/MainWindow date calculation is added. Each column
+owns immutable date/source identity and seven shared cell references; IsToday is observable.
+
+The previous DisplayedOverride/ApplyEffectiveDay single-date projection API is removed.
+The grid resolves each of five DateOnly keys independently using the existing complete-day
+projection function. Base commits reproject the cached date components; successful date
+editor commits refresh relevant columns through ProfileRuntime after durable publication.
+Today schedule/status refresh remains separately gated by actual CurrentDate in App.
+
+Ticks update IsToday and date-gated current-cell facts without fetching date columns or
+allocating 35 new cells. Navigation performs no clock read and no save. Source correction,
+midnight, Sunday→Monday and weekends do not force a navigation. UI dates use M/d, actual
+Header date keeps its existing full format. Import preview retains its own weekday-only
+layout and Base target. No persistence DTO/schema, Core model or new timer is introduced.
+
+Previous occupies the existing period-header corner; Next uses a narrow trailing header
+slot. The five headers and body share one equal-column region. Today and current-cell
+triggers change backgrounds only. Exact spacing/color remain native candidates.
+
+Native UX was explicitly approved on 2026-09-11. The user defers detailed arrow/header
+visual polish to a future styling/display milestone; it is not a blocker here. The observed
+native scope and limits are recorded in [Week Navigation](WEEK-NAVIGATION.md).

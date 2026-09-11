@@ -274,3 +274,11 @@ Final restore/build/test, source/diff audit and publication follow this acceptan
   ready for its authorized main commit and normal fast-forward origin/main push.
   Git author configuration is absent; the consistent author from the three latest
   main commits is used through command-local -c options only, without configuration changes.
+
+## Week Navigation follow-up — 2026-09-11
+
+The previous single-today grid behavior is superseded by [ADR 0013](adr/0013-viewed-week-and-date-header.md).
+Each displayed date now resolves its own complete timetable override. Date Apply/removal
+refreshes the visible week even when editing a future/past date, while only actual-today
+changes request status recalculation. This historical milestone's native observations do
+not establish native acceptance of the new navigation UI. See [Week Navigation](WEEK-NAVIGATION.md).

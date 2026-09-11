@@ -136,9 +136,9 @@ public sealed class CurrentStatusRefreshLoop : IDisposable
             // There is no await, second clock read, or independent highlight timer.
             CurrentDate = snapshot.Date;
             CurrentConfiguration = effective;
-            if (effective is not null) _timetableViewModel.ApplyEffectiveDay(effective);
+
             _viewModel.Apply(text);
-            _timetableViewModel.SetCurrentCell(slot);
+            _timetableViewModel.UpdateCurrent(snapshot.Date, slot);
         }
         finally { _refreshing = false; }
     }

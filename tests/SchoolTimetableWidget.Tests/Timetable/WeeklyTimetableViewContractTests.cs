@@ -30,24 +30,24 @@ public class WeeklyTimetableViewContractTests
         Assert.Equal(5, days.Items.Count);
         Assert.Equal(7, periods.Items.Count);
         Assert.Equal(35, body.Items.Count);
-        Assert.Equal(new[] { "월", "화", "수", "목", "금" }, Descendants<TextBlock>(days).Select(t => t.Text));
+        Assert.Equal(new[] { "월", "화", "수", "목", "금" }, Descendants<TextBlock>(days).Where((_, i) => i % 2 == 1).Select(t => t.Text));
         Assert.Equal(new[] { "1", "2", "3", "4", "5", "6", "7" }, Descendants<TextBlock>(periods).Select(t => t.Text));
         var corner = Assert.IsType<Border>(view.FindName("CornerHeader"));
-        Assert.Equal("", Assert.IsType<TextBlock>(corner.Child).Text);
-        Assert.Equal(48, Descendants<TextBlock>(view).Count());
+        Assert.Equal("<", Assert.IsType<Button>(corner.Child).Content);
+        Assert.Equal(10, Descendants<TextBlock>(days).Count());
         var panel = Assert.Single(Descendants<UniformGrid>(body));
         Assert.Equal(7, panel.Rows);
         Assert.Equal(5, panel.Columns);
         Assert.Equal(35, panel.Children.Count);
         var grid = Assert.IsType<Grid>(view.Content);
-        Assert.Equal(2, grid.ColumnDefinitions.Count);
+        Assert.Equal(3, grid.ColumnDefinitions.Count);
         Assert.Equal(1, Grid.GetColumn(body));
         Assert.Equal(1, Grid.GetRow(body));
         Assert.Equal(0, Grid.GetColumn(periods));
         Assert.Equal(1, Grid.GetRow(periods));
         Assert.Equal(1, Grid.GetColumn(days));
         Assert.Equal(0, Grid.GetRow(days));
-        Assert.All(Descendants<TextBlock>(view), text =>
+        Assert.All(Descendants<TextBlock>(days).Concat(Descendants<TextBlock>(periods)), text =>
         {
             Assert.Equal(TextAlignment.Center, text.TextAlignment);
             Assert.Equal(VerticalAlignment.Center, text.VerticalAlignment);
@@ -227,6 +227,8 @@ public class WeeklyTimetableViewContractTests
 
     private static void Layout(FrameworkElement view, double width)
     {
+        if (view.DataContext is WeeklyTimetableViewModel model && model.ViewedWeekStart is null)
+            model.UpdateCurrent(new DateOnly(2026, 9, 7), null);
         Drain(view);
         view.Measure(new Size(width, double.PositiveInfinity));
         view.Arrange(new Rect(0, 0, width, Math.Max(544, view.DesiredSize.Height)));

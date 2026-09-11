@@ -19,7 +19,7 @@ public sealed class WeeklyTimetableEditor
         var slot = _owner.GetSlot(cell);
         CellEditSession session;
         var label = $"{_owner.WeekdayHeaders[(int)slot.Day]}요일 {slot.PeriodNumber}교시";
-        if (_owner.DisplayedOverride is { Timetable: not null } dateOverride && dateOverride.Day == slot.Day)
+        if (_owner.Columns.FirstOrDefault(c => c.Day == slot.Day)?.DateOverride is { Timetable: not null } dateOverride)
         {
             if (DateEditor is null) throw new InvalidOperationException("Date editing is not configured.");
             session = DateEditor.CreateCellSession(dateOverride, slot.PeriodNumber, label);

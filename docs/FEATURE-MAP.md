@@ -242,3 +242,25 @@ Current status supersedes earlier persistence exclusions; user native review acc
 상세 의미와 future 검증 기준은
 [Architecture — Future Week Navigation / Date Header](ARCHITECTURE.md#future-week-navigation--date-header--2026-09-11)를 따른다.
 이 문서 추가는 현재 Persistence의 automated/native 완료 상태나 commit/push 승인 상태를 바꾸지 않는다.
+
+## Week Navigation implementation — 2026-09-11
+
+These states supersede the preceding future rows for this milestone.
+
+| Feature | Status | Boundary |
+| --- | --- | --- |
+| Week Navigation | IMPLEMENTED — AUTOMATED VERIFIED / USER NATIVE UX APPROVED | Monday start, exact ±7 days, no tick-driven navigation |
+| Date Headers | IMPLEMENTED — AUTOMATED VERIFIED / USER NATIVE UX APPROVED | M/d and 월–금, two lines, five aligned equal columns |
+| Per-date Effective Timetable Columns | IMPLEMENTED — AUTOMATED VERIFIED / USER NATIVE UX APPROVED | exact DateOnly complete-day fallback and typed provenance |
+| Today Indicator | IMPLEMENTED — AUTOMATED VERIFIED / USER NATIVE UX APPROVED | actual date, background only |
+| Date-aware Current Highlight | IMPLEMENTED — AUTOMATED VERIFIED / USER NATIVE UX APPROVED | zero cells outside actual today's displayed week |
+| Browsing / actual status separation | IMPLEMENTED — AUTOMATED VERIFIED / USER NATIVE UX APPROVED | Header/countdown/lunch use actual clock and schedule |
+| Editing while browsing | IMPLEMENTED — AUTOMATED VERIFIED / USER NATIVE UX APPROVED | captured Base/date target; Base-only bulk import |
+| Last Viewed Week Persistence | NOT IMPLEMENTED | schema 1 unchanged; restart current week |
+| Date Click/Calendar Picker | PLANNED / DEFERRED | no date action or calendar added |
+| Today button | PLANNED / DEFERRED | no return-to-current-week command added |
+
+[ADR 0013](adr/0013-viewed-week-and-date-header.md), [verification](WEEK-NAVIGATION.md).
+
+User native UX approval: 2026-09-11. Arrow/header visual polish remains future styling/display
+work and is explicitly not a milestone blocker. Evidence: [Week Navigation](WEEK-NAVIGATION.md).

@@ -15,8 +15,13 @@ public sealed class ProfileRuntime
         Timetable = new(initial.Timetable, session.SaveTimetable);
         Schedule = new(initial.Schedule, session.SaveSchedule);
         Overrides = new(initial.Overrides, session.SaveOverrides);
+        Timetable.ConfigureDateOverrides(Overrides.Get);
         Lunch = new(refresh, initial.ShowLunch, session.SaveLunch);
-        DateEditor = new(Overrides, () => Timetable.CommittedTimetable, () => Schedule.Current, refreshDate);
+        DateEditor = new(Overrides, () => Timetable.CommittedTimetable, () => Schedule.Current, date =>
+        {
+            if (Timetable.DisplayedDates.Contains(date)) Timetable.RefreshDisplayedWeek();
+            refreshDate(date);
+        });
         Timetable.Editor.DateEditor = DateEditor;
         ScheduleEditor = new(Schedule, refresh);
     }

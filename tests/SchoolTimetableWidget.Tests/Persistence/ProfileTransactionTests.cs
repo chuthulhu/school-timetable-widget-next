@@ -37,7 +37,7 @@ public class ProfileTransactionTests
         var session = new ProfileSession(store, ProfileStorageTests.Sample());
         Assert.Null(session.SaveLunch(true));
         var runtime = new ProfileRuntime(session, () => { }, _ => { });
-        runtime.Timetable.ApplyEffectiveDay(runtime.Resolve(ProfileStorageTests.Monday));
+        runtime.Timetable.UpdateCurrent(ProfileStorageTests.Monday, null);
         var before = File.ReadAllBytes(temp.File);
         var beforeSnapshot = session.Current;
         var beforeTimetable = runtime.Timetable.CommittedTimetable;

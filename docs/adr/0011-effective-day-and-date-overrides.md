@@ -31,3 +31,11 @@ returning to date selection explicitly discards that unapplied Draft. Successful
 Apply closes. This avoids silently assigning an existing Draft to a new date.
 
 Implementation and verification status: see ../DATE-OVERRIDES.md.
+
+## Week browsing follow-up — 2026-09-11
+
+[ADR 0013](0013-viewed-week-and-date-header.md) implements the previously documented
+future requirement: the grid resolves each displayed date, independently of actual-day
+status refresh. It supersedes this ADR's original single-today grid scope. Actual status
+still resolves today's schedule from one clock snapshot; other original day/component,
+provenance and stale-target semantics remain. Persistence follows ADR 0012.

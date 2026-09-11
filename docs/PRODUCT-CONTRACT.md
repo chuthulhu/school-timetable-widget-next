@@ -821,3 +821,33 @@ P8 Legacy Migration, P9 Full Backup/Restore, teacher profiles/groups, semester s
 Settings/font/clock customization and other excluded features remain PLANNED.
 No previous-file restore/repair/recovery UI is added. Verification and native scope:
 [Persistence](PERSISTENCE.md).
+
+## Week Navigation + Date Header — approved 2026-09-11
+
+**IMPLEMENTED — AUTOMATED VERIFIED / USER NATIVE UX APPROVED.** [ADR 0013](adr/0013-viewed-week-and-date-header.md),
+[verification and scope](WEEK-NAVIGATION.md). This supersedes the earlier single-today
+projection restriction in Effective Day / Date Overrides, using the previously approved
+future week-browsing requirement.
+
+- ViewedWeekStart is transient timetable UI state, initialized to the Monday containing
+  the Application Clock's actual local date. Weekend startup shows that same week's Mon–Fri.
+- Previous/Next navigate exactly −7/+7 days. Five two-line headers show invariant unpadded
+  M/d above 월/화/수/목/금, with arrows at the sides and five equal aligned body columns.
+- Each DateOnly independently selects its complete seven-cell timetable override or Base
+  weekday values. Date schedule overrides cannot change cell content/provenance.
+- CurrentDateText remains yyyy년 MM월 dd일. CurrentTimeText, status, countdown and lunch
+  continue to follow the actual clock and today's effective schedule during all browsing.
+- Current cell highlight requires exact actual-date membership in the displayed five dates.
+  Other weeks have zero highlighted cells. Today header indication is independent and
+  changes background only, preserving layout geometry.
+- Midnight and week boundaries update actual state/Today/highlight without auto-navigation.
+  Clock ticks never rebuild the 35 cell objects or the five column objects.
+- F2/double-click captures displayed Base/date source and exact target at editor open.
+  Navigation cannot retarget the open Draft. Base edits affect all non-overridden weeks;
+  explicit Base/date target labels, stale rejection and durable Apply semantics remain.
+- School/Canonical bulk import remains Base-only. Date-click/calendar/Today actions are deferred.
+- Viewed week is NOT persisted. Schema remains 1. Restart initializes the actual current
+  week, while saved future overrides reappear when their exact dates are browsed.
+
+Native UX approved 2026-09-11; arrow/header visual polish is deferred to the future
+styling/display milestone by explicit user decision, without expanding this implementation.

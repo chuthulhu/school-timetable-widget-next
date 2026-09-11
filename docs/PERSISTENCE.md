@@ -267,3 +267,11 @@ has occurred; the final report is a separate user approval gate.
 - git diff --check passed. Main and origin/main remain at
   d5fc840332e3eaabc54e9dd9ab7fe38afa09510e. No staging, commit or push was performed.
   The implementation is ready for the requested final pre-commit report and user decision.
+
+## Week Navigation regression — 2026-09-11
+
+ViewedWeekStart and displayed dates remain transient, with no schema/DTO/save change.
+Restart initializes the containing actual week from the shared clock; saved overrides
+remain available when their exact dates are browsed. New isolated TEMP integration tests
+exercise this wiring and verify unchanged profile bytes/mtime through navigation/restart.
+The navigation milestone's verification/native status is recorded in [Week Navigation](WEEK-NAVIGATION.md).

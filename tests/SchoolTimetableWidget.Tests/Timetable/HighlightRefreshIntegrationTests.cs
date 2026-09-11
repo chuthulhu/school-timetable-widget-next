@@ -60,8 +60,8 @@ public class HighlightRefreshIntegrationTests
         AssertCurrent(timetable, null);
         clock.CurrentSnapshot = Snapshot(14, 9, 10, 0);
         loop.RefreshNow();
-        AssertCurrent(timetable, 0);
-        Assert.Equal(new[] { 34, 0 }, selected);
+        AssertCurrent(timetable, null);
+        Assert.Equal(new[] { 34 }, selected);
         Assert.Equal(4, clock.ReadCount);
     });
 
