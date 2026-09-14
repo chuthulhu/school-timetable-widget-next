@@ -320,3 +320,16 @@ Missing/corrupt online files are runtime availability failures, not degraded per
 live under the selected profile directory's separate fonts/<id>/<source-commit>/ folder and remain after
 Settings Cancel. Profile atomic commit, writer lease and external-change checks are unchanged.
 The tests and runtime composition use TEMP fonts, never production cache. [Evidence](FONT-CATALOG.md).
+
+## Standalone preset file v1 — 2026-09-14
+
+`.stwpreset` is an independent sharing document, not `profile.json` and not a profile schema.
+Its top-level `presetFileVersion` is 1. It contains one user preset ID/name/settings and only
+logical font references. It contains no durable timetable/profile fields, paths or font bytes.
+The current profile writer remains schema v4; import does not trigger a schema change or save.
+
+The codec rejects files over 64 KiB, malformed/duplicate/unknown/missing JSON structure,
+future versions and invalid semantic values before returning an immutable candidate. Preview
+and collision choice then update only DisplaySettingsSession's Draft library. Existing atomic
+profile save and publish ordering applies only when the user later chooses Apply/OK. Invalid
+files and canceled previews perform no profile, display, network or cache mutation.

@@ -1,0 +1,43 @@
+<Window x:Class="SchoolTimetableWidget.Desktop.Features.DisplaySettings.ImportPresetWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        Title="가져올 프리셋 확인" Width="540" SizeToContent="Height" MaxHeight="720"
+        WindowStartupLocation="CenterOwner" ShowInTaskbar="False" FontSize="14">
+    <Grid Margin="20">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/><RowDefinition Height="Auto"/><RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto"/><RowDefinition Height="Auto"/><RowDefinition Height="Auto"/>
+        </Grid.RowDefinitions>
+        <StackPanel>
+            <TextBlock Text="프리셋 가져오기" FontSize="21" FontWeight="SemiBold"/>
+            <TextBlock Text="표시 디자인만 가져옵니다. 시간표와 교시 정보는 포함되지 않습니다."
+                       Margin="0,7,0,14" TextWrapping="Wrap"/>
+        </StackPanel>
+        <Grid Grid.Row="1">
+            <Grid.ColumnDefinitions><ColumnDefinition Width="92"/><ColumnDefinition Width="*"/></Grid.ColumnDefinitions>
+            <Grid.RowDefinitions><RowDefinition/><RowDefinition/><RowDefinition/></Grid.RowDefinitions>
+            <TextBlock Text="이름" Margin="0,4"/><TextBox x:Name="NameInput" Grid.Column="1" Padding="6,4"/>
+            <TextBlock Grid.Row="1" Text="표시 스타일" Margin="0,8,0,4"/>
+            <TextBlock x:Name="LayoutText" Grid.Row="1" Grid.Column="1" Margin="0,8,0,4"/>
+            <TextBlock Grid.Row="2" Text="표시 항목" Margin="0,4"/>
+            <TextBlock x:Name="OptionsText" Grid.Row="2" Grid.Column="1" Margin="0,4" TextWrapping="Wrap"/>
+        </Grid>
+        <ItemsControl x:Name="FontList" Grid.Row="2" Margin="0,12,0,0">
+            <ItemsControl.ItemTemplate><DataTemplate>
+                <Grid Margin="0,2"><Grid.ColumnDefinitions><ColumnDefinition Width="92"/><ColumnDefinition Width="*"/></Grid.ColumnDefinitions>
+                    <TextBlock Text="{Binding Element}"/><StackPanel Grid.Column="1">
+                        <TextBlock Text="{Binding Description}"/><TextBlock Text="{Binding Status}" FontSize="12" Foreground="#755000"/>
+                    </StackPanel>
+                </Grid>
+            </DataTemplate></ItemsControl.ItemTemplate>
+        </ItemsControl>
+        <TextBlock x:Name="CollisionText" Grid.Row="3" Margin="0,14,0,0" TextWrapping="Wrap" FontWeight="SemiBold"/>
+        <TextBlock x:Name="ErrorText" Grid.Row="4" Margin="0,10,0,0" Foreground="#A32323" TextWrapping="Wrap"/>
+        <StackPanel Grid.Row="5" Orientation="Horizontal" HorizontalAlignment="Right" Margin="0,18,0,0">
+            <Button Content="취소" IsCancel="True" Padding="16,7" MinWidth="76"/>
+            <Button x:Name="UpdateButton" Content="기존 프리셋 업데이트" Click="Update_Click" Padding="16,7" Margin="8,0,0,0"/>
+            <Button x:Name="CopyButton" Content="새 복사본으로 가져오기" Click="Copy_Click" Padding="16,7" Margin="8,0,0,0"/>
+            <Button x:Name="ImportButton" Content="가져오기" Click="Import_Click" IsDefault="True" Padding="16,7" Margin="8,0,0,0"/>
+        </StackPanel>
+    </Grid>
+</Window>

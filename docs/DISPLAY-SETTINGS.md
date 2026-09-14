@@ -517,3 +517,21 @@ Full behavior, exact font/license provenance, schema v4 and native approval: [Fo
 This supersedes bundled/online PLANNED entries above. User native UX approval ("확인, 승인") includes
 explicit download/preview, Save As selection, restart, missing-cache fallback and re-download restoration.
 Automated WPF selector regression also verifies stable IDs across collection refresh and transactions.
+
+## User preset file sharing — 2026-09-14
+
+Display Settings now provides **프리셋 내보내기...** only for a selected user preset and
+**프리셋 가져오기...** for `.stwpreset` files. Export uses the selected template value in the
+current Draft library; typography controls must first be captured with **현재 설정으로 업데이트**.
+The tooltip makes that source explicit. Export is otherwise read-only and does not Apply.
+
+Import opens a review window with name, layout, visibility/format summary and Time/Date/
+Weekday/Status font family, size and availability. It states that only display design—not
+timetable or period information—is imported. Missing valid System/Online fonts show fallback
+or download-needed state. No download or preset activation occurs.
+
+Same stable ID exposes update/copy/cancel; name-only collision proposes an editable unique
+copy name. Update retains the ID, copy creates a new ID, and neither silently overwrites.
+Successful decisions update only the Draft library. Cancel/X restores the last Apply library;
+Apply/OK uses the existing complete display/library profile transaction. Details:
+[Preset Import / Export](PRESET-IMPORT-EXPORT.md).

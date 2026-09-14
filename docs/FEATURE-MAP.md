@@ -313,3 +313,16 @@ This supersedes prior named-preset PLANNED and current-writer-v2 entries.
 
 This current section supersedes earlier no-assets/no-network/PLANNED entries for the implemented font scope.
 License provenance, final validation and native approval: [Font Catalog](FONT-CATALOG.md).
+
+## Display preset import/export — current 2026-09-14
+
+| Feature | Current status | Boundary |
+| --- | --- | --- |
+| Single user preset export | IMPLEMENTED — AUTOMATED VERIFIED / LIMITED USER NATIVE UX APPROVED | `.stwpreset`, deterministic UTF-8 JSON, Draft-library source |
+| Strict import and preview | IMPLEMENTED — AUTOMATED VERIFIED / LIMITED USER NATIVE UX APPROVED | 64 KiB, full validation, no mutation before decision |
+| ID/name collision handling | IMPLEMENTED — AUTOMATED VERIFIED / LIMITED USER NATIVE UX APPROVED | Update/copy/cancel; unique editable copy name; no silent overwrite |
+| Portable font references | IMPLEMENTED — AUTOMATED VERIFIED / LIMITED USER NATIVE UX APPROVED | Bundled/System/Online identity only; fallback status; no auto-download |
+| Settings transaction | IMPLEMENTED — AUTOMATED VERIFIED / LIMITED USER NATIVE UX APPROVED | Draft only until Apply/OK; Cancel rollback; no auto-activation |
+| Whole preset library/profile backup | PLANNED | Outside this one-preset sharing format |
+
+[Contract and format](PRESET-IMPORT-EXPORT.md), [ADR 0017](adr/0017-display-preset-files.md).

@@ -1,4 +1,5 @@
 using System.Globalization;
+using System.IO;
 using System.Windows;
 using System.Windows.Data;
 using System.Windows.Input;
@@ -37,11 +38,14 @@ public partial class DisplaySettingsWindow : Window
 {
     public DisplaySettingsSession Session { get; }
     private readonly Action<Window> _showPresetDialog;
-    public DisplaySettingsWindow(DisplaySettingsSession session, Action<Window>? showPresetDialog = null)
+    private readonly IPresetFileDialogs _fileDialogs;
+    public DisplaySettingsWindow(DisplaySettingsSession session, Action<Window>? showPresetDialog = null,
+        IPresetFileDialogs? fileDialogs = null)
     {
         if (session.IsClosed) throw new ArgumentException("닫힌 설정입니다.", nameof(session));
         Session = session;
         _showPresetDialog = showPresetDialog ?? (dialog => { dialog.Owner = this; dialog.ShowDialog(); });
+        _fileDialogs = fileDialogs ?? new WindowsPresetFileDialogs();
         InitializeComponent();
         DataContext = session;
     }
@@ -63,6 +67,48 @@ public partial class DisplaySettingsWindow : Window
     }
     private void UpdatePreset_Click(object sender, RoutedEventArgs e) => Session.TryUpdate();
     private void DeletePreset_Click(object sender, RoutedEventArgs e) => _showPresetDialog(new DeletePresetWindow(Session));
+    private void ExportPreset_Click(object sender, RoutedEventArgs e)
+    {
+        try
+        {
+            var preset = Session.SelectedUserPreset();
+            var invalid = Path.GetInvalidFileNameChars();
+            var safeName = string.Concat(preset.Name.Select(c => invalid.Contains(c) ? '_' : c));
+            var path = _fileDialogs.ChooseExportPath(safeName + DisplayPresetFile.Extension);
+            if (path is not null) { PresetFileStorage.Write(path, DisplayPresetFile.Export(preset)); Session.ShowError(""); }
+        }
+        catch (Exception error) when (error is IOException or UnauthorizedAccessException or
+            System.Security.SecurityException or ArgumentException or NotSupportedException)
+        {
+            System.Diagnostics.Debug.WriteLine(error);
+            Session.ShowError("프리셋 파일을 저장하지 못했습니다. 저장 위치와 파일 이름을 확인해 주세요.");
+        }
+    }
+    private void ImportPreset_Click(object sender, RoutedEventArgs e)
+    {
+        try
+        {
+            var path = _fileDialogs.ChooseImportPath();
+            if (path is null) return;
+            var preset = DisplayPresetFile.Import(PresetFileStorage.Read(path));
+            _showPresetDialog(new ImportPresetWindow(Session, Session.InspectImport(preset)));
+        }
+        catch (UnsupportedPresetFileVersionException)
+        {
+            Session.ShowError("이 앱에서 지원하지 않는 버전의 프리셋 파일입니다.");
+        }
+        catch (InvalidDataException error)
+        {
+            System.Diagnostics.Debug.WriteLine(error);
+            Session.ShowError("이 프리셋 파일을 불러올 수 없습니다. " + error.Message);
+        }
+        catch (Exception error) when (error is IOException or UnauthorizedAccessException or
+            System.Security.SecurityException or ArgumentException or NotSupportedException)
+        {
+            System.Diagnostics.Debug.WriteLine(error);
+            Session.ShowError("이 프리셋 파일을 불러올 수 없습니다. 파일이 올바른지 확인해 주세요.");
+        }
+    }
     private void Reset_Click(object sender, RoutedEventArgs e) => Session.Reset();
     private void Apply_Click(object sender, RoutedEventArgs e) => Session.TryApply();
     private void Accept_Click(object sender, RoutedEventArgs e) { if (Session.TryAccept()) Close(); }

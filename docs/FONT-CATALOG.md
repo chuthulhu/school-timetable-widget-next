@@ -213,3 +213,12 @@ final implementation; no ignored, weakened or retry-until-pass selector test was
 Final source/license metadata and bundled sizes/hashes were rechecked. Self-audit found no outstanding
 P1/P2 issue. Native evidence is limited to the observed desktop/user workflows described above, not
 exhaustive IME, multi-monitor/DPI or host-offline coverage. All requested milestone gates are satisfied.
+
+## Preset file references — 2026-09-14
+
+The `.stwpreset` v1 format exports only each selection's source, stable family/catalog ID and
+family name. It never embeds TTF/OTF bytes, base64, source URL, Windows registry data, absolute
+path or cache directory. Known bundled IDs are immediately portable. Missing System families
+and known Online entries without cache remain valid identities and preview fallback/download-
+needed status; import never downloads. Unknown source kinds or private catalog IDs fail the
+whole import instead of being silently replaced. [Full file contract](PRESET-IMPORT-EXPORT.md).

@@ -914,3 +914,14 @@ network. Missing/corrupt cache uses fallback without invalidating/replacing save
 Cancel rolls back display/library but retains complete reusable downloads. V4 stores source/family/FamilyId;
 strict v1/v2/v3 load remains writable without rewrite. Full contract, licenses and evidence: [Font Catalog](FONT-CATALOG.md).
 Native UX was approved by the user on 2026-09-11. Earlier bundled/online PLANNED statements are superseded only for this scope.
+
+## User display preset files — approved 2026-09-14
+
+The explicit milestone and [ADR 0017](adr/0017-display-preset-files.md) add one-user-preset
+`.stwpreset` import/export inside Display Settings. Preset file v1 is independent of profile
+schema v4 and carries only stable ID, user name and complete display/font-reference settings.
+It is not a profile backup and contains no timetable, schedule, date exception, lunch, clock,
+path, machine/account information or font bytes. Import is bounded, strict, previewed and
+explicit; it performs no automatic download or activation. Same-ID update/copy/cancel and
+name-only rename confirmation prevent silent overwrite. Imported values remain Draft until
+Apply/OK; Cancel/X and save failure preserve the existing P2 transaction guarantees.

@@ -110,6 +110,47 @@ public sealed class DisplaySettingsSession : ObservableObject
         Replace(new(selected.Id, selected.Name, candidate!));
         return true;
     });
+    public UserDisplayPreset SelectedUserPreset() => SelectedUser();
+    public PresetImportCandidate InspectImport(UserDisplayPreset preset)
+    {
+        ArgumentNullException.ThrowIfNull(preset);
+        var collision = Presets.Items.Any(p => p.Id == preset.Id) ? PresetImportCollision.SameId
+            : Presets.Items.Any(p => string.Equals(p.Name, preset.Name, StringComparison.OrdinalIgnoreCase))
+                ? PresetImportCollision.SameName : PresetImportCollision.None;
+        var fonts = new[]
+        {
+            new PresetImportFont("시간", preset.Display.Time.Font, _owner.Fonts.IsAvailable(preset.Display.Time.Font)),
+            new PresetImportFont("날짜", preset.Display.Date.Font, _owner.Fonts.IsAvailable(preset.Display.Date.Font)),
+            new PresetImportFont("요일", preset.Display.Weekday.Font, _owner.Fonts.IsAvailable(preset.Display.Weekday.Font)),
+            new PresetImportFont("상태", preset.Display.Status.Font, _owner.Fonts.IsAvailable(preset.Display.Status.Font))
+        };
+        return new(preset, collision, fonts);
+    }
+    public bool TryImport(PresetImportCandidate candidate, PresetImportAction action, string name) => EditLibrary(() =>
+    {
+        ArgumentNullException.ThrowIfNull(candidate);
+        var normalized = UserDisplayPreset.NormalizeName(name);
+        UserDisplayPreset imported;
+        switch (action)
+        {
+            case PresetImportAction.Add when candidate.Collision != PresetImportCollision.SameId:
+                imported = new(candidate.Preset.Id, normalized, candidate.Preset.Display);
+                Presets = new(Presets.Items.Append(imported));
+                break;
+            case PresetImportAction.UpdateExisting when candidate.Collision == PresetImportCollision.SameId:
+                imported = new(candidate.Preset.Id, normalized, candidate.Preset.Display);
+                Presets = new(Presets.Items.Select(p => p.Id == imported.Id ? imported : p));
+                break;
+            case PresetImportAction.ImportAsCopy:
+                imported = new(Guid.NewGuid(), normalized, candidate.Preset.Display);
+                Presets = new(Presets.Items.Append(imported));
+                break;
+            default:
+                throw new ArgumentException("가져오기 방법을 다시 선택해 주세요.");
+        }
+        return true;
+    });
+    public void ShowError(string message) => ErrorText = message;
     public bool CanDelete(Guid id) => !IsClosed && Preset.UserId != id && Presets.Items.Any(p => p.Id == id);
     public bool TryDelete(Guid id) => EditLibrary(() =>
     {

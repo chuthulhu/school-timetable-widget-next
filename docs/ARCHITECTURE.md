@@ -1368,3 +1368,17 @@ No font responsibilities enter Core or clock/tick code. Per-element picker candi
 committed display/library and cache side effects remain distinct. Preset selection resolves stable IDs into
 one choice snapshot per library revision, excluding transient WPF collection-reset nulls from editing.
 Schema v4 and strict older readers preserve whole-profile commit ownership. [Details/evidence](FONT-CATALOG.md).
+
+## Display preset file boundary — 2026-09-14
+
+[ADR 0017](adr/0017-display-preset-files.md) adds a bounded standalone file codec under
+Desktop Features/DisplaySettings and a small Windows Open/Save-dialog boundary. The codec
+maps only immutable UserDisplayPreset values, uses its own v1 DTOs and strict JSON validation,
+and knows neither ProfileSnapshot nor persistence DTOs. File I/O is synchronous and bounded
+at 64 KiB; import parsing, preview and collision inspection precede any Draft mutation.
+
+DisplaySettingsSession owns add/update/copy operations on immutable library revisions. The
+preview window gathers the explicit collision decision and unique editable name; it does not
+own persistence or rendering. RuntimeDisplaySettings remains the sole preview/commit owner,
+and ProfileSession's existing complete save remains the only path to durable profile change.
+FontLibrary is queried read-only for preview availability; imports never call its download API.

@@ -14,6 +14,65 @@ namespace SchoolTimetableWidget.Tests.DisplaySettings;
 public class UserPresetViewTests
 {
     [Fact]
+    public void ImportExportButtonsUseFileBoundaryPreviewAndKeepImportedPresetInactive() => HighlightTestDispatcher.Run(() =>
+    {
+        using var temp = new TempProfile(); var exportPath = Path.Combine(temp.Directory, "out.stwpreset");
+        var owner = DisplayModelTests.Owner(); var session = owner.Open(); Assert.True(session.TrySaveAs("교무실 시계"));
+        var originalId = session.Preset.UserId!.Value; var files = new FakePresetFileDialogs { ExportPath = exportPath };
+        var previewCalls = 0;
+        var dialog = new DisplaySettingsWindow(session, child =>
+        {
+            previewCalls++; var preview = Assert.IsType<ImportPresetWindow>(child);
+            try
+            {
+                Assert.Contains("같은 프리셋", ((TextBlock)preview.FindName("CollisionText")).Text);
+                Assert.Equal(Visibility.Visible, Button(preview, "UpdateButton").Visibility);
+                Assert.Equal(Visibility.Visible, Button(preview, "CopyButton").Visibility);
+                Assert.Equal(Visibility.Collapsed, Button(preview, "ImportButton").Visibility);
+                ((TextBox)preview.FindName("NameInput")).Text = "교무실 시계 복사";
+                Click(preview, "CopyButton");
+            }
+            finally { preview.Close(); }
+        }, files);
+        try
+        {
+            Assert.True(Button(dialog, "ExportPresetButton").IsEnabled);
+            Assert.True(Button(dialog, "ImportPresetButton").IsEnabled);
+            Click(dialog, "ExportPresetButton"); Assert.True(File.Exists(exportPath));
+            Assert.EndsWith(DisplayPresetFile.Extension, files.SuggestedName);
+            files.ImportPath = exportPath; Click(dialog, "ImportPresetButton");
+            Assert.Equal(1, previewCalls); Assert.Equal(2, session.Presets.Items.Count);
+            Assert.Equal(originalId, session.Preset.UserId); Assert.Equal(owner.Current.Preset, session.Preset);
+            dialog.Close(); Assert.Empty(owner.CommittedPresets.Items);
+        }
+        finally { dialog.Close(); }
+    });
+
+    [Fact]
+    public void ExportIsDisabledForBuiltInAndNameCollisionPreviewSuggestsEditableCopyName() => HighlightTestDispatcher.Run(() =>
+    {
+        var owner = DisplayModelTests.Owner(); var session = owner.Open();
+        var dialog = new DisplaySettingsWindow(session);
+        try
+        {
+            Drain(dialog);
+            Assert.False(Button(dialog, "ExportPresetButton").IsEnabled);
+            Assert.True(Button(dialog, "ImportPresetButton").IsEnabled);
+            Assert.True(session.TrySaveAs("A"));
+            var incoming = new UserDisplayPreset(Guid.NewGuid(), "A", DisplayPresets.Create(DisplayPreset.Digital));
+            var preview = new ImportPresetWindow(session, session.InspectImport(incoming));
+            try
+            {
+                Assert.Equal("A (복사본)", ((TextBox)preview.FindName("NameInput")).Text);
+                Assert.Equal(Visibility.Collapsed, Button(preview, "UpdateButton").Visibility);
+                Assert.Equal(Visibility.Visible, Button(preview, "CopyButton").Visibility);
+                Assert.Contains("같은 이름", ((TextBlock)preview.FindName("CollisionText")).Text);
+            }
+            finally { preview.Close(); }
+        }
+        finally { dialog.Close(); }
+    });
+    [Fact]
     public void SaveNameDialogValidatesThenSelectorAndManagementReflectUserPreset() => HighlightTestDispatcher.Run(() =>
     {
         var owner = DisplayModelTests.Owner(); var session = owner.Open(); var calls = 0;
@@ -124,4 +183,13 @@ public class UserPresetViewTests
     private static void Click(Window window, string name)
     { Button(window, name).RaiseEvent(new RoutedEventArgs(ButtonBase.ClickEvent)); Drain(window); }
     private static void Drain(Window window) => window.Dispatcher.Invoke(() => { }, DispatcherPriority.ApplicationIdle);
+}
+
+internal sealed class FakePresetFileDialogs : IPresetFileDialogs
+{
+    public string? ExportPath { get; set; }
+    public string? ImportPath { get; set; }
+    public string SuggestedName { get; private set; } = "";
+    public string? ChooseExportPath(string suggestedFileName) { SuggestedName = suggestedFileName; return ExportPath; }
+    public string? ChooseImportPath() => ImportPath;
 }

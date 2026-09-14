@@ -46,6 +46,10 @@
                     <Button x:Name="RenamePresetButton" Content="이름 변경..." Click="RenamePreset_Click" IsEnabled="{Binding CanManageSelected}" Margin="0,0,8,6" Padding="10,6"/>
                     <Button x:Name="UpdatePresetButton" Content="현재 설정으로 업데이트" Click="UpdatePreset_Click" IsEnabled="{Binding CanManageSelected}" Margin="0,0,8,6" Padding="10,6"/>
                     <Button x:Name="DeletePresetButton" Content="내 프리셋 삭제..." Click="DeletePreset_Click" IsEnabled="{Binding HasUserPresets}" Margin="0,0,8,6" Padding="10,6"/>
+                    <Button x:Name="ExportPresetButton" Content="프리셋 내보내기..." Click="ExportPreset_Click" IsEnabled="{Binding CanManageSelected}"
+                            ToolTip="선택한 내 프리셋에 저장된 현재 편집본을 파일로 저장합니다." Margin="0,0,8,6" Padding="10,6"/>
+                    <Button x:Name="ImportPresetButton" Content="프리셋 가져오기..." Click="ImportPreset_Click"
+                            ToolTip="파일을 확인한 뒤 내 프리셋 목록에 추가합니다." Margin="0,0,8,6" Padding="10,6"/>
                 </WrapPanel>
                 <WrapPanel Margin="0,0,0,6">
                     <CheckBox x:Name="Use24HourCheckBox" Content="24시간제" IsChecked="{Binding Use24Hour}"/>
