@@ -459,7 +459,7 @@ Migration/restore 중에는 기존 Draft, geometry intent, debounce write가 새
 | Open | 마지막 committed state에서 Draft와 baseline 복사 | 저장 없음 |
 | Preview | Draft를 visual runtime에 적용. font/layout 변경은 P3 minimum 재측정 | persistence 없음; committed/baseline 불변 |
 | Theme | 다른 appearance와 같은 Draft/Preview | 즉시 whole-style save 없음 |
-| Reset (위치 포함) | Draft 변경, preview하는 owned state도 추적 | Apply 전 저장/OS 변경 없음 |
+| Display Reset | Draft 변경, preview하는 owned state도 추적. 창 위치/크기 초기화는 ADR 0019의 별도 즉시 동작 | Apply 전 저장/OS 변경 없음 |
 | Apply 성공 | 검증한 결과 반영, controls 동기화, dialog 유지 | persistence 성공 후 committed와 rollback baseline을 같은 새 결과로 갱신 |
 | OK | Apply 수행, 성공한 경우에만 닫기 | Apply와 같은 성공 경계 |
 | Cancel / X | 마지막 성공 Apply baseline으로 controls + preview + owned runtime state 완전 복원 후 닫기 | baseline 이전으로 되돌리지 않음; 새 저장/OS 부작용 없음 |
@@ -511,7 +511,7 @@ source가 검토 중 바뀐 경우의 재검증 방식은 후속 persistence/imp
 ## Backup / Restore Contract
 
 **APPROVED — P9.**
-전체 profile의 시간표·교시·appearance·geometry/lock·notification/autostart 선호를 backup/restore 대상으로 한다.
+전체 profile의 시간표·교시·appearance·lock·notification/autostart 선호를 backup/restore 대상으로 한다. geometry는 ADR 0019에 따라 machine-local window state로 분리하며 backup/restore에서 제외한다.
 실제 OS Startup registration이나 알림 전달 상태는 profile 값과 구분하며 backup 파일만으로 복원 성공을 주장하지 않는다.
 새 backup은 하나의 committed revision을 담고 Preview/서로 다른 시점/stale files를 섞지 않는다.
 성공한 snapshot과 실패한 불완전 출력을 구별한다. 충돌이 기존 backup을 조용히 덮어쓰지 않게 한다.
@@ -964,3 +964,19 @@ Remeasure requests follow layout-affecting content/configuration events, includi
 effective week/date content, display/font/preset changes and profile restore. They are coalesced
 after WPF binding/layout publication. Ordinary clock/countdown ticks do not request window
 geometry changes.
+
+## Machine-local window placement — approved 2026-09-16
+
+[ADR 0019](adr/0019-machine-local-window-placement.md) supersedes earlier placement deferrals,
+geometry-in-backup wording and position-reset-in-Settings wording. Window move/resize/reset
+is immediate machine-local UI preference, outside Display Settings Draft/Apply/Cancel.
+Window state is not profile data and never enters .stwbackup. Full restore preserves local
+preferred bounds; changed content affects only applied bounds.
+
+Completed normal-state user gestures set preferred DIP size and monitor-relative position.
+Automatic content growth, temporary size caps and upward screen fit do not overwrite intent.
+Content shrink returns to preferred bounds where possible. Remember a best-effort monitor hint;
+missing monitor falls back to primary and clamps within current work area. Negative virtual
+coordinates and current monitor DPI are supported. No numeric Settings UI is added.
+The context-menu reset affects only window intent. Invalid local state uses safe defaults
+without profile degradation. See [Window Placement](WINDOW-PLACEMENT.md) for evidence status.

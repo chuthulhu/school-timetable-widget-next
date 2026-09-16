@@ -134,3 +134,12 @@ full three-line rendering, grow without unnecessary scroll, work-area cap with b
 period 7 access, natural shrink, resize without clipping, fixed top headers, stable positioning and
 restart persistence. The user explicitly approved this UX. The repeated final gate passed
 **907/907**, failed/skipped 0, with build warnings/errors **0**.
+
+## Local placement exclusion — approved 2026-09-16
+
+Machine-local window-state.json is explicitly excluded from .stwbackup. Restore leaves the
+current PC's preferred width/height/position/monitor hint unchanged, including degraded or
+Recovery Required workflows. Restored content may increase or shrink measured minimum and
+applied geometry; it cannot replace preferred geometry. The existing export destination guard
+also protects the local window-state file. No backup/profile schema change. See
+[ADR 0019](adr/0019-machine-local-window-placement.md) and [Window Placement](WINDOW-PLACEMENT.md).

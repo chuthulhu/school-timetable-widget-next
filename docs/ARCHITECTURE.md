@@ -1420,3 +1420,13 @@ navigation header remains outside that viewport; period labels scroll with their
 The window behavior combines fixed header height with the body's full desired height, so the
 scrollbar appears only after the monitor cap is reached. This fixes the native multiline-cell
 clipping found during backup/restore review without changing or normalizing stored text.
+
+## Window placement ownership — 2026-09-16
+
+[ADR 0019](adr/0019-machine-local-window-placement.md): Features/WindowPlacement owns immutable
+preferred bounds, pure fit calculation and completed-gesture persistence intent. The Windows
+controller owns HWND message lifecycle, monitor selection and current-DPI conversion;
+WindowContentMinimum supplies measured content minima. JsonWindowStateStore owns only the
+separate machine-local file, using the existing atomic file primitive. App composes it using
+the selected production/TEMP directory before Show. No ownership moves into MainWindowViewModel,
+ProfileSession, display transactions, clocks or backups. [Evidence](WINDOW-PLACEMENT.md).

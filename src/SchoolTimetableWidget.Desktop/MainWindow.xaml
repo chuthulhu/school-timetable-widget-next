@@ -12,6 +12,8 @@
         <ContextMenu>
             <MenuItem Header="표시 설정..." InputGestureText="Ctrl+," Command="{x:Static display:DisplaySettingsCommands.Open}"
                       CommandTarget="{Binding PlacementTarget, RelativeSource={RelativeSource AncestorType=ContextMenu}}"/>
+            <MenuItem Header="창 위치/크기 초기화" Command="{x:Static windows:WindowPlacementCommands.Reset}"
+                      CommandTarget="{Binding PlacementTarget, RelativeSource={RelativeSource AncestorType=ContextMenu}}"/>
             <Separator/>
             <MenuItem Header="데이터 백업..." Command="{x:Static backup:BackupCommands.Backup}" CommandTarget="{Binding PlacementTarget, RelativeSource={RelativeSource AncestorType=ContextMenu}}"/>
             <MenuItem Header="데이터 복원..." Command="{x:Static backup:BackupCommands.Restore}" CommandTarget="{Binding PlacementTarget, RelativeSource={RelativeSource AncestorType=ContextMenu}}"/>

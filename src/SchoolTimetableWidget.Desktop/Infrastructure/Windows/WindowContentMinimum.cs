@@ -37,7 +37,13 @@ public static class WindowContentMinimum
         States.GetOrCreateValue(window).WorkArea = provider;
     }
 
-    internal static double GetPreferredHeight(Window window) => States.GetOrCreateValue(window).PreferredHeight;
+    internal static void SetPlacement(Window window, WindowPlacementController placement) => States.GetOrCreateValue(window).Placement = placement;
+
+    internal static double GetPreferredHeight(Window window)
+    {
+        var state = States.GetOrCreateValue(window);
+        return state.Placement?.Session.Preferred.Height ?? state.PreferredHeight;
+    }
 
     private static void OnIsEnabledChanged(DependencyObject target, DependencyPropertyChangedEventArgs e)
     {
@@ -90,7 +96,7 @@ public static class WindowContentMinimum
     private static void OnLocationChanged(object? sender, EventArgs e)
     {
         var window = (Window)sender!;
-        if (window.IsLoaded) Refresh(window);
+        if (window.IsLoaded && States.GetOrCreateValue(window).Placement is null) Refresh(window);
     }
 
     private static void OnClosed(object? sender, EventArgs e)
@@ -107,10 +113,7 @@ public static class WindowContentMinimum
     {
         var window = (Window)sender;
         var state = States.GetOrCreateValue(window);
-        if (e.HeightChanged && !state.Applying &&
-            (!double.IsFinite(state.AppliedHeight) || Math.Abs(e.NewSize.Height - state.AppliedHeight) > 0.5))
-            state.PreferredHeight = e.NewSize.Height;
-        if (e.WidthChanged && window.IsLoaded) Refresh(window);
+        if (e.WidthChanged && window.IsLoaded && state.Placement?.IsInteracting != true) Refresh(window);
     }
 
     public static void Refresh(Window window)
@@ -128,7 +131,8 @@ public static class WindowContentMinimum
 
     private static void Apply(Window window, State state)
     {
-        if (state.Refreshing || window.Content is not FrameworkElement content || content.ActualWidth <= 0) return;
+        if (state.Refreshing || state.Placement?.IsInteracting == true || window.WindowState != WindowState.Normal ||
+            window.Content is not FrameworkElement content || content.ActualWidth <= 0) return;
         EnsurePreferredHeight(window, state);
         state.Refreshing = true;
         try
@@ -147,6 +151,12 @@ public static class WindowContentMinimum
                 requiredClientHeight = Math.Max(requiredClientHeight, fixedHeight + overflowContent.DesiredSize.Height);
             }
             var requiredHeight = requiredClientHeight + chromeHeight;
+            if (state.Placement is not null)
+            {
+                state.Placement.Apply(minimumWidth + chromeWidth, requiredHeight);
+                content.InvalidateMeasure();
+                return;
+            }
             var workAreaHeight = state.WorkArea.GetAvailableHeight(window);
             if (!double.IsFinite(workAreaHeight) || workAreaHeight <= 0) workAreaHeight = double.PositiveInfinity;
             var minimumHeight = Math.Min(requiredHeight, workAreaHeight);
@@ -203,6 +213,7 @@ public static class WindowContentMinimum
 
     private sealed class State
     {
+        public WindowPlacementController? Placement { get; set; }
         public IWindowWorkAreaProvider WorkArea { get; set; } = MonitorWindowWorkAreaProvider.Instance;
         public HwndSource? Source { get; set; }
         public double PreferredHeight { get; set; } = double.NaN;

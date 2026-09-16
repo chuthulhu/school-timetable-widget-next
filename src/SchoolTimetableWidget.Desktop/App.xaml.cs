@@ -33,11 +33,13 @@ public partial class App : Application
         if (periodPreview) ApplicationClock = new PeriodSchedulePreviewClock();
         var headerViewModel = new CurrentStatusHeaderViewModel();
         ProfileSession profile;
+        JsonWindowStateStore? windowStateStore = null;
         var fonts = FontLibrary.LocalOnly;
         try
         {
             var directory = DevelopmentProfileLocation.FromArguments(e.Args) ??
                 (preview ? DevelopmentProfileLocation.CreateTemporary() : ProfileLocation.ForCurrentUser());
+            windowStateStore = new JsonWindowStateStore(directory);
             _profileStore = new JsonProfileStore(directory);
             fonts = new FontLibrary(new DownloadedFontCache(directory));
             var seed = preview ? new ProfileSnapshot(TimetablePreviewData.Create(), new(DefaultPeriodSchedule.Periods), [], false) : null;
@@ -61,6 +63,7 @@ public partial class App : Application
         {
             MainWindow = new MainWindow(headerViewModel, timetableViewModel,
                 runtime.ScheduleEditor, profile.LoadResult.Notice, runtime.Display, runtime: runtime, clock: ApplicationClock);
+            _ = new WindowPlacementController(MainWindow, windowStateStore);
             var timetableView = (WeeklyTimetableView)MainWindow.FindName("Timetable");
             timetableView.DateEditor = runtime.DateEditor;
             timetableView.GetCurrentDate = () => _statusRefreshLoop.CurrentDate;

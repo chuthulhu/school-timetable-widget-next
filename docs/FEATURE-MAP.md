@@ -36,7 +36,7 @@ PLANNED 기능에도 계약에 명시된 DEFERRED 상세는 그대로 남아 있
 | Legacy Migration | PLANNED | P8, C1–C6, I4–I5; Migration Contract | [0001](adr/0001-golden-reference-policy.md); provenance/concurrency 상세 DEFERRED |
 | Backup / Restore | PLANNED | P9, C6, R17–R21, I4 | [0003](adr/0003-settings-transaction.md); format/manifest/recovery 상세 DEFERRED |
 | File Sharing | PLANNED | A3, P10, C3, C7; Sharing Scope | [0001](adr/0001-golden-reference-policy.md); 새 format 및 Legacy envelope 지원 상세 DEFERRED |
-| Window / DPI / Multi-monitor | PLANNED | P3, P6, M6, I8–I9, I14 | [0002](adr/0002-windows-desktop-stack.md); close/z-order/monitor 제거/overflow DEFERRED |
+| Window / DPI / Multi-monitor | IMPLEMENTED — placement; automated verified / user native UX approved | P3, P6, M6, I8–I9, I14 | [0019](adr/0019-machine-local-window-placement.md), [evidence](WINDOW-PLACEMENT.md); tray/lock/close/z-order remain separate |
 | Tray | PLANNED | P6; Window / Tray Contract | [0002](adr/0002-windows-desktop-stack.md); Windows adapter 검증 필요 |
 | Single Instance | PLANNED | P6, R23 | [0002](adr/0002-windows-desktop-stack.md); 사용자/profile당 writer 하나 |
 | Autostart | PLANNED | A1, P7, C1, I11 | [0002](adr/0002-windows-desktop-stack.md); OS registration 상세 DEFERRED |
@@ -339,3 +339,11 @@ See [Backup / Restore](BACKUP-RESTORE.md) and [ADR 0018](adr/0018-profile-backup
 Invalid-backup UI exception P2 is resolved with a narrow typed boundary and retry coverage.
 Final full suite 907/907, build warnings/errors 0. Native smoke and the user UX checkpoint passed;
 commit/push remain intentionally pending. See BACKUP-RESTORE.md.
+
+## Window placement milestone — 2026-09-16
+
+Window placement / preferred size: **IMPLEMENTED — AUTOMATED VERIFIED / USER NATIVE UX APPROVED**.
+Machine-local preferred size/position, current work-area cap, monitor fallback, normal gesture
+save and dedicated reset are covered by [ADR 0019](adr/0019-machine-local-window-placement.md).
+[Window Placement](WINDOW-PLACEMENT.md) distinguishes automated and native evidence.
+Tray, lock, single-instance activation and lifecycle redesign remain separate milestones.

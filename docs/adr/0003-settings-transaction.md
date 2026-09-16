@@ -87,3 +87,10 @@ without creating another session, changing Draft/Preview/library/baseline or sav
 Closed releases window ownership; the next Open starts from committed state. The runtime
 single-session invariant remains enforced. This resolves display-window reentrancy only,
 not broader restore/import concurrency or a generic modal-management policy.
+
+## Machine-local window follow-up — 2026-09-16
+
+[ADR 0019](0019-machine-local-window-placement.md) supersedes the position-related Reset/Cancel
+examples above. Window gestures and the dedicated context-menu window reset now update
+machine-local UI state immediately, outside this Display Settings transaction. Display Reset,
+Theme and other Draft/Preview/Apply/Cancel semantics remain as specified.

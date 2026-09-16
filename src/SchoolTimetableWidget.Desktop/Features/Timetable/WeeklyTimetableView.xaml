@@ -24,6 +24,8 @@
         <ContextMenu>
             <MenuItem Header="표시 설정..." InputGestureText="Ctrl+," Command="{x:Static display:DisplaySettingsCommands.Open}"
                       CommandTarget="{Binding PlacementTarget, RelativeSource={RelativeSource AncestorType=ContextMenu}}"/>
+            <MenuItem Header="창 위치/크기 초기화" Command="{x:Static windows:WindowPlacementCommands.Reset}"
+                      CommandTarget="{Binding PlacementTarget, RelativeSource={RelativeSource AncestorType=ContextMenu}}"/>
             <Separator/>
             <MenuItem Header="학교 시간표 가져오기..." InputGestureText="Ctrl+V"
                       Command="{x:Static import:TimetableImportCommands.School}"

@@ -348,3 +348,13 @@ data; degraded origin restores exact original bytes and remains write-blocked wi
 available. Both policies are approved. The invalid-backup UI exception P2 is fixed; the full
 final automated suite passes 907/907 with warnings/errors 0, and the user approved normal,
 degraded, restart and screen-fit native UX. Commit/push remain pending. See BACKUP-RESTORE.md.
+
+## Machine-local window state — 2026-09-16
+
+Separate window-state.json version 1 lives beside profile.json and is isolated by the same
+DEBUG TEMP-directory selection. Only preferred DIP size, monitor-relative DIP position and
+monitor hint are saved after normal move/resize completion or explicit reset. Auto geometry,
+content minimum and tick values are excluded. Safe same-directory temporary replacement is
+reused; corrupt window state and write failures do not change profile load/recovery status.
+No profile schema change or profile write is caused by window movement. See
+[ADR 0019](adr/0019-machine-local-window-placement.md) and [Window Placement](WINDOW-PLACEMENT.md).
