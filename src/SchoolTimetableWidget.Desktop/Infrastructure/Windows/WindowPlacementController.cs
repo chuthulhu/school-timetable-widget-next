@@ -41,6 +41,13 @@ internal sealed class WindowPlacementController
         Apply(0, 0);
     }
 
+    internal void PrepareForShow()
+    {
+        // Refit the existing HWND before showing it after a monitor/work-area change.
+        Apply(_window.MinWidth, _window.MinHeight);
+        WindowContentMinimum.Refresh(_window);
+    }
+
     internal void Reset()
     {
         Session.Reset(_desktop.Observe()?.MonitorHint);

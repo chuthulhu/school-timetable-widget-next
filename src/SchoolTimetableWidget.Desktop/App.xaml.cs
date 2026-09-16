@@ -1,4 +1,5 @@
 using SchoolTimetableWidget.Desktop.Infrastructure.Fonts;
+using SchoolTimetableWidget.Desktop.Features.TrayLifecycle;
 using System.IO;
 using SchoolTimetableWidget.Desktop.Features.Persistence;
 using SchoolTimetableWidget.Desktop.Infrastructure.Persistence;
@@ -20,26 +21,48 @@ public partial class App : Application
     internal IApplicationClock ApplicationClock { get; private set; } = new PcFallbackApplicationClock();
     private CurrentStatusRefreshLoop? _statusRefreshLoop;
     private JsonProfileStore? _profileStore;
+    private WindowsSingleInstance? _instance;
+    private WidgetTrayLifecycle? _trayLifecycle;
 
     protected override void OnStartup(StartupEventArgs e)
     {
         base.OnStartup(e);
-        var effectivePreview = e.Args.Contains("--effective-preview", StringComparer.Ordinal);
-        var periodPreview = effectivePreview || e.Args.Contains("--period-preview", StringComparer.Ordinal);
-        var bulkPreview = e.Args.Contains("--bulk-preview", StringComparer.Ordinal);
-        var highlightPreview = bulkPreview || e.Args.Contains("--highlight-preview", StringComparer.Ordinal);
-        var preview = periodPreview || highlightPreview || e.Args.Contains("--timetable-preview", StringComparer.Ordinal);
+        var developmentDirectory = DevelopmentProfileLocation.FromArguments(e.Args);
+        var preview = e.Args.Any(arg => arg is "--effective-preview" or "--period-preview" or
+            "--bulk-preview" or "--highlight-preview" or "--timetable-preview");
+        _instance = new WindowsSingleInstance(WindowsSingleInstance.ScopeFor(developmentDirectory, preview));
+        try
+        {
+            if (!SingleInstanceStartup.Run(_instance, () => InitializePrimary(e.Args, developmentDirectory)))
+                Shutdown();
+        }
+        catch
+        {
+            DisposeResources();
+            throw;
+        }
+    }
+
+    private void InitializePrimary(string[] args, string? developmentDirectory)
+    {
+        var effectivePreview = args.Contains("--effective-preview", StringComparer.Ordinal);
+        var periodPreview = effectivePreview || args.Contains("--period-preview", StringComparer.Ordinal);
+        var bulkPreview = args.Contains("--bulk-preview", StringComparer.Ordinal);
+        var highlightPreview = bulkPreview || args.Contains("--highlight-preview", StringComparer.Ordinal);
+        var preview = periodPreview || highlightPreview || args.Contains("--timetable-preview", StringComparer.Ordinal);
         if (highlightPreview) ApplicationClock = new HighlightPreviewClock();
         if (periodPreview) ApplicationClock = new PeriodSchedulePreviewClock();
         var headerViewModel = new CurrentStatusHeaderViewModel();
         ProfileSession profile;
         JsonWindowStateStore? windowStateStore = null;
+        JsonTrayNoticeStore? trayNoticeStore = null;
         var fonts = FontLibrary.LocalOnly;
         try
         {
-            var directory = DevelopmentProfileLocation.FromArguments(e.Args) ??
+            var directory = developmentDirectory ??
                 (preview ? DevelopmentProfileLocation.CreateTemporary() : ProfileLocation.ForCurrentUser());
             windowStateStore = new JsonWindowStateStore(directory);
+            trayNoticeStore = new JsonTrayNoticeStore(directory);
             _profileStore = new JsonProfileStore(directory);
             fonts = new FontLibrary(new DownloadedFontCache(directory));
             var seed = preview ? new ProfileSnapshot(TimetablePreviewData.Create(), new(DefaultPeriodSchedule.Periods), [], false) : null;
@@ -63,7 +86,10 @@ public partial class App : Application
         {
             MainWindow = new MainWindow(headerViewModel, timetableViewModel,
                 runtime.ScheduleEditor, profile.LoadResult.Notice, runtime.Display, runtime: runtime, clock: ApplicationClock);
-            _ = new WindowPlacementController(MainWindow, windowStateStore);
+            var placement = new WindowPlacementController(MainWindow, windowStateStore);
+            var window = new WpfWidgetWindow(MainWindow, placement, () => _statusRefreshLoop.RefreshNow());
+            var tray = new WindowsTrayIcon();
+            _trayLifecycle = new WidgetTrayLifecycle(window, tray, trayNoticeStore, () => Shutdown());
             var timetableView = (WeeklyTimetableView)MainWindow.FindName("Timetable");
             timetableView.DateEditor = runtime.DateEditor;
             timetableView.GetCurrentDate = () => _statusRefreshLoop.CurrentDate;
@@ -82,18 +108,44 @@ public partial class App : Application
             // Populate header and current slot before the first visible frame.
             _statusRefreshLoop.Start();
             MainWindow.Show();
+            _instance!.Listen(Dispatcher, _trayLifecycle.Show);
         }
         catch
         {
-            _statusRefreshLoop.Dispose();
-            _profileStore?.Dispose();
+            DisposeResources();
             throw;
+        }
+    }
+
+    protected override void OnSessionEnding(SessionEndingCancelEventArgs e)
+    {
+        _trayLifecycle?.SessionEnding();
+        base.OnSessionEnding(e);
+        e.Cancel = false;
+    }
+
+    private void DisposeResources()
+    {
+        // Stop activation first; release ownership only after profile resources are closed.
+        try { _instance?.StopListening(); }
+        finally
+        {
+            try { _trayLifecycle?.Dispose(); }
+            finally
+            {
+                try { _statusRefreshLoop?.Dispose(); }
+                finally
+                {
+                    try { _profileStore?.Dispose(); }
+                    finally { _instance?.Dispose(); }
+                }
+            }
         }
     }
 
     protected override void OnExit(ExitEventArgs e)
     {
-        try { _statusRefreshLoop?.Dispose(); }
-        finally { _profileStore?.Dispose(); base.OnExit(e); }
+        try { DisposeResources(); }
+        finally { base.OnExit(e); }
     }
 }

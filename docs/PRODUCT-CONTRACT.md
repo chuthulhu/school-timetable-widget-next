@@ -90,7 +90,7 @@ A1–A9, P1–P10 및 연결된 MATCH/COMPATIBLE/REDESIGN의 제품 수준 계�
 | A6 | APPROVED | Current Status State Model: BeforeFirstPeriod, InPeriod, Break, AfterLastPeriod, Weekend의 정확히 5상태와 아래 current/next/transition 사실 계약 | 상태 사실과 A7 countdown 계산은 별도 책임; Core는 display string을 제공하지 않으며 UI는 별도 단계 |
 | A7 | APPROVED | Countdown Display Semantics: 초를 표시하지 않고 전체 남은 분을 floor; 양수 1분 미만은 LessThanMinute, 1시간 이상은 hours/minutes로 정규화, 0분 표시 없이 exact transition에 새 상태 사용 | 한국어 문자열 조합은 A8 Desktop presentation 책임; Header UI 미구현 |
 | A8 | APPROVED | Current Status Header Presentation Text: v1 한국어 단일 언어, CurrentTimeText/StatusText 분리, invariant `HH:mm:ss`, 아래 5상태 문구와 countdown 한국어 변환 | Core는 localized text를 소유하지 않음; 다국어 infrastructure는 현재 범위 밖, refresh lifecycle은 A9, Header XAML은 미구현 |
-| A9 | APPROVED | Current Status Header Refresh Lifecycle: 약 1초 DispatcherTimer, Start 즉시 refresh, cycle당 snapshot 1회와 동일 snapshot pipeline, 표시 ViewModel/loop 분리, missed tick replay 없음, 아래 Start/Stop/Dispose 계약 | Tray visibility lifecycle 및 suspend/resume detection은 DEFERRED; Header XAML/layout과 실제 앱 activation은 별도 단계 |
+| A9 | APPROVED | Current Status Header Refresh Lifecycle: 약 1초 DispatcherTimer, Start 즉시 refresh, cycle당 snapshot 1회와 동일 snapshot pipeline, 표시 ViewModel/loop 분리, missed tick replay 없음, 아래 Start/Stop/Dispose 계약 | Tray hide는 refresh 유지, Show 즉시 refresh (ADR 0020); suspend/resume detection은 DEFERRED |
 
 ## Approved Decisions — P1–P10
 
@@ -101,7 +101,7 @@ A1–A9, P1–P10 및 연결된 MATCH/COMPATIBLE/REDESIGN의 제품 수준 계�
 | P3 | APPROVED | preferred size와 applied size 구분, Preview에서도 content minimum 재측정 | actual < minimum 금지; 화면보다 큰 minimum의 overflow UX는 DEFERRED |
 | P4 | APPROVED | current-period 구간 `[start, end)` | 시작 포함·종료 제외; legacy exact-end inclusive를 의도적으로 변경 |
 | P5 | APPROVED | 신규 설치 알림 OFF, 활성화 시 시작/사전 알림, 빈 수업 제외, 중복 방지, resume 후 지난 알림 몰아 보내지 않음 | scheduling policy와 Windows delivery 분리 |
-| P6 | APPROVED | tray icon/show-hide/명시적 Exit 완전 종료, 사용자/profile당 writer 하나, 이동 잠금·resize 허용, taskbar 미표시 위젯 | 두 번째 실행은 기존 instance 표시/활성화; main close 의미는 DEFERRED |
+| P6 | APPROVED | tray icon/show-hide/명시적 Exit 완전 종료, 사용자 세션당 instance 하나, 이동 잠금·resize 허용, taskbar 미표시 위젯 | X/Alt+F4는 hide; 두 번째 실행은 기존 instance 표시/활성화; ADR 0020 |
 | P7 | APPROVED | 신규 설치 autostart OFF, Settings에서 명시적 활성화 | migration의 true는 선호로만 표시하고 사용자 승인 후 OS 등록 |
 | P8 | APPROVED | source 표시 → read-only parse → validation → 변환 preview/report → 사용자 선택 → 새 profile 1회 commit | 원본 불변, partial import 금지, corrupt ≠ missing, 자동 재import 금지 |
 | P9 | APPROVED | 전체 profile backup/restore 및 legacy backup importer, committed revision 하나에서 backup | 전체 검증 후 restore, 실패 시 기존 상태 유지/완전 rollback; format 상세 DEFERRED |
@@ -284,9 +284,8 @@ Timer Tick 하나당 현재 snapshot 기반 refresh 하나만 실행한다. 지�
 
 Loop 생성과 lifecycle/RefreshNow 호출은 소유 WPF dispatcher thread에서 수행하며 timer Tick도
 같은 thread에서 ViewModel을 갱신한다. Background worker, generic scheduler 또는 별도
-SynchronizationContext abstraction을 도입하지 않는다. Future resume/show에서 RefreshNow를
-호출할 수 있지만 tray hide/show에 따른 Start/Stop 정책과 suspend/resume detection/integration은
-**DEFERRED**다. Editable period persistence의 schedule source 교체 방식도 별도 설계다.
+SynchronizationContext abstraction을 도입하지 않는다. Tray hide 중에도 refresh는 유지하며 Show에서
+RefreshNow를 호출한다 (ADR 0020). Suspend/resume detection/integration은 **DEFERRED**다. Editable period persistence의 schedule source 교체 방식도 별도 설계다.
 
 Phase 0.7은 ViewModel + live refresh loop foundation이다. Header XAML/rendering/layout,
 실제 App activation/wiring, Highlight 및 KRISS sync 완료를 뜻하지 않는다.
@@ -489,8 +488,10 @@ Legacy 저장값에 source DPI가 없는 경우 변환 보고에서 불확실성
 Tray icon과 show/hide toggle을 제공하고 명시적 Exit는 widget/icon 및 소유 process를 완전히 종료한다.
 Lock은 이동만 잠그고 resize는 허용한다. taskbar 미표시 desktop-widget 방향을 유지한다.
 Legacy Bottom/Tool/Frameless flags 자체나 always-on-top을 새 제품 기본값으로 확정하지 않는다.
-두 번째 실행은 같은 사용자/profile의 기존 instance를 표시하거나 활성화하며 writer를 추가하지 않는다.
-Main close button의 hide/exit 의미, z-order, 사라진 monitor의 구체적 배치 정책은 DEFERRED다.
+두 번째 실행은 같은 Windows 사용자/세션의 기존 instance를 표시하거나 활성화하며 profile/UI를 추가로 열지 않는다.
+MainWindow X/Alt+F4는 기존 창을 Hide하며, tray 종료는 완전히 종료한다 (ADR 0020).
+열린 editor/modal이 있으면 해당 창을 활성화하고 Hide/Exit를 보류한다. 시스템 종료는 막지 않는다.
+사라진 monitor는 ADR 0019를 따르며 z-order는 DEFERRED다.
 
 ## Migration Contract
 
@@ -602,12 +603,12 @@ I15–I20은 A4/A5의 새 APPROVED invariant다. 구현 acceptance 기준이며 
 | A1/P1/P7 | DEFERRED | installer technology, 권한 실증, OS 지원 범위, runtime 배포, uninstall 데이터 정책 |
 | P1/R22 | DEFERRED | updater 범위/library, version identity 구현, update 검증/복구 |
 | P2/P8/P9 | PARTLY RESOLVED | Native v1 schema/storage/write exclusion/load-failure A policy: ADR 0012. Full backup/restore recovery, migration provenance 및 후속 revision/동시성은 DEFERRED |
-| P3/P6 | DEFERRED | 화면보다 큰 minimum overflow UX, main close 의미, z-order, monitor 제거 배치 |
+| P3/P6 | DEFERRED | z-order (main close는 ADR 0020, placement는 ADR 0019로 확정) |
 | P4/P5 | DEFERRED | time validation 세부, clock/resume 갱신 지연, 알림 빈 수업 판정 및 delivery adapter |
 | P9/P10 | DEFERRED | backup manifest/schema/checksum/naming, sharing format와 부분 적용 UX |
 | P10/C7 | DEFERRED | legacy sharing JSON envelope의 실제 지원 상세; raw timetable JSON과 구분 |
 | A4/A7/A8/A9 | DEFERRED | font/layout 구현, Header XAML 및 실제 App activation/wiring, Upcoming optional 보조 강조; 의미 A7, 한국어 문구 A8, refresh lifecycle A9 APPROVED. 다국어 infrastructure는 현재 범위 밖 |
-| A9 | DEFERRED | Tray visibility lifecycle, suspend/resume detection/integration, editable period persistence의 schedule source 교체 |
+| A9 | DEFERRED | suspend/resume detection/integration (Tray visibility lifecycle은 ADR 0020으로 확정) |
 | A5 | DEFERRED | 공식 endpoint 재확인, NTP client, timeout/retry/resync, drift/correction/slew, offline cache, monotonic 구현, test injection, suspend/resume 처리 |
 | A5 | DEFERRED | Settings/tooltip/status detail 중 sync 상세 표시 위치 |
 
@@ -980,3 +981,16 @@ missing monitor falls back to primary and clamps within current work area. Negat
 coordinates and current monitor DPI are supported. No numeric Settings UI is added.
 The context-menu reset affects only window intent. Invalid local state uses safe defaults
 without profile degradation. See [Window Placement](WINDOW-PLACEMENT.md) for evidence status.
+
+## Tray lifecycle contract — 2026-09-16
+
+[ADR 0020](adr/0020-tray-lifecycle-single-instance.md) resolves the previously deferred P6
+lifecycle: normal X/Alt+F4 hides the existing widget; only tray 종료 explicitly exits.
+System session ending allows termination. Hidden runtime keeps refreshing; show preserves
+the viewed week, fits current monitors without changing preferred placement and activates
+best effort. The widget uses no taskbar button. Open editors/native modal popups block
+hide/Exit and are brought forward without discarding Draft.
+Production is one instance per current Windows user/session. Secondary signals the primary
+before any profile/UI startup, then exits. First close notice receipt is machine-local,
+outside portable data. No autostart or class notifications in this scope.
+[Full lifecycle contract and evidence](TRAY-LIFECYCLE.md).

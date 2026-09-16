@@ -26,7 +26,7 @@ PLANNED 기능에도 계약에 명시된 DEFERRED 상세는 그대로 남아 있
 | Live refresh loop foundation | IMPLEMENTED — FOUNDATION / Phase 0.7 | A9, A5, I16 | Desktop DispatcherTimer 약 1초, Start 즉시 refresh, cycle당 snapshot 1회, Start/Stop/Dispose, missed tick replay 없음 |
 | Actual Header XAML/rendering | IMPLEMENTED — USER NATIVE SMOKE PASSED / Phase 0.8 | A4, A8, I15 | XAML/binding/object tests 통과; 고정 높이/fixed time column/Tabular/NoWrap 후보. 기본 폭의 clipping/겹침 없음과 가로 resize 안정성 사용자 확인; font glyph 지원/DPI/최소 폭은 별도 검증 |
 | Actual app activation/wiring | IMPLEMENTED — USER NATIVE SMOKE PASSED / Phase 0.8 | A9, A5, I16 | App OnStartup에서 동일 clock/default schedule 주입, Start 후 Show, OnExit Dispose. 사용자 live refresh 확인 및 X 종료 후 process 소멸 확인; 계측된 cadence/Dispose 실행 증거는 아님 |
-| Tray visibility refresh lifecycle | DEFERRED | A9, P6 | hide/show에 따른 loop Start/Stop 정책 미결정 |
+| Tray visibility refresh lifecycle | IMPLEMENTED — AUTOMATED VERIFIED / USER NATIVE UX APPROVED | A9, P6 | Hide refresh 유지, Show 즉시 refresh; ADR 0020 |
 | Suspend/resume integration | DEFERRED | A9, A5 | OS detection/event 연결 미구현; RefreshNow로 현재 상태 재평가 가능한 기반만 제공 |
 | Application Clock / KRISS | PARTIAL — Phase 0.2 foundation | A5, I16–I20 | [0004](adr/0004-application-time-source.md); Core snapshot/interface, Desktop PC fallback, App 소유 경계, Tests fake/contract tests 구현. KRISS 동기화는 미구현; endpoint/client/보정/동시 전환 DEFERRED |
 | Timetable Editing | PARTIAL — EDITING FOUNDATION COMPLETE / USER NATIVE SMOKE PASSED | M1–M2, A2, R16, I3, I6–I7; approved Editing Foundation | [0006](adr/0006-single-cell-in-memory-editing.md); 교과/반 별도 Draft, atomic one-cell in-memory Apply/Cancel; persistence 미구현 |
@@ -37,8 +37,8 @@ PLANNED 기능에도 계약에 명시된 DEFERRED 상세는 그대로 남아 있
 | Backup / Restore | PLANNED | P9, C6, R17–R21, I4 | [0003](adr/0003-settings-transaction.md); format/manifest/recovery 상세 DEFERRED |
 | File Sharing | PLANNED | A3, P10, C3, C7; Sharing Scope | [0001](adr/0001-golden-reference-policy.md); 새 format 및 Legacy envelope 지원 상세 DEFERRED |
 | Window / DPI / Multi-monitor | IMPLEMENTED — placement; automated verified / user native UX approved | P3, P6, M6, I8–I9, I14 | [0019](adr/0019-machine-local-window-placement.md), [evidence](WINDOW-PLACEMENT.md); tray/lock/close/z-order remain separate |
-| Tray | PLANNED | P6; Window / Tray Contract | [0002](adr/0002-windows-desktop-stack.md); Windows adapter 검증 필요 |
-| Single Instance | PLANNED | P6, R23 | [0002](adr/0002-windows-desktop-stack.md); 사용자/profile당 writer 하나 |
+| Tray | IMPLEMENTED — AUTOMATED VERIFIED / USER NATIVE UX APPROVED | P6; Window / Tray Contract | [0020](adr/0020-tray-lifecycle-single-instance.md); NotifyIcon, close-to-hide, explicit Exit |
+| Single Instance | IMPLEMENTED — AUTOMATED VERIFIED / USER NATIVE UX APPROVED | P6, R23 | [0020](adr/0020-tray-lifecycle-single-instance.md); 사용자 세션당 instance 하나, secondary activation |
 | Autostart | PLANNED | A1, P7, C1, I11 | [0002](adr/0002-windows-desktop-stack.md); OS registration 상세 DEFERRED |
 | Notifications | PLANNED | P5, C5, R24, I11, I16 | [0002](adr/0002-windows-desktop-stack.md), [0004](adr/0004-application-time-source.md); delivery/빈 수업 판정 상세 DEFERRED |
 | Installer | DEFERRED | A1, P1; Installation / Lifecycle | [0002](adr/0002-windows-desktop-stack.md); 설치형 방향 승인, technology/배포 상세 DEFERRED |
@@ -347,3 +347,10 @@ Machine-local preferred size/position, current work-area cap, monitor fallback, 
 save and dedicated reset are covered by [ADR 0019](adr/0019-machine-local-window-placement.md).
 [Window Placement](WINDOW-PLACEMENT.md) distinguishes automated and native evidence.
 Tray, lock, single-instance activation and lifecycle redesign remain separate milestones.
+
+## Tray milestone — 2026-09-16
+
+Tray show/hide, explicit Exit, taskbar-hidden widget and per-user/session single instance:
+**IMPLEMENTED — AUTOMATED VERIFIED / USER NATIVE UX APPROVED**.
+This supersedes the earlier deferred entries for this scope. Windows autostart, notifications,
+window lock, installer and updater remain separate. [Lifecycle](TRAY-LIFECYCLE.md).

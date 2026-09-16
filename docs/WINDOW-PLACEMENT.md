@@ -126,3 +126,12 @@ reset affects only local preferred bounds. Tests/docs/ADR match the approved own
 Native message references: [enter](https://learn.microsoft.com/en-us/windows/win32/winmsg/wm-entersizemove),
 [exit](https://learn.microsoft.com/en-us/windows/win32/winmsg/wm-exitsizemove),
 [resize edges](https://learn.microsoft.com/en-us/windows/win32/winmsg/wm-sizing).
+
+## Tray integration — 2026-09-16
+
+Show reuses the existing window and placement session. PrepareForShow refits against current
+work area/monitor topology and refreshes content measurement. Hide/show/activation does not
+record applied bounds as preferred; completed native user gestures remain the only capture
+path. Closing for X now cancels and hides; final Exit still flushes dirty preferred intent.
+Earlier X/process-exit native evidence above belongs to the preceding milestone and is not
+the current close contract. [Tray lifecycle evidence](TRAY-LIFECYCLE.md).

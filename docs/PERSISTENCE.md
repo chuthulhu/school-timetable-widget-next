@@ -358,3 +358,15 @@ content minimum and tick values are excluded. Safe same-directory temporary repl
 reused; corrupt window state and write failures do not change profile load/recovery status.
 No profile schema change or profile write is caused by window movement. See
 [ADR 0019](adr/0019-machine-local-window-placement.md) and [Window Placement](WINDOW-PLACEMENT.md).
+
+## Tray notice receipt — 2026-09-16
+
+tray-state.json is optional machine-local UI state next to profile.json, with its own version:
+{"trayStateVersion":1,"closeNoticeRequested":true}. It is not profile/window geometry state.
+Missing, invalid, unsupported, oversized or unreadable receipt permits one fresh request.
+Write via flushed same-directory temporary file and atomic rename. Write failure never
+degrades profile and never repeats the notice during that run. Startup and ordinary tray
+show/hide do not write it. Only first normal close-to-tray requests/persists the notice.
+Backup/preset codecs do not contain it. Recovery Required blocks profile mutation as before;
+tray receipt remains independent. Secondary startup does not open the profile store.
+[Lifecycle](TRAY-LIFECYCLE.md), [ADR 0020](adr/0020-tray-lifecycle-single-instance.md).

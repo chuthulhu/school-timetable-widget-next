@@ -7,7 +7,7 @@
         xmlns:timetable="clr-namespace:SchoolTimetableWidget.Desktop.Features.Timetable"
         xmlns:windows="clr-namespace:SchoolTimetableWidget.Desktop.Infrastructure.Windows"
         windows:WindowContentMinimum.IsEnabled="True"
-        Title="School Timetable Widget" Height="600" Width="800">
+        Title="School Timetable Widget" Height="600" Width="800" ShowInTaskbar="False">
     <Window.ContextMenu>
         <ContextMenu>
             <MenuItem Header="표시 설정..." InputGestureText="Ctrl+," Command="{x:Static display:DisplaySettingsCommands.Open}"

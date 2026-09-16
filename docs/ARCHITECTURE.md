@@ -1430,3 +1430,16 @@ WindowContentMinimum supplies measured content minima. JsonWindowStateStore owns
 separate machine-local file, using the existing atomic file primitive. App composes it using
 the selected production/TEMP directory before Show. No ownership moves into MainWindowViewModel,
 ProfileSession, display transactions, clocks or backups. [Evidence](WINDOW-PLACEMENT.md).
+
+## Tray and application lifetime — 2026-09-16
+
+App elects WindowsSingleInstance ownership before constructing persistence/runtime/UI.
+Secondary only signals the AutoReset event and shuts down. The primary listener marshals
+to WPF Dispatcher. WidgetTrayLifecycle separates visibility, close cancellation and exit
+permission from the window and tray adapters. WpfWidgetWindow guards owned/native dialogs
+and integrates refresh/placement; WindowsTrayIcon owns inbox NotifyIcon and menu resources.
+OnExplicitShutdown prevents last-window hide/close from accidentally ending runtime.
+SessionEnding permits shutdown; cleanup stops listener first and releases mutex after profile.
+WinForms is used only for tray objects; WPF keeps its manifest DPI policy. WFO0003 is narrowly
+suppressed because WinForms ApplicationConfiguration does not own this application's startup.
+No new third-party package. [ADR 0020](adr/0020-tray-lifecycle-single-instance.md).
