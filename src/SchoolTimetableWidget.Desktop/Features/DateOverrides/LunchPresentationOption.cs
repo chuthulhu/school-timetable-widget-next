@@ -7,6 +7,8 @@ public sealed class LunchPresentationOption(Action refresh, bool initial = false
     private bool _enabled = initial;
     private string _errorText = "";
     public string ErrorText { get => _errorText; private set => SetProperty(ref _errorText, value); }
+    internal void RestoreValue(bool value) => _enabled = value;
+    internal void NotifyRestored() => OnPropertyChanged(nameof(Enabled));
     public bool Enabled
     {
         get => _enabled;

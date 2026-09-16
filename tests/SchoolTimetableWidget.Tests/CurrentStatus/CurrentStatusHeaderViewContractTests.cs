@@ -139,18 +139,5 @@ public class CurrentStatusHeaderViewContractTests
             CurrentStatusCountdownCalculator.Calculate(snapshot, status));
     }
 
-    private static void OnDispatcher(Action test)
-    {
-        Exception? failure = null;
-        var thread = new Thread(() =>
-        {
-            try { test(); }
-            catch (Exception exception) { failure = exception; }
-            finally { Dispatcher.CurrentDispatcher.InvokeShutdown(); }
-        });
-        thread.SetApartmentState(ApartmentState.STA);
-        thread.Start();
-        thread.Join();
-        if (failure is not null) ExceptionDispatchInfo.Capture(failure).Throw();
-    }
+    private static void OnDispatcher(Action test) => SchoolTimetableWidget.Tests.Timetable.HighlightTestDispatcher.Run(test);
 }

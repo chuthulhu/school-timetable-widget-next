@@ -233,6 +233,7 @@ public class TimetableEditorViewTests
             var root = (FrameworkElement)window.Content;
             Layout(root, 620);
             WindowContentMinimum.Refresh(window);
+            Drain(window);
             var before = window.MinHeight;
             var controls = Descendants<TimetableCellControl>(root).ToArray();
             var session = model.Editor.BeginEdit(model.Cells[0]);
@@ -241,6 +242,7 @@ public class TimetableEditorViewTests
             Assert.True(session.TryApply());
             Drain(window);
             WindowContentMinimum.Refresh(window);
+            Drain(window);
             Layout(root, 620);
             Assert.True(window.MinHeight > before);
             Assert.Equal(session.SubjectText + "\n" + session.ClassText, Assert.Single(Descendants<TextBlock>(controls[0])).Text);
@@ -255,6 +257,7 @@ public class TimetableEditorViewTests
             Assert.True(clear.TryApply());
             Drain(window);
             WindowContentMinimum.Refresh(window);
+            Drain(window);
             Assert.Equal(before, window.MinHeight);
         }
         finally { window.Close(); }

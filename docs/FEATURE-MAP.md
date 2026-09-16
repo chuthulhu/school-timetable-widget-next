@@ -326,3 +326,16 @@ License provenance, final validation and native approval: [Font Catalog](FONT-CA
 | Whole preset library/profile backup | PLANNED | Outside this one-preset sharing format |
 
 [Contract and format](PRESET-IMPORT-EXPORT.md), [ADR 0017](adr/0017-display-preset-files.md).
+
+## Full profile backup / restore — 2026-09-15
+
+IMPLEMENTED — AUTOMATED VERIFIED / USER NATIVE UX APPROVED. Backup codec, restore transaction,
+runtime/startup routing, preview/dialogs and approved normal/degraded Recovery Required behavior
+are implemented. Normal/degraded smoke, restart persistence and screen-fit restore UX are approved.
+See [Backup / Restore](BACKUP-RESTORE.md) and [ADR 0018](adr/0018-profile-backup-recovery-required.md).
+
+### Current backup milestone status — 2026-09-15
+
+Invalid-backup UI exception P2 is resolved with a narrow typed boundary and retry coverage.
+Final full suite 907/907, build warnings/errors 0. Native smoke and the user UX checkpoint passed;
+commit/push remain intentionally pending. See BACKUP-RESTORE.md.

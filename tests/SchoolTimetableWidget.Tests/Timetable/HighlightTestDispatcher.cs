@@ -5,7 +5,13 @@ namespace SchoolTimetableWidget.Tests.Timetable;
 
 internal static class HighlightTestDispatcher
 {
+    private static readonly object ResourceGate = new();
     public static void Run(Action test)
+    {
+        // WPF package resources are process-shared even across separate STA dispatchers.
+        lock (ResourceGate) RunIsolated(test);
+    }
+    private static void RunIsolated(Action test)
     {
         Exception? failure = null;
         var thread = new Thread(() =>

@@ -20,8 +20,14 @@ public sealed class RuntimeDisplaySettings
     public DisplayConfiguration Current { get; private set; }
     public UserDisplayPresetLibrary CommittedPresets { get; private set; }
     public event EventHandler? Changed;
+    internal Func<bool> AllowEditing { get; set; } = () => true;
+    public bool HasActiveSession => _active is { IsClosed: false };
+    internal void RestoreValues(DisplayConfiguration display, UserDisplayPresetLibrary presets)
+    { Committed = Current = display; CommittedPresets = presets; }
+    internal void NotifyRestored() => Changed?.Invoke(this, EventArgs.Empty);
     public DisplaySettingsSession Open()
     {
+        if (!AllowEditing()) throw new InvalidOperationException("데이터 보호를 위해 편집이 중지되었습니다.");
         if (_active is { IsClosed: false }) throw new InvalidOperationException("표시 설정이 이미 열려 있습니다.");
         return _active = new(this);
     }

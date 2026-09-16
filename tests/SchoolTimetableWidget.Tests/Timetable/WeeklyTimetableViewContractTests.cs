@@ -42,11 +42,14 @@ public class WeeklyTimetableViewContractTests
         var grid = Assert.IsType<Grid>(view.Content);
         Assert.Equal(3, grid.ColumnDefinitions.Count);
         Assert.Equal(1, Grid.GetColumn(body));
-        Assert.Equal(1, Grid.GetRow(body));
+        Assert.Equal(0, Grid.GetRow(body));
         Assert.Equal(0, Grid.GetColumn(periods));
-        Assert.Equal(1, Grid.GetRow(periods));
+        Assert.Equal(0, Grid.GetRow(periods));
         Assert.Equal(1, Grid.GetColumn(days));
         Assert.Equal(0, Grid.GetRow(days));
+        var bodyScroll = Assert.IsType<ScrollViewer>(view.FindName("TimetableBodyScroll"));
+        Assert.Equal(1, Grid.GetRow(bodyScroll));
+        Assert.Equal(2, Grid.GetColumnSpan(bodyScroll));
         Assert.All(Descendants<TextBlock>(days).Concat(Descendants<TextBlock>(periods)), text =>
         {
             Assert.Equal(TextAlignment.Center, text.TextAlignment);
@@ -131,6 +134,39 @@ public class WeeklyTimetableViewContractTests
     });
 
     [Fact]
+    public void ScreenLimitedWindowScrollsInsteadOfCompressingMultilineCells() => OnDispatcher(() =>
+    {
+        var values = WeeklyTimetable.Empty().Cells.Select(cell =>
+            new TimetableCell(cell.Day, cell.PeriodNumber,
+                cell.Day == SchoolDay.Monday && cell.PeriodNumber == 1
+                    ? new TimetableCellValue("xptmxm\r\n", "1-1")
+                    : new TimetableCellValue("", "")));
+        var window = new MainWindow(new CurrentStatusHeaderViewModel(),
+            new WeeklyTimetableViewModel(new WeeklyTimetable(values)));
+        try
+        {
+            var root = Assert.IsType<Grid>(window.Content);
+            root.Measure(new Size(800, 560));
+            root.Arrange(new Rect(0, 0, 800, 560));
+            root.UpdateLayout();
+            Drain(root);
+
+            var timetable = Assert.IsType<WeeklyTimetableView>(window.FindName("Timetable"));
+            var scroll = Assert.IsType<ScrollViewer>(timetable.FindName("TimetableBodyScroll"));
+            Assert.True(scroll.ScrollableHeight > 0);
+            Assert.Equal(ScrollBarVisibility.Auto, scroll.VerticalScrollBarVisibility);
+            var first = Descendants<TimetableCellControl>(root).First();
+            var text = Assert.Single(Descendants<TextBlock>(first));
+            var origin = text.TranslatePoint(new Point(), first);
+            Assert.Equal("xptmxm\r\n\n1-1", text.Text);
+            Assert.True(origin.Y >= 0);
+            Assert.True(origin.Y + text.ActualHeight <= first.ActualHeight + 0.01);
+            Assert.True(text.DesiredSize.Height <= text.ActualHeight + 0.01);
+        }
+        finally { window.Close(); }
+    });
+
+    [Fact]
     public void SyntheticLoadedEventAppliesMeasuredContentMinimumWithoutShowingWindow() => OnDispatcher(() =>
     {
         var window = new MainWindow(new CurrentStatusHeaderViewModel(), RepresentativeModel());
@@ -141,11 +177,13 @@ public class WeeklyTimetableViewContractTests
             var requiredHeight = root.DesiredSize.Height;
             // No native chrome exists in this test. Native border/DPI sizing remains a smoke check.
             window.RaiseEvent(new RoutedEventArgs(FrameworkElement.LoadedEvent));
+            Drain(window);
             Assert.Equal(root.MinWidth, window.MinWidth);
             Assert.Equal(requiredHeight, window.MinHeight, 5);
             Assert.False(window.IsVisible);
             Layout(root, 500);
             window.RaiseEvent(new RoutedEventArgs(FrameworkElement.LoadedEvent));
+            Drain(window);
             Assert.True(window.MinHeight >= requiredHeight);
         }
         finally { window.Close(); }
@@ -239,18 +277,5 @@ public class WeeklyTimetableViewContractTests
     private static void Drain(DispatcherObject view) =>
         view.Dispatcher.Invoke(() => { }, DispatcherPriority.ApplicationIdle);
 
-    private static void OnDispatcher(Action test)
-    {
-        Exception? failure = null;
-        var thread = new Thread(() =>
-        {
-            try { test(); }
-            catch (Exception exception) { failure = exception; }
-            finally { Dispatcher.CurrentDispatcher.InvokeShutdown(); }
-        });
-        thread.SetApartmentState(ApartmentState.STA);
-        thread.Start();
-        thread.Join();
-        if (failure is not null) ExceptionDispatchInfo.Capture(failure).Throw();
-    }
+    private static void OnDispatcher(Action test) => SchoolTimetableWidget.Tests.Timetable.HighlightTestDispatcher.Run(test);
 }

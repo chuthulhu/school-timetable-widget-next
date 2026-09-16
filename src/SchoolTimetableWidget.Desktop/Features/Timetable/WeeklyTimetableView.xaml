@@ -4,8 +4,10 @@
              xmlns:local="clr-namespace:SchoolTimetableWidget.Desktop.Features.Timetable"
              xmlns:import="clr-namespace:SchoolTimetableWidget.Desktop.Features.TimetableImport"
              xmlns:periods="clr-namespace:SchoolTimetableWidget.Desktop.Features.PeriodScheduleEditing"
+             xmlns:backup="clr-namespace:SchoolTimetableWidget.Desktop.Features.Persistence"
              xmlns:display="clr-namespace:SchoolTimetableWidget.Desktop.Features.DisplaySettings"
              xmlns:dates="clr-namespace:SchoolTimetableWidget.Desktop.Features.DateOverrides"
+             xmlns:windows="clr-namespace:SchoolTimetableWidget.Desktop.Infrastructure.Windows"
              FontSize="16" MinWidth="500">
     <UserControl.CommandBindings>
         <CommandBinding Command="{x:Static dates:DateOverrideCommands.Edit}" Executed="DateOverride_Executed" CanExecute="DateOverride_CanExecute" />
@@ -41,6 +43,9 @@
                       IsChecked="{Binding PlacementTarget.LunchOption.Enabled, RelativeSource={RelativeSource AncestorType=ContextMenu}, Mode=OneWay}"
                       Command="{x:Static dates:DateOverrideCommands.Lunch}"
                       CommandTarget="{Binding PlacementTarget, RelativeSource={RelativeSource AncestorType=ContextMenu}}" />
+            <Separator/>
+            <MenuItem Header="데이터 백업..." Command="{x:Static backup:BackupCommands.Backup}" CommandTarget="{Binding PlacementTarget, RelativeSource={RelativeSource AncestorType=ContextMenu}}"/>
+            <MenuItem Header="데이터 복원..." Command="{x:Static backup:BackupCommands.Restore}" CommandTarget="{Binding PlacementTarget, RelativeSource={RelativeSource AncestorType=ContextMenu}}"/>
         </ContextMenu>
     </UserControl.ContextMenu>
     <UserControl.Resources>
@@ -152,14 +157,23 @@
         </ItemsControl>
         <Button x:Name="NextWeekButton" Grid.Column="2" Content="›" Style="{StaticResource WeekArrow}" Command="{Binding NextWeekCommand}"
                 ToolTip="다음 주" AutomationProperties.Name="다음 주" Margin="2,6" Padding="0" MinHeight="28" />
-        <ItemsControl x:Name="PeriodHeaders" Grid.Row="1"
+        <ScrollViewer x:Name="TimetableBodyScroll" Grid.Row="1" Grid.ColumnSpan="2"
+                      VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled"
+                      windows:WindowContentMinimum.IsOverflowHost="True"
+                      CanContentScroll="False">
+            <Grid>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="48" />
+                    <ColumnDefinition Width="*" />
+                </Grid.ColumnDefinitions>
+        <ItemsControl x:Name="PeriodHeaders"
                       ItemsSource="{Binding PeriodHeaders, Mode=OneWay}"
                       ItemTemplate="{StaticResource HeaderTemplate}">
             <ItemsControl.ItemsPanel>
                 <ItemsPanelTemplate><UniformGrid Rows="7" Columns="1" /></ItemsPanelTemplate>
             </ItemsControl.ItemsPanel>
         </ItemsControl>
-        <ItemsControl x:Name="BodyCells" Grid.Row="1" Grid.Column="1"
+        <ItemsControl x:Name="BodyCells" Grid.Column="1"
                       ItemsSource="{Binding Cells, Mode=OneWay}">
             <ItemsControl.ItemsPanel>
                 <ItemsPanelTemplate><UniformGrid Rows="7" Columns="5" /></ItemsPanelTemplate>
@@ -178,5 +192,7 @@
                 </DataTemplate>
             </ItemsControl.ItemTemplate>
         </ItemsControl>
+            </Grid>
+        </ScrollViewer>
     </Grid>
 </UserControl>

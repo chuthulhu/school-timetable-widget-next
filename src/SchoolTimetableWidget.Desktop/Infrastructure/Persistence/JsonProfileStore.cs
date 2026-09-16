@@ -5,7 +5,7 @@ using SchoolTimetableWidget.Desktop.Features.Persistence;
 namespace SchoolTimetableWidget.Desktop.Infrastructure.Persistence;
 
 /// <summary>One leased writer per directory. Whole-document same-directory rename, never destination truncation.</summary>
-public sealed class JsonProfileStore : IProfileStore, IDisposable
+public sealed partial class JsonProfileStore : IProfileStore, IProfileRecoveryStore, IDisposable
 {
     private readonly Action<ProfileWriteStage>? _checkpoint;
     private FileStream? _lease;
@@ -32,15 +32,25 @@ public sealed class JsonProfileStore : IProfileStore, IDisposable
         {
             Directory.CreateDirectory(DirectoryPath);
             _lease = new FileStream(Path.Combine(DirectoryPath, "profile.lock"), FileMode.OpenOrCreate, FileAccess.ReadWrite, FileShare.None);
+            try
+            {
+                if (Recovery.IsPending) return LoadRecovery();
+            }
+            catch (Exception error) when (IsAccessFailure(error))
+            {
+                // A marker that cannot be inspected must never permit ordinary profile startup.
+                System.Diagnostics.Debug.WriteLine(error);
+                return LoadRecovery();
+            }
             try { _expectedBytes = File.ReadAllBytes(FilePath); }
             catch (FileNotFoundException)
             {
                 _writable = true;
-                return new(ProfileSnapshot.Defaults(), ProfileLoadState.Missing, FilePath);
+                return Result(ProfileSnapshot.Defaults(), ProfileLoadState.Missing);
             }
             var snapshot = ProfileJson.Deserialize(_expectedBytes);
             _writable = true;
-            return new(snapshot, ProfileLoadState.Loaded, FilePath);
+            return Result(snapshot, ProfileLoadState.Loaded);
         }
         catch (UnsupportedProfileVersionException) { return Failure(ProfileLoadState.Unsupported); }
         catch (Exception error) when (error is JsonException or ArgumentException or FormatException or InvalidOperationException)
@@ -58,8 +68,14 @@ public sealed class JsonProfileStore : IProfileStore, IDisposable
     public void Save(ProfileSnapshot snapshot)
     {
         ObjectDisposedException.ThrowIf(_disposed, this);
-        if (!_writable || _lease is null) throw new IOException("This profile is not writable.");
+        if (!_writable || _recoveryRequired || _lease is null) throw new IOException("This profile is not writable.");
         var bytes = ProfileJson.Serialize(snapshot);
+        WriteProfile(bytes);
+        _state = ProfileLoadState.Loaded;
+    }
+
+    private void WriteProfile(byte[] bytes)
+    {
         VerifyUnchanged();
         var temporary = Path.Combine(DirectoryPath, $".profile-{Guid.NewGuid():N}.tmp");
         try
@@ -96,7 +112,7 @@ public sealed class JsonProfileStore : IProfileStore, IDisposable
         if (actual is null ? _expectedBytes is not null : _expectedBytes is null || !actual.AsSpan().SequenceEqual(_expectedBytes))
             throw new IOException("The profile changed outside this session. Refusing to overwrite it.");
     }
-    private ProfileLoadResult Failure(ProfileLoadState state) => new(ProfileSnapshot.Defaults(), state, FilePath);
+    private ProfileLoadResult Failure(ProfileLoadState state) => Result(ProfileSnapshot.Defaults(), state);
     private static bool IsAccessFailure(Exception error) => error is IOException or UnauthorizedAccessException or System.Security.SecurityException;
     public void Dispose()
     {

@@ -925,3 +925,42 @@ path, machine/account information or font bytes. Import is bounded, strict, prev
 explicit; it performs no automatic download or activation. Same-ID update/copy/cancel and
 name-only rename confirmation prevent silent overwrite. Imported values remain Draft until
 Apply/OK; Cancel/X and save failure preserve the existing P2 transaction guarantees.
+
+## Full profile recovery policy — 2026-09-15
+
+The user approved Recovery Required as the exceptional outcome when restore publication and
+its compensating rollback write both fail: preserve the previous valid revision and persistent
+marker, block mutation, prioritize recovery at startup and require explicit previous-state
+recovery. No silent candidate acceptance or automatic retry. This extends P9 and ADR 0012;
+[ADR 0018](adr/0018-profile-backup-recovery-required.md) records the accepted policy and the
+approved degraded-origin exact-byte rollback. [Backup / Restore](BACKUP-RESTORE.md) records the
+implemented boundaries and verification.
+
+### Degraded-origin recovery approval — 2026-09-15 (supersedes pending subcase)
+
+The user explicitly approved exact corrupt-original rollback. Successful explicit retry clears
+Recovery Required but returns to the original degraded/write-blocked state, with backup restore
+available again. It never labels temporary defaults as healthy recovered data. Failure preserves
+original/marker and blocks mutation; startup prioritizes the marker. ADR 0018 records this
+accepted policy. The invalid-backup UI exception P2 is fixed and the automated suite passes;
+normal/degraded restore, restart persistence and screen-fit UX are user-approved.
+
+## Main window auto height and screen fit — approved 2026-09-15
+
+When accepted timetable or display content needs more vertical space, MainWindow grows from
+the user's preferred height to the measured content height while it fits in the work area of
+the monitor containing the window. The usable work area includes taskbar reservations and is
+converted from physical pixels with that window's current per-monitor DPI. Growth near the
+bottom edge moves the window upward only as far as needed to keep it inside that work area.
+
+If the complete content exceeds the work area, the window is capped there and only the
+timetable body (period labels and 35 cells) scrolls vertically; current status and week
+navigation remain visible. Cell text is never clipped as the fallback. When content becomes
+shorter, height returns to the retained user-preferred height rather than overwriting that
+preference. User resize cannot make actual height smaller than the applicable content/work-area
+minimum. Monitor/work-area/DPI changes recalculate the cap.
+
+Remeasure requests follow layout-affecting content/configuration events, including cell/import,
+effective week/date content, display/font/preset changes and profile restore. They are coalesced
+after WPF binding/layout publication. Ordinary clock/countdown ticks do not request window
+geometry changes.

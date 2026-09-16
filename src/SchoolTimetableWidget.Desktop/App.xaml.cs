@@ -60,7 +60,7 @@ public partial class App : Application
         try
         {
             MainWindow = new MainWindow(headerViewModel, timetableViewModel,
-                runtime.ScheduleEditor, profile.LoadResult.Notice, runtime.Display);
+                runtime.ScheduleEditor, profile.LoadResult.Notice, runtime.Display, runtime: runtime, clock: ApplicationClock);
             var timetableView = (WeeklyTimetableView)MainWindow.FindName("Timetable");
             timetableView.DateEditor = runtime.DateEditor;
             timetableView.GetCurrentDate = () => _statusRefreshLoop.CurrentDate;

@@ -16,6 +16,8 @@ public sealed class RuntimePeriodSchedule
 
     public PeriodSchedule Current { get; private set; }
 
+    internal void RestoreValue(PeriodSchedule value) => Current = value;
+
     public bool TryReplace(PeriodSchedule baseline, PeriodSchedule replacement)
     {
         CommitError = null;

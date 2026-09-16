@@ -1382,3 +1382,41 @@ preview window gathers the explicit collision decision and unique editable name;
 own persistence or rendering. RuntimeDisplaySettings remains the sole preview/commit owner,
 and ProfileSession's existing complete save remains the only path to durable profile change.
 FontLibrary is queried read-only for preview availability; imports never call its download API.
+
+## Backup / restore boundaries — 2026-09-15
+
+Desktop persistence now has standalone ProfileBackupFile conversion and AtomicProfileFile /
+ProfileRecoveryFiles boundaries. Canonical backup validation reuses strict profile readers;
+backup version remains independent. One recovery marker identifies a validated prior snapshot
+or exact degraded original by hash. Recovery Required startup/transaction/runtime integration
+and the approved degraded-origin double-failure behavior are implemented; no new Core/global state owner was added.
+See [ADR 0018](adr/0018-profile-backup-recovery-required.md) and [current evidence](BACKUP-RESTORE.md).
+
+### Recovery integration follow-up — 2026-09-15
+
+Degraded-origin policy is now approved (ADR 0018). JsonProfileStore's recovery boundary is
+integrated with ProfileSession, existing feature owners, startup and dedicated backup actions.
+The marker distinguishes valid previous data from exact corrupt-original rollback. UI wiring
+and narrow invalid-input handling are present. The full automated suite passes; native UX
+acceptance is complete. BACKUP-RESTORE.md records tests, native evidence and test-only WPF isolation.
+
+## Screen-fit content minimum boundary — 2026-09-15
+
+`WindowContentMinimum` retains the initial or user-resized preferred height separately from
+the measured content minimum. Layout-affecting callers request a dispatcher-coalesced refresh;
+measurement runs after bindings have published, then chooses
+`min(max(preferred height, required height), monitor work-area height)`. Shorter content returns
+only auto-added height to the retained preference. MinHeight prevents user resizing into a
+clipping state, while MaxHeight caps the window at the current usable monitor height.
+
+`MonitorWindowWorkAreaProvider` is the explicit Windows boundary. It uses the MainWindow HWND,
+nearest monitor work area and `GetDpiForWindow` to convert physical pixels to WPF units. The
+same boundary calculates the smallest vertical position correction needed to keep the bottom
+edge in the work area. DPI, display and work-area messages plus window location/width changes
+request recalculation; ordinary clock ticks do not.
+
+`WeeklyTimetableView` marks its body ScrollViewer as the overflow measurement host. The week
+navigation header remains outside that viewport; period labels scroll with their seven rows.
+The window behavior combines fixed header height with the body's full desired height, so the
+scrollbar appears only after the monitor cap is reached. This fixes the native multiline-cell
+clipping found during backup/restore review without changing or normalizing stored text.

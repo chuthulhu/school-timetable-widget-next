@@ -40,6 +40,13 @@ public sealed partial class WeeklyTimetableViewModel : CommunityToolkit.Mvvm.Com
     public event EventHandler? ContentChanged;
 
 
+    internal void RestoreValue(WeeklyTimetable value) => CommittedTimetable = value;
+    internal void NotifyRestored()
+    {
+        if (ViewedWeekStart is not null) RefreshDisplayedWeek();
+        else Publish(CommittedTimetable, () => { });
+    }
+
     internal (SchoolDay Day, int PeriodNumber) GetSlot(TimetableCellViewModel cell)
     {
         ArgumentNullException.ThrowIfNull(cell);

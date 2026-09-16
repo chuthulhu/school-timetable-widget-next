@@ -333,3 +333,18 @@ future versions and invalid semantic values before returning an immutable candid
 and collision choice then update only DisplaySettingsSession's Draft library. Existing atomic
 profile save and publish ordering applies only when the user later chooses Apply/OK. Invalid
 files and canceled previews perform no profile, display, network or cache mutation.
+
+## Backup recovery follow-up — 2026-09-15
+
+The approved Recovery Required policy extends ordinary startup failure behavior. A pending
+restore marker takes precedence over profile.json, and explicit recovery must complete before
+normal writes resume. Startup/runtime integration and approved degraded-origin exact-byte rollback
+are implemented. See [ADR 0018](adr/0018-profile-backup-recovery-required.md) and [Backup / Restore](BACKUP-RESTORE.md).
+
+### Recovery integration — 2026-09-15
+
+Marker-first startup and explicit recovery are wired. Normal origin restores validated previous
+data; degraded origin restores exact original bytes and remains write-blocked with backup restore
+available. Both policies are approved. The invalid-backup UI exception P2 is fixed; the full
+final automated suite passes 907/907 with warnings/errors 0, and the user approved normal,
+degraded, restart and screen-fit native UX. Commit/push remain pending. See BACKUP-RESTORE.md.

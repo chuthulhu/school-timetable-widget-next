@@ -5,7 +5,7 @@ namespace SchoolTimetableWidget.Desktop.Features.DateOverrides;
 /// <summary>Owned UI-dispatcher date map; injected persistence accepts the full candidate before mutation.</summary>
 public sealed class RuntimeDateOverrides
 {
-    private readonly Dictionary<DateOnly, DateSpecificOverride> _entries = new();
+    private Dictionary<DateOnly, DateSpecificOverride> _entries = new();
     private readonly Func<IReadOnlyCollection<DateSpecificOverride>, string?>? _persist;
     public RuntimeDateOverrides(IEnumerable<DateSpecificOverride>? initial = null,
         Func<IReadOnlyCollection<DateSpecificOverride>, string?>? persist = null)
@@ -15,6 +15,8 @@ public sealed class RuntimeDateOverrides
     }
     public string? CommitError { get; private set; }
     public DateSpecificOverride? Get(DateOnly date) => _entries.GetValueOrDefault(date);
+
+    internal void RestoreValues(IEnumerable<DateSpecificOverride> values) => _entries = values.ToDictionary(e => e.Date);
 
     public bool TryReplace(DateOnly date, DateSpecificOverride? expected, DateSpecificOverride? candidate)
     {
