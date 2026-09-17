@@ -370,3 +370,11 @@ show/hide do not write it. Only first normal close-to-tray requests/persists the
 Backup/preset codecs do not contain it. Recovery Required blocks profile mutation as before;
 tray receipt remains independent. Secondary startup does not open the profile store.
 [Lifecycle](TRAY-LIFECYCLE.md), [ADR 0020](adr/0020-tray-lifecycle-single-instance.md).
+
+## Autostart exclusion — 2026-09-17
+
+Autostart is machine/user-specific OS registration, not a persisted boolean. Profile JSON,
+.stwbackup, .stwpreset, window-state.json and tray-state.json exclude it. Restore never accesses
+registration. Degraded/Recovery Required blocks remain while the independent tray toggle works;
+no profile save, recovery marker removal or snapshot update results. Hidden is runtime-only.
+[Autostart](AUTOSTART.md), [ADR 0021](adr/0021-per-user-windows-autostart.md).

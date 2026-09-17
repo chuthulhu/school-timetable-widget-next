@@ -30,15 +30,15 @@ public class TrayIntegrationTests
         tray.ToggleRequested += () => toggles++; tray.ExitRequested += () => exits++;
         Assert.NotNull(icon.Icon); Assert.NotEqual(IntPtr.Zero, icon.Icon.Handle);
         Assert.Equal("School Timetable Widget", icon.Text); Assert.False(icon.Visible);
-        Assert.Equal(3, menu.Items.Count); Assert.IsType<Forms.ToolStripSeparator>(menu.Items[1]);
-        Assert.Equal("종료", menu.Items[2].Text);
+        Assert.Equal(4, menu.Items.Count); Assert.IsType<Forms.ToolStripSeparator>(menu.Items[2]);
+        Assert.Equal("종료", menu.Items[3].Text);
         tray.SetWindowVisible(true); Assert.Equal("위젯 숨기기", menu.Items[0].Text);
         menu.Items[0].PerformClick(); tray.SetWindowVisible(false);
         Assert.Equal("위젯 보이기", menu.Items[0].Text);
         var dispatch = typeof(Forms.NotifyIcon).GetMethod("OnMouseDoubleClick", BindingFlags.NonPublic | BindingFlags.Instance)!;
         dispatch.Invoke(icon, [new Forms.MouseEventArgs(Forms.MouseButtons.Left, 2, 0, 0, 0)]);
         dispatch.Invoke(icon, [new Forms.MouseEventArgs(Forms.MouseButtons.Right, 2, 0, 0, 0)]);
-        menu.Items[2].PerformClick();
+        menu.Items[3].PerformClick();
         Assert.Equal(2, toggles); Assert.Equal(1, exits);
         var iconDisposed = false; icon.Disposed += (_, _) => iconDisposed = true;
         tray.Dispose(); tray.Dispose();

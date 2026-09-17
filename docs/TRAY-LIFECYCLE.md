@@ -6,7 +6,7 @@ Implemented; **993/993 automated tests passed; user native UX approved**.
 ## User behavior
 
 - X / Alt+F4 hides the existing MainWindow and leaves the process/tray alive.
-- Tray menu shows 위젯 숨기기 when visible and 위젯 보이기 when hidden, then a separator and 종료.
+- Tray menu shows 위젯 숨기기 when visible and 위젯 보이기 when hidden, then Windows 시작 시 실행, a separator and 종료 (ADR 0021).
 - Left double-click toggles; single click has no application action.
 - 종료 terminates the application after editors are closed. With an open editor it brings that
   dialog forward and requests “열린 편집 창을 먼저 닫아 주세요.” without discarding Draft.
@@ -98,3 +98,10 @@ Final restart cleanup: user selected tray Exit for PID 59704; process absence wa
 An earlier final build attempt was blocked by that live executable's file lock (MSB3026/3027/3021).
 After normal tray Exit, build completed with 0 warnings and 0 errors. Original state
 existence/hash/mtime checks remained unchanged. No diagnostic process was forcibly terminated.
+
+## Autostart integration — 2026-09-17
+
+Opening the menu refreshes OS registration; only clicking Windows 시작 시 실행 changes it.
+X/show/hide/notice/Exit/session end/secondary activation do not change registration. Every new
+primary shows MainWindow; prior hidden state is never persisted. Autostart native evidence is
+tracked separately in [AUTOSTART](AUTOSTART.md), not inferred from earlier tray approval.

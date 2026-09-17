@@ -1443,3 +1443,12 @@ SessionEnding permits shutdown; cleanup stops listener first and releases mutex 
 WinForms is used only for tray objects; WPF keeps its manifest DPI policy. WFO0003 is narrowly
 suppressed because WinForms ApplicationConfiguration does not own this application's startup.
 No new third-party package. [ADR 0020](adr/0020-tray-lifecycle-single-instance.md).
+
+## Windows autostart boundary — 2026-09-17
+
+Features/Autostart owns OS status/read-back mutation through a narrow registration store.
+WindowsAutoStartRegistrationStore manages exactly one HKCU Run value; AutoStartCommand uses
+the actual apphost EXE. WindowsTrayIcon refreshes on opening and handles explicit clicks.
+App composes these only inside primary initialization; visible startup remains unchanged.
+No profile, backup, recovery, placement or MainWindowViewModel responsibilities are added.
+[ADR 0021](adr/0021-per-user-windows-autostart.md), [verification](AUTOSTART.md).

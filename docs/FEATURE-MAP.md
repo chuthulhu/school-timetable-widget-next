@@ -354,3 +354,10 @@ Tray show/hide, explicit Exit, taskbar-hidden widget and per-user/session single
 **IMPLEMENTED — AUTOMATED VERIFIED / USER NATIVE UX APPROVED**.
 This supersedes the earlier deferred entries for this scope. Windows autostart, notifications,
 window lock, installer and updater remain separate. [Lifecycle](TRAY-LIFECYCLE.md).
+
+## Windows autostart — 2026-09-17
+
+IMPLEMENTED — 1,032/1,032 automated tests passed; user native UX approved.
+Tray checkbox explicitly manages one per-user HKCU Run value; default OFF, explicit stale
+repair, normal visible startup and existing single instance. No portable-data changes or
+installer/updater. [Autostart](AUTOSTART.md), [ADR 0021](adr/0021-per-user-windows-autostart.md).

@@ -27,7 +27,8 @@ public partial class App : Application
     protected override void OnStartup(StartupEventArgs e)
     {
         base.OnStartup(e);
-        var developmentDirectory = DevelopmentProfileLocation.FromArguments(e.Args);
+        var developmentDirectory = DevelopmentProfileLocation.FromArguments(e.Args,
+            Environment.GetEnvironmentVariable("STW_DEV_PROFILE_DIRECTORY"));
         var preview = e.Args.Any(arg => arg is "--effective-preview" or "--period-preview" or
             "--bulk-preview" or "--highlight-preview" or "--timetable-preview");
         _instance = new WindowsSingleInstance(WindowsSingleInstance.ScopeFor(developmentDirectory, preview));
@@ -88,7 +89,9 @@ public partial class App : Application
                 runtime.ScheduleEditor, profile.LoadResult.Notice, runtime.Display, runtime: runtime, clock: ApplicationClock);
             var placement = new WindowPlacementController(MainWindow, windowStateStore);
             var window = new WpfWidgetWindow(MainWindow, placement, () => _statusRefreshLoop.RefreshNow());
-            var tray = new WindowsTrayIcon();
+            var autostart = new Features.Autostart.AutoStartRegistration(
+                new WindowsAutoStartRegistrationStore(), AutoStartCommand.ForCurrentProcess());
+            var tray = new WindowsTrayIcon(registration: autostart);
             _trayLifecycle = new WidgetTrayLifecycle(window, tray, trayNoticeStore, () => Shutdown());
             var timetableView = (WeeklyTimetableView)MainWindow.FindName("Timetable");
             timetableView.DateEditor = runtime.DateEditor;

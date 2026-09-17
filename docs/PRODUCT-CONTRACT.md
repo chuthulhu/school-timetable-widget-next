@@ -102,7 +102,7 @@ A1–A9, P1–P10 및 연결된 MATCH/COMPATIBLE/REDESIGN의 제품 수준 계�
 | P4 | APPROVED | current-period 구간 `[start, end)` | 시작 포함·종료 제외; legacy exact-end inclusive를 의도적으로 변경 |
 | P5 | APPROVED | 신규 설치 알림 OFF, 활성화 시 시작/사전 알림, 빈 수업 제외, 중복 방지, resume 후 지난 알림 몰아 보내지 않음 | scheduling policy와 Windows delivery 분리 |
 | P6 | APPROVED | tray icon/show-hide/명시적 Exit 완전 종료, 사용자 세션당 instance 하나, 이동 잠금·resize 허용, taskbar 미표시 위젯 | X/Alt+F4는 hide; 두 번째 실행은 기존 instance 표시/활성화; ADR 0020 |
-| P7 | APPROVED | 신규 설치 autostart OFF, Settings에서 명시적 활성화 | migration의 true는 선호로만 표시하고 사용자 승인 후 OS 등록 |
+| P7 | APPROVED | 신규 설치 autostart OFF, tray에서 명시적 활성화 | OS registration이 source of truth; migration true로 자동 등록 금지; ADR 0021 |
 | P8 | APPROVED | source 표시 → read-only parse → validation → 변환 preview/report → 사용자 선택 → 새 profile 1회 commit | 원본 불변, partial import 금지, corrupt ≠ missing, 자동 재import 금지 |
 | P9 | APPROVED | 전체 profile backup/restore 및 legacy backup importer, committed revision 하나에서 backup | 전체 검증 후 restore, 실패 시 기존 상태 유지/완전 rollback; format 상세 DEFERRED |
 | P10 | APPROVED | timetable와 period/time settings를 선택적으로 파일 공유 | PC ↔ PC 파일 방식 자체는 A3 APPROVED; QR 제외; format DEFERRED |
@@ -512,7 +512,7 @@ source가 검토 중 바뀐 경우의 재검증 방식은 후속 persistence/imp
 ## Backup / Restore Contract
 
 **APPROVED — P9.**
-전체 profile의 시간표·교시·appearance·lock·notification/autostart 선호를 backup/restore 대상으로 한다. geometry는 ADR 0019에 따라 machine-local window state로 분리하며 backup/restore에서 제외한다.
+전체 profile의 시간표·교시·appearance·lock·notification 선호를 backup/restore 대상으로 한다. geometry는 ADR 0019에 따라 machine-local window state로 분리하며 backup/restore에서 제외한다. Autostart는 ADR 0021에 따라 OS registration으로만 관리하며 profile/backup에서 제외한다.
 실제 OS Startup registration이나 알림 전달 상태는 profile 값과 구분하며 backup 파일만으로 복원 성공을 주장하지 않는다.
 새 backup은 하나의 committed revision을 담고 Preview/서로 다른 시점/stale files를 섞지 않는다.
 성공한 snapshot과 실패한 불완전 출력을 구별한다. 충돌이 기존 backup을 조용히 덮어쓰지 않게 한다.
@@ -541,8 +541,8 @@ A5의 시간 동기화는 이와 별개로 관리자 권한이나 Windows system
 **DEFERRED:** MSIX/MSI/WiX/Squirrel/기타 installer technology, updater library 및 update 정책,
 지원 Windows 버전, runtime 배포 방식, uninstall 시 사용자 데이터 보존/삭제 선택의 상세.
 
-**APPROVED — P7:** 신규 설치 autostart 기본 OFF. Settings에서 사용자가 명시적으로 켠다.
-Migration/restore에서 읽은 autostart 선호는 실제 OS registration과 구분하고 사용자 승인 후 적용한다.
+**APPROVED — P7 / ADR 0021:** 신규 설치 autostart 기본 OFF. Tray에서 사용자가 명시적으로 켠다.
+Migration true는 보고용이며 OS 변경을 일으키지 않는다. Restore는 autostart registry를 읽거나 변경하지 않는다.
 **APPROVED — P5:** 신규 설치 알림 기본 OFF. 활성화하면 시작·사전 알림을 제공하되 빈 수업 제외,
 중복 방지, sleep/resume 이후 지난 알림 몰아서 보내지 않음을 지킨다. whitespace-only를 빈 수업으로 볼지는
 notification ADR에서 DEFERRED이며 원본 문자열을 trim하는 근거가 되지 않는다.
@@ -994,3 +994,12 @@ Production is one instance per current Windows user/session. Secondary signals t
 before any profile/UI startup, then exits. First close notice receipt is machine-local,
 outside portable data. No autostart or class notifications in this scope.
 [Full lifecycle contract and evidence](TRAY-LIFECYCLE.md).
+
+## Windows autostart contract — 2026-09-17
+
+[ADR 0021](adr/0021-per-user-windows-autostart.md): explicit per-user HKCU Run registration,
+independent of portable data. Tray checkbox refreshes OS state; stale repair requires a click.
+Failure never implies success. Startup always shows MainWindow with existing placement/tray,
+taskbar and degraded/recovery behavior. Hidden state is runtime only. X/Exit/second launch
+never change registration. No installer/updater, hidden start, delay, scheduler, service,
+elevation or policy bypass. [Contract and evidence](AUTOSTART.md).

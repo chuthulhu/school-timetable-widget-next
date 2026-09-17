@@ -1,4 +1,5 @@
 using SchoolTimetableWidget.Desktop.Features.TrayLifecycle;
+using SchoolTimetableWidget.Desktop.Features.Autostart;
 using Forms = System.Windows.Forms;
 
 namespace SchoolTimetableWidget.Desktop.Infrastructure.Windows;
@@ -10,6 +11,9 @@ internal sealed class WindowsTrayIcon : ITrayIcon
     private readonly Forms.ContextMenuStrip _menu;
     private readonly Forms.ToolStripMenuItem _toggle;
     private readonly Forms.ToolStripMenuItem _exit;
+    private readonly Forms.ToolStripMenuItem _autoStart;
+    private readonly AutoStartRegistration? _registration;
+    private readonly Action<string> _showError;
     private readonly System.Drawing.Icon _image;
     private bool _disposed;
     public event Action? ToggleRequested;
@@ -19,13 +23,20 @@ internal sealed class WindowsTrayIcon : ITrayIcon
     internal Forms.ContextMenuStrip Menu => _menu;
 
     // Tests construct actual Forms objects without publishing a shell icon.
-    public WindowsTrayIcon(bool publish = true)
+    public WindowsTrayIcon(bool publish = true, AutoStartRegistration? registration = null, Action<string>? showError = null)
     {
+        _registration = registration;
+        _showError = showError ?? (text => System.Windows.MessageBox.Show(text, "School Timetable Widget",
+            System.Windows.MessageBoxButton.OK, System.Windows.MessageBoxImage.Warning));
         _image = (System.Drawing.Icon)System.Drawing.SystemIcons.Application.Clone();
         _toggle = new("위젯 숨기기");
         _exit = new("종료");
+        _autoStart = new("Windows 시작 시 실행") { CheckOnClick = false };
         _menu = new();
-        _menu.Items.AddRange([_toggle, new Forms.ToolStripSeparator(), _exit]);
+        _menu.Items.AddRange([_toggle, _autoStart, new Forms.ToolStripSeparator(), _exit]);
+        _menu.Opening += MenuOpening;
+        _autoStart.Click += AutoStartClick;
+        UpdateAutoStart();
         _icon = new() { Text = "School Timetable Widget", Icon = _image, ContextMenuStrip = _menu };
         _toggle.Click += Toggle;
         _exit.Click += Exit;
@@ -34,6 +45,31 @@ internal sealed class WindowsTrayIcon : ITrayIcon
     }
 
     public void SetWindowVisible(bool visible) => _toggle.Text = visible ? "위젯 숨기기" : "위젯 보이기";
+    private void MenuOpening(object? sender, System.ComponentModel.CancelEventArgs e)
+    {
+        _registration?.Refresh();
+        UpdateAutoStart();
+    }
+    private void AutoStartClick(object? sender, EventArgs e)
+    {
+        if (_registration is null) return;
+        var success = _registration.SetEnabled(!_autoStart.Checked);
+        UpdateAutoStart();
+        if (!success) _showError(_registration.Error!);
+    }
+    private void UpdateAutoStart()
+    {
+        var status = _registration?.Status ?? AutoStartStatus.Unavailable;
+        _autoStart.Enabled = status != AutoStartStatus.Unavailable;
+        _autoStart.CheckState = status == AutoStartStatus.Unavailable ? Forms.CheckState.Indeterminate :
+            status == AutoStartStatus.Enabled ? Forms.CheckState.Checked : Forms.CheckState.Unchecked;
+        _autoStart.ToolTipText = status switch
+        {
+            AutoStartStatus.StaleOrDifferent => "현재 실행 파일로 다시 등록하려면 선택하세요.",
+            AutoStartStatus.Unavailable => "자동 실행 상태를 확인하지 못했습니다. 메뉴를 다시 열어 주세요.",
+            _ => ""
+        };
+    }
     private void Toggle(object? sender, EventArgs e) => ToggleRequested?.Invoke();
     private void Exit(object? sender, EventArgs e) => ExitRequested?.Invoke();
     private void DoubleClick(object? sender, Forms.MouseEventArgs e)
@@ -54,6 +90,7 @@ internal sealed class WindowsTrayIcon : ITrayIcon
         _icon.Visible = false;
         _icon.MouseDoubleClick -= DoubleClick;
         _toggle.Click -= Toggle; _exit.Click -= Exit;
+        _autoStart.Click -= AutoStartClick; _menu.Opening -= MenuOpening;
         _icon.Dispose(); _menu.Dispose(); _image.Dispose();
     }
 }
