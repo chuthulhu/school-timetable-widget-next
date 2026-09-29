@@ -1,7 +1,9 @@
 # Semester Sets
 
 Status: implemented; 1,083/1,083 automated tests passed; user native UX approved (2026-09-29).
-Baseline: main and origin/main d36dc986fc8dd6392ac707588067f81393db6b2e, clean.
+Pre-milestone baseline: main and origin/main d36dc986fc8dd6392ac707588067f81393db6b2e, clean.
+Implemented and accepted in ef6c977abbfdd9725183614701bb90bc3c03a5a8. Dated pending
+checkpoints below are historical; current handoff is [Continuity](CONTINUITY.md).
 Authority: user Semester Sets milestone and [ADR 0022](adr/0022-semester-ownership.md).
 
 Semester data: stable ID, display name, 35 base cells, seven base periods, independent

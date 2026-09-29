@@ -78,7 +78,6 @@ try {
     finally { Pop-Location }
 
     Write-Host '[OK] Restore, Debug build and test runner completed.'
-    Write-Host '[INFO] Phase 0 has no product tests yet; a zero-test run is expected.'
     exit 0
 }
 catch {

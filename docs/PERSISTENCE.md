@@ -1,4 +1,20 @@
-# Local Persistence Foundation
+# Profile persistence
+
+## Current storage summary — 2026-09-29
+
+Writer: profile schema v5; strict readers v1–v5. Older supported profiles upgrade in memory
+only, with the next successful save writing v5. The portable profile contains all Semester
+Sets/active ID and global lunch/display/user presets. Window/tray state, OS autostart and
+font cache are separate; recovery evidence must be preserved.
+See [schema v5](#schema-v5-semesters--2026-09-18), [Continuity](CONTINUITY.md) and
+[Backup/Restore](BACKUP-RESTORE.md). Current backup exports are envelope v1 with embedded
+schema v5; preset files remain independent v1.
+
+Dated records below preserve historical storage evolution and verification. Old writer
+versions, future exclusions, local log paths and commit/native-pending entries are historical
+evidence, not current setup requirements or instructions to repeat a session.
+
+## Local Persistence Foundation — historical record
 
 Date: 2026-09-11. Status: **IMPLEMENTED — AUTOMATED VERIFIED / USER NATIVE REVIEW ACCEPTED (limited scope)**.
 Authority: milestone request, explicit A load-failure policy approval and final user native acceptance.

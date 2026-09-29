@@ -4,25 +4,27 @@ Status: **AUTOMATED VERIFIED — USER NATIVE UX APPROVED** (2026-09-15).
 Authority: Full Profile Backup / Restore, Recovery Required, and Degraded-Origin Restore Failure
 Policy approvals. [ADR 0018](adr/0018-profile-backup-recovery-required.md).
 Start: main, HEAD/origin/main `10c3413de5a0676d8d059abc9e1c6e85e78a52da`, clean.
-All changes remain uncommitted. Commit/push remain intentionally pending.
+The start SHA and dated verification below are historical; implementation landed in acf911c.
+Current all-semester support is recorded at the end of this document.
 
 ## User and file contract
 
-`.stwbackup` contains `backupFileVersion: 1`, independently of contained `profileSchemaVersion: 4`
+`.stwbackup` contains `backupFileVersion: 1`, independently of contained `profileSchemaVersion: 5`
 and `.stwpreset` version 1. Preset files share one display design; full backups preserve the
 current committed profile. Export never Applies Drafts or saves profile.json.
 
-Included: 35 SubjectText/ClassText cells, seven complete periods, date timetable/schedule
-overrides, lunch, display configuration and all user presets with stable IDs/names/settings.
+Included: every ordered semester and the active ID; each semester has 35 SubjectText/ClassText
+cells, seven periods and independent date overrides. Global lunch, display and user presets
+with stable IDs/names/settings are included.
 Font selection contains source, family and stable identity only. Missing System/Online fonts
 retain identity, show fallback and can be explicitly downloaded later. Restore never downloads.
 Excluded: current time/status/countdown/highlight, viewed week, machine/account/cache paths,
 font binaries and transient data. User-entered text is preserved exactly, not scrubbed.
 
-The external input/output bound is 4 MiB. Full validation uses the strict profile-v4 converter:
+The external input/output bound is 4 MiB. Full validation uses the strict embedded-profile v4/v5 readers:
 malformed/missing/duplicate/unknown fields, invalid schedules/dates/display/fonts/libraries or
-dangling references reject the entire candidate. Old v1/v2/v3 profile readers produce current
-canonical backups without rewriting the source. No legacy backup importer or selective merge.
+dangling references reject the entire candidate. Loaded native v1–v4 profiles can be exported as current v5 backups without rewriting profile.json.
+Backup import accepts envelope v1 with embedded schema v4 or v5 only. No legacy backup importer or selective merge.
 
 Export writes a unique same-directory temporary file, flushes/closes and moves over the chosen
 destination. Active app-owned profile/recovery/cache destinations are protected. Restore reads

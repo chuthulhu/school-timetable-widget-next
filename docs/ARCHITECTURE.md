@@ -1,8 +1,15 @@
 # Architecture
 
-현재 Phase 0.8 Header XAML + App startup/shutdown wiring은 IMPLEMENTED — USER NATIVE SMOKE PASSED다. 기존 A4–A9를 실제 View에 연결하고 사용자 host Windows에서 표시/live update/가로 resize와 종료를 확인했다. 검증 범위는 아래 native smoke 기록을 따른다. Weekly Timetable Core/read-only View도 구현했고 사용자 native smoke를 통과했다. Current Highlight integration도 구현했고 아래 범위의 사용자 native smoke를 통과했다. 교과/반 한 셀 Editing Foundation도 in-memory 범위의 자동 검증과 사용자 native smoke를 통과했다. 다국어 infrastructure는 도입하지 않는다.
-이 문서는 확정된 baseline과 설계 방향을 구분한다. 상세 계약은
-[Product Contract](PRODUCT-CONTRACT.md), 진행 상태는 [Feature Map](FEATURE-MAP.md)을 따른다.
+Current implementation: Semester Sets, portable profile v5, display/preset/font support,
+full backup/recovery, machine-local placement, tray/single instance and Windows autostart.
+Read [Continuity](CONTINUITY.md) for the current snapshot and [Feature Map](FEATURE-MAP.md)
+for implemented versus remaining scope. [Product Contract](PRODUCT-CONTRACT.md) and
+[Accepted ADRs](adr/README.md) remain authoritative.
+
+Dated sections below preserve design evolution and verification evidence. Their “future”,
+“not implemented”, native checkpoint and “commit pending” statements describe that date,
+not today's roadmap. Later accepted follow-ups supersede earlier exclusions. Existing
+section anchors are retained for evidence links.
 
 ## Accepted baseline
 
@@ -45,9 +52,9 @@ Tests   → Desktop  (Phase 0.6 presentation contract tests)
 
 | Project | 책임 / 현재 범위 |
 | --- | --- |
-| Desktop | View/ViewModel, Windows integration, infrastructure adapter. 현재 MainWindow의 Header/Timetable feature View, App startup/shutdown composition, PC fallback clock adapter와 Features/CurrentStatus의 한국어 formatter, 표시 전용 ViewModel, Header와 current slot을 동일 snapshot으로 갱신하는 DispatcherTimer refresh loop가 있다. 실제 Header/live app refresh는 구현했고 사용자 host Windows의 제한된 native smoke를 통과했다. CommunityToolkit.Mvvm은 이 project에만 직접 참조한다. |
-| Core | 순수 계산, 상태 전이, product contract logic, 시간 abstraction, persistence/migration contract의 소유 경계. 현재 Time/의 clock interface, immutable snapshot, source enum과 Features/Periods/의 교시 정의·기본 profile·current-period 계산, Features/CurrentStatus/의 5상태 계산·countdown 의미 정규화, Features/Timetable/의 immutable 35셀 모델이 있으며 WPF/Toolkit/Desktop 의존성이 없다. |
-| Tests | 기존 Core tests와 Desktop presentation/lifecycle tests의 진입점. xUnit v3로 Application Clock, current-period, Current Status, countdown, Header formatter, ViewModel/refresh loop 및 Header XAML/binding 및 Timetable model/presentation/XAML/layout contract tests를 실행한다. Fake clock과 dispatcher object test helper는 Tests 내부에만 둔다. |
+| Desktop | Feature views/sessions/runtime, App composition, persistence/recovery, font resolution and Windows adapters; Toolkit is directly referenced here only. |
+| Core | Immutable timetable, period, day override and semester values; import parsing, clock abstraction and pure status/countdown calculations; no WPF/Toolkit/Desktop dependency. |
+| Tests | Core/Desktop contract, transaction, failure, WPF object/event and isolated Windows-boundary tests; Windows runtime required. Native input/rendering is separate evidence. |
 
 Core → Desktop 의존은 금지한다. Feature별 assembly를 추가하지 않고 project 내부 폴더/namespace로
 책임을 나눈다. Feature/Platform/Infrastructure 상세 폴더는 실제 첫 코드가 필요할 때 생성한다.
@@ -64,7 +71,7 @@ SDK는 `global.json`의 10.0.400 / `latestFeature` / stable-only 정책으로 �
 | --- | --- |
 | 세부 feature folder/namespace 및 type 배치 | DEFERRED — 실제 기능 코드 추가 시 |
 | DI container | 도입하지 않음; App에서 직접 소유하고 향후 소비자 constructor에 주입 |
-| Native v1 persistence/schema/write exclusion/load failure | RESOLVED — ADR 0012; broader backup/restore recovery remains DEFERRED |
+| Profile storage/recovery | RESOLVED — ADR 0012/0018/0022: v5 writer, v1–v5 readers and full recovery; legacy migration remains deferred |
 | Installer/updater technology와 배포 상세 | DEFERRED |
 | Windows App SDK 사용 범위 | DEFERRED |
 
@@ -529,7 +536,7 @@ persistence를 확정하는 데이터가 아니다. `--timetable-preview`를 명
 사용자의 일반 host PowerShell에서 다음 명령으로 정상 창을 실행한다:
 
 ```powershell
-& 'C:\Program Files\dotnet\dotnet.exe' run --no-build --project 'D:\Codex\school-timetable-widget-next\src\SchoolTimetableWidget.Desktop\SchoolTimetableWidget.Desktop.csproj' -- --timetable-preview
+& 'C:\Program Files\dotnet\dotnet.exe' run --no-build --project '.\src\SchoolTimetableWidget.Desktop\SchoolTimetableWidget.Desktop.csproj' -- --timetable-preview
 ```
 
 먼저 창이 실제로 보이는지 확인한다. 이후 다음을 순서대로 확인하고 기록한다:
@@ -681,7 +688,7 @@ Preview가 주입하는 날짜/과목은 이미 확인한 fixture이며 저장�
 사용자 로그인 desktop에서 정상 창을 띄우는 host PowerShell 명령:
 
 ```powershell
-& 'C:\Program Files\dotnet\dotnet.exe' run --no-build --project 'D:\Codex\school-timetable-widget-next\src\SchoolTimetableWidget.Desktop\SchoolTimetableWidget.Desktop.csproj' -- --highlight-preview
+& 'C:\Program Files\dotnet\dotnet.exe' run --no-build --project '.\src\SchoolTimetableWidget.Desktop\SchoolTimetableWidget.Desktop.csproj' -- --highlight-preview
 ```
 
 도구 실행이 사용자 desktop을 보장하지 못하므로 sandbox 앱을 먼저 띄우지 않는다.
@@ -866,6 +873,14 @@ parse/validation no partial modification, all-or-nothing Apply를 지킨다.
   hierarchy를 선제 도입하지 않는다. 현재 구현은 값과 대상 callback의 분리까지만 제공한다.
 
 ## Future teacher profiles and groups — 2026-09-10
+
+Current boundary (reviewed 2026-09-29): still NOT IMPLEMENTED. TeacherTimetableProfile
+would have stable ProfileId, DisplayName and a timetable ownership boundary.
+TimetableGroup would have stable GroupId, DisplayName and ProfileId references.
+DisplayName is never identity; membership may be many-to-many without copying timetable data.
+The exact relationship to current Semester Sets and school schedules is a deferred product
+decision. The examples below are not an approved final hierarchy.
+No schema v6, UI or model implementation follows from documenting this boundary.
 
 **FUTURE REQUIREMENT — NOT IMPLEMENTED.** 현재 Editing Foundation scope는 확대하지 않는다.
 향후 여러 교사 timetable profile을 저장하고 `3학년 담임`, `과학교사`, `내가 자주 확인하는 교사`

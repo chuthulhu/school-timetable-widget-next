@@ -9,7 +9,99 @@
 Visual Studio는 필수 prerequisite가 아니다. CLI restore/build/test를 기준으로 한다.
 SDK는 개발 PC마다 필요하고 NuGet dependencies와 정확한 직접 참조 버전은 project가 관리한다.
 
-## New development PC
+## Direct CLI workflow on a clean checkout
+
+No particular editor, AI tool, chat history or local scratch file is required.
+The repository and public package feeds supply the build inputs; online font download is
+not required for restore/build/test. Windows is required for WPF and the Desktop test runtime.
+
+```powershell
+git clone https://github.com/chuthulhu/school-timetable-widget-next.git
+Set-Location school-timetable-widget-next
+dotnet --info
+dotnet restore
+dotnet build --no-restore
+dotnet test --no-build --logger "console;verbosity=normal"
+```
+
+Run each command only after the preceding one succeeds. PowerShell users can check
+`$LASTEXITCODE`. The existing bootstrap below automates prerequisite checks and the same
+restore/build/test sequence with failure exit codes; no additional verify script is needed.
+The current baseline is 1,083 tests, not the historical Phase 0 zero-test run below.
+
+## Run the desktop app
+
+For ordinary use (reads/writes the current user's normal profile):
+
+```powershell
+dotnet run --no-build --project .\src\SchoolTimetableWidget.Desktop\SchoolTimetableWidget.Desktop.csproj
+```
+
+For a diagnostic run, keep storage separate with a unique TEMP directory in the Debug build:
+
+```powershell
+$diagnosticDirectory = Join-Path ([IO.Path]::GetTempPath()) ('stw-dev-' + [guid]::NewGuid().ToString('N'))
+dotnet run --no-build --project .\src\SchoolTimetableWidget.Desktop\SchoolTimetableWidget.Desktop.csproj -- "--dev-profile-directory=$diagnosticDirectory"
+```
+
+Reuse that same directory for restart tests. The DEBUG-only selector is ignored in Release.
+It isolates profile, recovery files, window/tray state and font cache; it does not virtualize
+Windows or make native input safe in the background. Do not click autostart during ordinary
+storage-only smoke tests: OS registration remains an independent real side effect.
+Normal startup uses real PC fallback time. Optional preview flags identify synthetic/sample
+conditions in the title. Close the app via tray **종료** before rebuilding; X/Alt+F4 only hides it.
+
+## Independent committed-checkout gate
+
+After committing changes, clone committed Git objects into an empty unique location.
+`--no-local` avoids borrowing objects/hardlinks; neither ignored output nor untracked scratch
+from the original working tree is copied. For a local pre-push clone:
+
+```powershell
+$sourceRepository = (Get-Location).Path
+$verificationCommit = (git rev-parse HEAD).Trim()
+$freshDirectory = Join-Path ([IO.Path]::GetTempPath()) ('stw-fresh-' + [guid]::NewGuid().ToString('N'))
+git clone --no-local $sourceRepository $freshDirectory
+Set-Location $freshDirectory
+git checkout --detach $verificationCommit
+git status --short
+dotnet --info
+dotnet restore
+dotnet build --no-restore
+dotnet test --no-build --logger "console;verbosity=normal"
+git diff --check
+```
+
+Read README → CONTINUITY → this guide in that clone. Stop at a failed command and preserve its
+exit code/output. This checks repository completeness on the current machine; it is not proof
+of a newly installed Windows/SDK or an empty global NuGet cache. Record that distinction.
+[Continuity verification](CONTINUITY-VERIFICATION.md) records the latest execution.
+
+## Non-interfering Windows verification
+
+Prefer isolated TEMP profiles, fake clocks/stores, source inspection and unshown WPF
+object/event tests. Background checks must not activate windows, inject keys/pointer input,
+change the clipboard or open foreground dialogs. Neither minimization nor another virtual
+desktop guarantees input isolation.
+
+Before native input, agree on the required foreground interval unless already authorized.
+Distinguish discovery, capture, launch/visibility and input failure; HWND/PID alone is not
+visibility evidence. A tool that activates a window is not a background input tool.
+During an authorized native check, use the actual application and report changed test
+conditions; object/event evidence does not establish keyboard/IME, Tab/focus loss, OS dialogs,
+title-bar clicks or native rendering. Keep focus-sensitive typing and focus loss within
+the app before returning to another application.
+
+When native smoke is requested, first attempt a direct authorized launch and inspect its
+process/visibility before delegating execution to the user. Reuse a previously confirmed
+launch boundary where applicable, but do not generalize old session-isolation observations.
+Do not repeatedly relaunch unchanged conditions when a window is not visible.
+Use process-local time injection, never change the system clock, and terminate only owned
+diagnostic processes. Record limitations and protect user data. Historical direct-launch/
+visibility observations are in [Period Editing](PERIOD-SCHEDULE-EDITING.md) and other feature
+verification records; their session-specific commands are not required setup steps.
+
+## New development PC — optional bootstrap
 
 ```powershell
 git clone https://github.com/chuthulhu/school-timetable-widget-next.git
@@ -127,7 +219,7 @@ $dotnetExe = 'C:\Program Files\dotnet\dotnet.exe'
 & $dotnetExe test --no-build
 ```
 
-NuGet 접근이 막히면 실패 출력과 exit code를 확인한다. Codex 실행 환경에만 제한이 있으면
+NuGet 접근이 막히면 실패 출력과 exit code를 확인한다. 도구 실행 환경에만 제한이 있으면
 host PowerShell에서 `bootstrap-dev.ps1`을 실행한다. 해결을 위해 시스템 네트워크 설정을 자동 변경하지 않는다.
 
 ## Solution and test scope
@@ -136,7 +228,7 @@ host PowerShell에서 `bootstrap-dev.ps1`을 실행한다. 해결을 위해 시�
 | --- | --- | --- |
 | SchoolTimetableWidget.Desktop | net10.0-windows | Core / CommunityToolkit.Mvvm 8.4.2 |
 | SchoolTimetableWidget.Core | net10.0 | 없음; WPF/Toolkit 독립 |
-| SchoolTimetableWidget.Tests | net10.0 | Core / xunit.v3.mtp-off 4.0.0, xunit.runner.visualstudio 4.0.0, Microsoft.NET.Test.Sdk 18.9.0 |
+| SchoolTimetableWidget.Tests | net10.0-windows | Core + Desktop / xunit.v3.mtp-off 4.0.0, xunit.runner.visualstudio 4.0.0, Microsoft.NET.Test.Sdk 18.9.0 |
 
 SDK 10.0.400의 기본 `dotnet new xunit`은 xUnit v2 2.9.3을 생성했다.
 [공식 v3 전환 안내](https://xunit.net/docs/getting-started/v3/migration)에 따라
@@ -151,7 +243,7 @@ Template의 Class1/UnitTest1과 coverage collector를 제거했다. 최초 Phase
 `Time/ApplicationClockContractTests.cs`와 Tests 내부 `Time/FakeApplicationClock.cs`를 추가했다.
 고정 DateTimeOffset과 fake 교체로 시각/offset 보존, reference identity, 자정 및 source 전환 전후
 snapshot 전달을 검증한다. 실제 system clock 변경, native UI/input 또는 네트워크를 사용하지 않는다.
-Tests는 Core만 참조하므로 Desktop adapter와 WPF startup의 실제 실행 검증은 포함하지 않는다.
+현재 Tests는 Core와 Desktop을 참조하며 Windows Desktop runtime이 필요하다. 아래 Phase 0 기록은 당시 범위이며, 현재 자동 검증은 unshown WPF object/event와 격리된 adapter 경계까지 포함한다. Native UI/input/실제 로그인을 대신하지 않는다.
 직접 system time 읽기는 Desktop의 `Infrastructure/Time/PcFallbackApplicationClock.cs`만 허용한다.
 Core snapshot 필드와 composition/source/revision 의미는 [Architecture](ARCHITECTURE.md#phase-02-application-clock-foundation)를 따른다.
 
@@ -223,17 +315,17 @@ WPF 창을 실행하거나 활성화하지 않았고 native input, system clock 
 Desktop adapter/composition은 build와 source inspection으로 확인했다. Contract tests는 Core와 fake 증거이며
 실제 OS adapter 실행, native startup 또는 동시 sync 전환 검증으로 해석하지 않는다.
 
-## Editing Foundation native checkpoint — 2026-09-10
+## Editing Foundation native checkpoint — historical, 2026-09-10
 
 한 셀의 교과/반 편집, in-memory Apply/Cancel foundation이다.
-Persistence, Bulk Import, Date Override, 날짜 표시는 구현하지 않았다.
+당시 Persistence, Bulk Import, Date Override, 날짜 표시는 미구현이었다. 현재는 구현되어 있으며 X는 종료 대신 숨김이다. 아래는 당시 checkpoint의 증거 범위다.
 
 Codex가 먼저 정상 앱을 직접 실행하고 process 상태를 확인한다. 사용자에게는 실제 창 표시와
 시각적/native UX를 확인한다. 아래 host PowerShell 명령은 현재 실행 권한/desktop isolation
 등의 실패를 확인한 경우에만 사용하는 fallback이다. 과거 isolation만으로 수동 실행을 요구하지 않는다.
 
 ```powershell
-& 'C:\Program Files\dotnet\dotnet.exe' run --no-build --project 'D:\Codex\school-timetable-widget-next\src\SchoolTimetableWidget.Desktop\SchoolTimetableWidget.Desktop.csproj' -- --highlight-preview
+& 'C:\Program Files\dotnet\dotnet.exe' run --no-build --project '.\src\SchoolTimetableWidget.Desktop\SchoolTimetableWidget.Desktop.csproj' -- --highlight-preview
 ```
 
 모의 시각 70초 순환은 기존 공통 application clock 주입이다. 시스템 시간은 바꾸지 않는다.

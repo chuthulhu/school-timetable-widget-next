@@ -1,10 +1,11 @@
 # ADR 0018 — Full profile backup and Recovery Required
 
-Status: **Accepted policy; implementation in progress**. Date: 2026-09-15.
+Status: **Accepted; implemented, automated verified and user native UX approved**. Date: 2026-09-15.
 Authority: explicit Full Profile Backup / Restore, Recovery Required and Degraded-Origin
 Restore Failure Policy approvals. [Implementation/evidence](../BACKUP-RESTORE.md).
 
-Use independent native `.stwbackup` version 1 containing canonical profile schema v4 inputs.
+Use independent native `.stwbackup` version 1, originally containing profile v4 inputs.
+ADR 0022 extends new exports to profile v5/all semesters while retaining v4 backup reads.
 Export only committed validated values. Restore is full validation, preview, explicit consent,
 secured previous state, atomic persistence, whole runtime publication and refresh. Preserve
 viewed week and missing font identity; do not download automatically or import legacy backups.
@@ -29,4 +30,4 @@ Missing/invalid recovery evidence never authorizes destructive fallback.
 
 This extends P9 and ADR 0012 with explicitly approved startup/recovery behavior. The application
 clock and existing feature ownership remain separate. Native UX acceptance and implementation
-verification are separate from this Accepted policy; see the current P2/test status above.
+verification are separate from this Accepted policy; see BACKUP-RESTORE.md for the resolved P2 and evidence limits.

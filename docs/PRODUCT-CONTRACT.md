@@ -1,5 +1,14 @@
 # School Timetable Widget Next — Product Contract v0.1
 
+## Current reading guide
+
+Current delivery and versions are summarized in [Continuity](CONTINUITY.md) and
+[Feature Map](FEATURE-MAP.md). This contract retains dated approvals and their original
+milestone exclusions; later approved follow-ups supersede those exclusions. A dated
+in-memory-only or pre-implementation statement is not today's implementation status.
+See [ADR index](adr/README.md) for all accepted decisions. No product behavior is changed
+by this documentation consolidation.
+
 ## Status
 
 **Approved baseline v0.1 (2026-09-08).**
@@ -602,12 +611,12 @@ I15–I20은 A4/A5의 새 APPROVED invariant다. 구현 acceptance 기준이며 
 | --- | --- | --- |
 | A1/P1/P7 | DEFERRED | installer technology, 권한 실증, OS 지원 범위, runtime 배포, uninstall 데이터 정책 |
 | P1/R22 | DEFERRED | updater 범위/library, version identity 구현, update 검증/복구 |
-| P2/P8/P9 | PARTLY RESOLVED | Native v1 schema/storage/write exclusion/load-failure A policy: ADR 0012. Full backup/restore recovery, migration provenance 및 후속 revision/동시성은 DEFERRED |
+| P2/P8/P9 | PARTLY RESOLVED | Native storage and full backup/Recovery Required: ADR 0012/0018/0022. Legacy migration provenance and concurrency remain DEFERRED |
 | P3/P6 | DEFERRED | z-order (main close는 ADR 0020, placement는 ADR 0019로 확정) |
-| P4/P5 | DEFERRED | time validation 세부, clock/resume 갱신 지연, 알림 빈 수업 판정 및 delivery adapter |
-| P9/P10 | DEFERRED | backup manifest/schema/checksum/naming, sharing format와 부분 적용 UX |
+| P4/P5 | PARTLY RESOLVED | Complete chronological period validation: ADR 0009. OS resume, notification empty-class policy and delivery remain DEFERRED |
+| P9/P10 | PARTLY RESOLVED | Full backup v1 and recovery: ADR 0018/0022. Selective timetable/time sharing format and UX remain DEFERRED |
 | P10/C7 | DEFERRED | legacy sharing JSON envelope의 실제 지원 상세; raw timetable JSON과 구분 |
-| A4/A7/A8/A9 | DEFERRED | font/layout 구현, Header XAML 및 실제 App activation/wiring, Upcoming optional 보조 강조; 의미 A7, 한국어 문구 A8, refresh lifecycle A9 APPROVED. 다국어 infrastructure는 현재 범위 밖 |
+| A4/A7/A8/A9 | PARTLY RESOLVED | Header wiring and display/font/presets implemented; ADR 0014–0017. Upcoming highlight and remaining customization stay DEFERRED; multilingual infrastructure outside scope |
 | A9 | DEFERRED | suspend/resume detection/integration (Tray visibility lifecycle은 ADR 0020으로 확정) |
 | A5 | DEFERRED | 공식 endpoint 재확인, NTP client, timeout/retry/resync, drift/correction/slew, offline cache, monotonic 구현, test injection, suspend/resume 처리 |
 | A5 | DEFERRED | Settings/tooltip/status detail 중 sync 상세 표시 위치 |
@@ -619,7 +628,7 @@ I15–I20은 A4/A5의 새 APPROVED invariant다. 구현 acceptance 기준이며 
 | P1–P10 미승인 blocker | 0 — 모두 APPROVED |
 | Golden Reference remaining MUST | 0 — COMPLETE AS GOLDEN REFERENCE |
 | Product-level approval blocker | 0 — A1–A9 및 연결된 계약 확정 |
-| 저장소 상태 | Phase 0.7 Header ViewModel + live refresh loop foundation; 실제 Header XAML/App activation과 전체 제품/UI 완료 아님 |
+| 저장소 상태 | IN_DEVELOPMENT — Semester Sets까지 구현, profile v5; 현재 기능/검증은 CONTINUITY와 FEATURE-MAP 참조. Release-ready를 뜻하지 않음 |
 | 남은 결정 | DEFERRED implementation decisions; 해당 기능 구현 전 ADR/spike/UX 검토 |
 
 이 baseline은 release-ready나 모든 구현 상세 확정을 뜻하지 않는다.
