@@ -36,7 +36,7 @@ production inventory/autostart readback was unchanged. Committed-checkout eviden
 | Item | Value |
 | --- | --- |
 | Repository / development branch | chuthulhu/school-timetable-widget-next / main |
-| Verified implementation commit | ef6c977abbfdd9725183614701bb90bc3c03a5a8 — feat: add semester timetable sets |
+| Verified implementation commit | da3aedca70bd4e5668ffdf7e331a62b34f743733 — feat: add KRISS application clock synchronization |
 | Product maturity | IN_DEVELOPMENT; local Windows desktop application, no hosted service |
 | Stack | WPF, .NET 10 LTS, CommunityToolkit.Mvvm 8.4.2 |
 | SDK selection | global.json: 10.0.400, latestFeature, stable only |

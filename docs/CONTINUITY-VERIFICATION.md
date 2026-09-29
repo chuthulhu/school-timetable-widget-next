@@ -1,5 +1,30 @@
 # Continuity and workspace verification
 
+## KRISS committed-checkout gate — 2026-09-29
+
+Implementation commit: `da3aedca70bd4e5668ffdf7e331a62b34f743733`
+(`feat: add KRISS application clock synchronization`). The original checkout was clean
+after committing the approved milestone. A unique TEMP checkout was created using
+`git clone --no-local` from the application repository and detached at that exact commit.
+No original bin/obj, untracked diagnostic file or chat memory was copied as a build input.
+
+In that checkout, `dotnet restore`, `dotnet build --no-restore` and
+`dotnet test --no-build --logger "console;verbosity=normal"` all exited 0:
+**1,161 passed (78 new), failed/skipped 0, build warnings/errors 0**.
+`git diff --check` passed and tracked/untracked status remained clean.
+This proves a committed clean checkout on this Windows machine with its existing SDK/NuGet
+cache, not a newly installed Windows system or empty package cache. Real KRISS access is not
+part of this automated gate. The subsequent documentation-only handoff records this result
+and pins the implementation SHA; source, tests, dependencies and schema do not change.
+
+Official endpoint, successful three-response production-source network probe, independent
+review/self-audit, user native UX acceptance and limitations are recorded in
+[KRISS time sync](KRISS-TIME-SYNC.md). Final native readback confirmed the owned process exited,
+production top-level file inventory unchanged (no original files present) and autostart unchanged.
+Milestone document file/heading links and staged `git diff --check` passed before the feature commit.
+
+## Earlier continuity milestone
+
 Milestone: tool-independent project continuity and local workspace consolidation.
 Date: 2026-09-29. Implementation baseline:
 ef6c977abbfdd9725183614701bb90bc3c03a5a8 (main and origin/main matched before work).

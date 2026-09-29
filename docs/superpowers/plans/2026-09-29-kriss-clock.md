@@ -35,7 +35,7 @@ intermediate approval gates. No native input without an agreed foreground interv
 - [x] Verification: full restore/build/test (zero failed/skipped/warnings/errors), diff and local
   Markdown links; independent code review. Separate production-path KRISS probe with observation
   UTC/RTT/offset or exact environment limit. Native isolated TEMP smoke/UX checkpoint; document limits.
-- [ ] After native acceptance: final checks, app commit, committed fresh clone restore/build/test,
+- Delivery procedure after native acceptance: final checks, app commit, committed fresh clone restore/build/test,
   fetch/divergence check and ordinary main push/readback. Only then registry two-file refresh,
   validate, commit/main push/readback. Both trees clean and HEAD==origin/main.
 
@@ -64,3 +64,7 @@ to their owning groups above. Native evidence must remain distinct from object/s
   readback confirmed. PrintWindow WPF content capture unavailable; user UX/Exit approval pending.
 - User explicitly approved native UX 2026-09-29. Owned diagnostic process absent; final production
   file inventory/autostart unchanged. Commit/fresh-checkout/delivery now authorized.
+- Implementation committed as da3aedca70bd4e5668ffdf7e331a62b34f743733. A no-local clone,
+  detached at this commit, passed restore/build/1,161 tests with 0 failures/skips/warnings/errors
+  and remained clean. The documentation-only handoff records that evidence. Final delivery
+  identity is the application main revision pinned by the platform registry, not this historical ledger.

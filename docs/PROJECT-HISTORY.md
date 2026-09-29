@@ -28,10 +28,11 @@ in this repository. No historical test count is inferred.
 | Close-to-tray / explicit Exit / single instance | b5076ed | Separate machine-local tray-state v1 | [Lifecycle](TRAY-LIFECYCLE.md), ADR 0020 |
 | Windows autostart | d36dc98 | OS registration only | [Autostart](AUTOSTART.md), ADR 0021 |
 | Semester Sets and all-semester recovery | ef6c977 | Profile v5; backup envelope stays v1, new embedded schema v5 | [Semesters](SEMESTER-SETS.md), ADR 0022; final UX approval 2026-09-29 |
+| KRISS Application Clock synchronization | da3aedc | Runtime only; profile v5/backup v1/preset v1 unchanged | [KRISS policy/evidence](KRISS-TIME-SYNC.md), ADR 0024; 1,161 tests, live NTP and limited native UX accepted |
 
-The baseline commit is ef6c977abbfdd9725183614701bb90bc3c03a5a8.
-The continuity milestone updates documentation and one obsolete bootstrap status message only;
-application source, test expectations, dependencies and schema are unchanged.
+The original continuity milestone used baseline ef6c977abbfdd9725183614701bb90bc3c03a5a8
+and changed documentation/one obsolete bootstrap status message only. The current baseline is
+listed in [Continuity](CONTINUITY.md); KRISS implementation and its documentation handoff supersede it.
 Its cleanup and clean-clone evidence are recorded in [Continuity verification](CONTINUITY-VERIFICATION.md).
 
 ## Teacher Profile / Group foundation — 2026-09-29
