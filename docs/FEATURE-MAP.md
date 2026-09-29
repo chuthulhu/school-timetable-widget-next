@@ -1,6 +1,7 @@
 # Feature Map
 
-Current implementation at ef6c977 (Semester Sets), reviewed 2026-09-29.
+Current implementation adds KRISS synchronization to the verified Semester Sets baseline;
+reviewed 2026-09-29. Automated/network verified; limited native UX accepted.
 [Product Contract](PRODUCT-CONTRACT.md) and [Accepted ADRs](adr/README.md) define the
 requirements; this page tracks delivery, not approval. Historical progression is in
 [Project History](PROJECT-HISTORY.md) and dated feature verification records.
@@ -14,7 +15,7 @@ requirements; this page tracks delivery, not approval. Historical progression is
 | School/Canonical bulk import and template copy | Strict quoted TSV, candidate/mapping preview, captured semester Base-only Apply; [Bulk](TIMETABLE-BULK-INPUT.md) |
 | Base period editing | Complete chronological seven-period validation and durable Apply; [Periods](PERIOD-SCHEDULE-EDITING.md), [Persistence](PERSISTENCE.md) |
 | Current Status Header/countdown/date/highlight | Shared snapshot, five Core states, exact [start,end), no tick-driven geometry changes; [Architecture](ARCHITECTURE.md) |
-| Application Clock foundation | Interface/snapshot, injected tests and PC fallback implemented; KRISS network sync remains below |
+| KRISS Application Clock synchronization | IMPLEMENTED / AUTOMATED AND NETWORK VERIFIED; immediate PC fallback, bounded multi-sample NTP, atomic monotonic KST reference, last-good retention, single-flight retry and Windows resume; [policy/evidence](KRISS-TIME-SYNC.md) |
 | Date timetable/period overrides and lunch | Independent complete components per semester/date; global default-OFF lunch presentation; [Overrides](DATE-OVERRIDES.md) |
 | Week navigation / date columns / Today indicator | Exactly ±7 days, per-date provenance, browsing independent of actual status, no viewed-week persistence; [Navigation](WEEK-NAVIGATION.md) |
 | Profile persistence / degraded handling | Current writer v5, strict v1–v5 readers, preserve corrupt originals and block writes; [Persistence](PERSISTENCE.md) |
@@ -29,7 +30,7 @@ requirements; this page tracks delivery, not approval. Historical progression is
 | Windows autostart | Explicit tray toggle, exact per-user OS registration/read-back; [Autostart](AUTOSTART.md) |
 | Semester Sets | Ordered stable identities, explicit switch/create/copy/rename/inactive delete, scoped edits, v5 storage/all-semester restore; [Semesters](SEMESTER-SETS.md) |
 
-Automated baseline: 1,083 tests; native approvals cover only scenarios documented in the
+Automated baseline: 1,161 tests; native approvals cover only scenarios documented in the
 linked evidence. “Implemented” does not imply release readiness or all native paths verified.
 Profile schema v1–v4 in older milestone records describes prior writers, not the current writer.
 
@@ -39,9 +40,9 @@ Profile schema v1–v4 in older milestone records describes prior writers, not t
 | --- | --- |
 | Teacher profiles/groups | DEFERRED — FOUNDATION READY / NOT IMPLEMENTED; stable IDs, many-to-many references and (ProfileId, SemesterId) logical ownership; [Foundation](TEACHER-PROFILE-GROUP-FOUNDATION.md), [ADR 0023](adr/0023-teacher-profile-group-ownership.md) |
 | Multi-teacher import | DEFERRED; future explicit creation/update mapping of several profiles and their relevant SemesterId timetables; current single-candidate Base import unchanged |
-| KRISS synchronization | PLANNED; endpoint/client/correction/retry/resync and sync UX deferred; PC fallback is implemented |
-| Suspend/resume integration | DEFERRED; OS detection and sync/notification behavior not implemented |
-| Class notifications | PLANNED; scheduling/dedup/resume and actual Windows delivery; first-close tray notice is a different feature |
+| KRISS diagnostic UX | Source/status UI remains deferred; no new setting or sync popup. Limited native UX accepted for current clock |
+| Notification suspend/resume integration | DEFERRED; clock resync implemented under ADR 0024, notification replay/dedup remains separate |
+| Class notifications | PLANNED; must consume the shared KRISS-capable Application Clock; scheduling/dedup/resume and actual Windows delivery remain; first-close tray notice is a different feature |
 | Legacy migration / legacy backup import | PLANNED; immutable source, preview and all-or-nothing conversion; native v1–v4 migration is already implemented |
 | Selective timetable/period file sharing | PLANNED under P10; distinct from implemented preset files and full-profile backups |
 | Installer / updater | DEFERRED; technology, distribution/signing/rollback, uninstall data policy and supported OS matrix |

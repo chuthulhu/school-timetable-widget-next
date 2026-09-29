@@ -23,6 +23,16 @@ not authoritative and are not needed to build or resume development.
 
 ## Verified implementation baseline
 
+KRISS implementation (2026-09-29): **IMPLEMENTED / AUTOMATED AND NETWORK VERIFIED**,
+limited native UX accepted. Base checkout: clean main/origin/main
+`1438e163c2b2b8fbba3ef8b1c3b4093987a46ec0`. Current implementation has 1,161 passing tests
+(78 new), zero failures/skips and build warnings/errors. Official endpoint readback and three
+production-parser NTP responses succeeded in the actual-user execution boundary; default
+sandbox UDP timed out. Evidence and next actions: [KRISS time sync](KRISS-TIME-SYNC.md).
+User native acceptance was explicitly received; the isolated app exited normally and final
+production inventory/autostart readback was unchanged. Committed-checkout evidence is in
+[Continuity verification](CONTINUITY-VERIFICATION.md); app push precedes registry refresh.
+
 | Item | Value |
 | --- | --- |
 | Repository / development branch | chuthulhu/school-timetable-widget-next / main |
@@ -34,8 +44,8 @@ not authoritative and are not needed to build or resume development.
 | Standalone preset | .stwpreset, presetFileVersion 1, one user display preset |
 | Full backup | .stwbackup, backupFileVersion 1; new exports embed profileSchemaVersion 5; embedded v4/v5 accepted |
 | Machine-local files | window-state.json v1, tray-state.json v1; OS autostart registration separately |
-| Automated baseline | 1,083 passed, 0 failed/skipped; build warnings/errors 0 |
-| Baseline native evidence | Semester Sets UX accepted 2026-09-29; see scope in SEMESTER-SETS.md |
+| Automated baseline | 1,161 passed, 0 failed/skipped; build warnings/errors 0 |
+| Baseline native evidence | KRISS UX accepted 2026-09-29; [scope and limitations](KRISS-TIME-SYNC.md); previous Semester Sets evidence retained |
 
 The implementation SHA deliberately identifies the last application change, not the
 self-referential SHA of this documentation commit. Use `git rev-parse HEAD` for the checked-out
@@ -50,7 +60,7 @@ The platform project registry pins the subsequently verified/pushed handoff revi
 | 35 independent Mon–Fri × seven cells, lossless Subject/Class text | Core Features/Timetable; [editing](TIMETABLE-EDITING-FOUNDATION.md) |
 | School/Canonical bulk input, strict parsing, preview, atomic Apply, template copy | Core/Desktop Features/TimetableImport; [bulk input](TIMETABLE-BULK-INPUT.md). Captured active-semester Base target only |
 | Editable complete seven-period schedule | Core Features/Periods and Desktop Features/PeriodScheduleEditing; [period editing](PERIOD-SCHEDULE-EDITING.md) |
-| Current Status Header, five states, countdown, date-aware highlight | Core/Desktop Features/CurrentStatus and Core Time; one shared Application Clock snapshot per refresh; PC fallback only |
+| Current Status Header, five states, countdown, date-aware highlight | Core/Desktop Features/CurrentStatus and Core Time; one shared Application Clock snapshot per refresh; initial PC fallback then KRISS-derived KST, [sync](KRISS-TIME-SYNC.md) |
 | Independent date timetable and date period overrides, optional lunch | Core Features/SchoolDays, Desktop Features/DateOverrides; [date overrides](DATE-OVERRIDES.md) |
 | Previous/next week and independent per-date columns | Desktop Features/Timetable; [week navigation](WEEK-NAVIGATION.md). Actual status remains tied to today |
 | Display customization and named user presets | Desktop Features/DisplaySettings; [display settings](DISPLAY-SETTINGS.md). Preview/Apply/OK/Cancel and stable preset IDs |
@@ -61,6 +71,7 @@ The platform project registry pins the subsequently verified/pushed handoff revi
 | Tray show/hide, explicit Exit and per-user/session single instance | Features/TrayLifecycle and Infrastructure/Windows; [lifecycle](TRAY-LIFECYCLE.md) |
 | Explicit Windows autostart | Features/Autostart, WindowsAutoStartRegistrationStore; [autostart](AUTOSTART.md) |
 | Semester Sets | Core Features/Semesters, Desktop Features/Semesters and ProfileSnapshot; [semester ownership](SEMESTER-SETS.md) |
+| KRISS synchronization | Desktop Infrastructure/Time, WindowsResumeSignal and App composition; official NTP, no system clock mutation or persisted correction; [ADR 0024](adr/0024-kriss-application-clock-sync.md) |
 
 Repository paths in this table are relative to the corresponding project under `src/`.
 Tests mirror the feature areas under `tests/SchoolTimetableWidget.Tests/`.
@@ -122,6 +133,9 @@ schema, importer and recovery code are unchanged. Self-audit found no outstandin
 or contract conflict within this scope. No native input/rendering verification was performed.
 
 ## Resuming safely
+
+Future notifications must consume this same Application Clock. Their scheduling/dedup/resume/
+delivery milestone remains separate. Teacher Profile/Group stays FOUNDATION ONLY / DEFERRED.
 
 Read the contract/ADR for the feature, inspect current code/tests and check the working tree.
 Follow DEVELOPMENT for restore/build/test; use its fresh-checkout procedure to detect hidden

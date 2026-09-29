@@ -1,5 +1,9 @@
 # ADR 0004 — Application Time Source and KRISS Synchronization
 
+Follow-up: [ADR 0024](0024-kriss-application-clock-sync.md), accepted 2026-09-29, resolves
+the NTP endpoint, correction, runtime reference and synchronization lifecycle deferrals.
+The historical records below retain their original scope. Visible sync diagnostics remain deferred.
+
 Status: **Accepted**
 
 Date: 2026-09-08

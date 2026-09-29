@@ -27,7 +27,7 @@ dotnet test --no-build --logger "console;verbosity=normal"
 Run each command only after the preceding one succeeds. PowerShell users can check
 `$LASTEXITCODE`. The existing bootstrap below automates prerequisite checks and the same
 restore/build/test sequence with failure exit codes; no additional verify script is needed.
-The current baseline is 1,083 tests, not the historical Phase 0 zero-test run below.
+The KRISS implementation has 1,161 passing tests; native acceptance and baseline are in CONTINUITY.
 
 ## Run the desktop app
 
@@ -48,8 +48,14 @@ Reuse that same directory for restart tests. The DEBUG-only selector is ignored 
 It isolates profile, recovery files, window/tray state and font cache; it does not virtualize
 Windows or make native input safe in the background. Do not click autostart during ordinary
 storage-only smoke tests: OS registration remains an independent real side effect.
-Normal startup uses real PC fallback time. Optional preview flags identify synthetic/sample
-conditions in the title. Close the app via tray **종료** before rebuilding; X/Alt+F4 only hides it.
+Normal startup uses real PC fallback immediately and starts background KRISS NTP after showing
+the primary window/tray. Optional preview flags identify synthetic/sample
+conditions in the title and disable NTP. Close the app via tray **종료** before rebuilding; X/Alt+F4 only hides it.
+
+Optional independent network probe: `./scripts/probe-kriss-time.ps1`. It compiles actual production
+Time sources in a unique TEMP project and performs one bounded three-sample cycle. It reports
+DNS/packet/RTT/offset evidence or unavailable. No profile, UI or system time mutation is involved.
+Internet is never a test-suite dependency. Artifacts remain under the printed TEMP path.
 
 ## Independent committed-checkout gate
 

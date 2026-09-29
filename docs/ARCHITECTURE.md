@@ -24,6 +24,16 @@ section anchors are retained for evidence links.
 
 ## Architecture direction
 
+Current clock implementation (2026-09-29): Desktop Infrastructure/Time contains
+`SynchronizedApplicationClock` (atomic runtime UTC/monotonic anchor), `NtpPacket`/`NtpSample`
+(wire validation and coherent selection), `INtpNetwork`/`UdpNtpNetwork` (DNS/UDP), `NtpClient`
+(bounded cycle), and `ClockSynchronizationCoordinator` (single-flight schedule/lifetime).
+Core snapshot and feature calculations are unchanged. App shows the primary window/tray
+before starting the worker; WindowsResumeSignal isolates OS events. Hidden windows keep both
+refresh and synchronization alive. Exit/SessionEnding cancel without awaiting network timeouts.
+See [ADR 0024](adr/0024-kriss-application-clock-sync.md) and [policy/evidence](KRISS-TIME-SYNC.md).
+The Phase 0.2 section below describes the original foundation.
+
 - Feature-oriented 책임 경계로 기능별 변경을 작고 명확하게 유지한다.
 - Windows adapter를 명시적 platform boundary에 격리한다.
 - Persistence boundary에서 validation과 committed revision의 성공/실패를 다룬다.

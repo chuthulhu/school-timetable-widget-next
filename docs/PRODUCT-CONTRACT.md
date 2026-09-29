@@ -95,11 +95,11 @@ A1–A9, P1–P10 및 연결된 MATCH/COMPATIBLE/REDESIGN의 제품 수준 계�
 | A2 | APPROVED | 월~금 × 7교시 독립 35 cells, 초기 셀 병합 없음. 반복 문자열에서 병합 의도 추론 금지. import는 문자열 보존 | 향후 병합 요구가 생기면 새 metadata 기능으로 별도 검토 |
 | A3 | APPROVED | QR 기능 제외. 공유는 PC ↔ PC 파일 기반을 기본으로 함 | timetable/time 선택 공유 상세는 P10, 파일 format은 DEFERRED |
 | A4 | APPROVED | Current Status Header: 요일 헤더 위의 독립된 고정 높이 영역에 현재 시각 `HH:mm:ss`(24시간제)와 학교 시간 상태를 항상 함께 표시 | countdown 의미는 A7, 한국어 presentation text는 A8; font/layout 구현, Upcoming 보조 강조는 DEFERRED |
-| A5 | APPROVED | Application Clock / Standard Time Source: 공통 앱 시간원, KRISS 대한민국 표준시(KST) 우선, PC local time으로 즉시 시작 및 동기화 불가 시 fallback, Windows system clock 변경 금지 | endpoint/NTP/timeout/retry/resync/correction/monotonic 구현 및 test injection은 DEFERRED; [ADR 0004](adr/0004-application-time-source.md) |
+| A5 | APPROVED | Application Clock / Standard Time Source: 공통 앱 시간원, KRISS 대한민국 표준시(KST) 우선, PC local time으로 즉시 시작 및 초기 동기화 불가 시 fallback, Windows system clock 변경 금지 | [ADR 0004](adr/0004-application-time-source.md), 2026-09-29 [ADR 0024](adr/0024-kriss-application-clock-sync.md)로 NTP/monotonic/last-good/retry/resume 상세 확정 |
 | A6 | APPROVED | Current Status State Model: BeforeFirstPeriod, InPeriod, Break, AfterLastPeriod, Weekend의 정확히 5상태와 아래 current/next/transition 사실 계약 | 상태 사실과 A7 countdown 계산은 별도 책임; Core는 display string을 제공하지 않으며 UI는 별도 단계 |
 | A7 | APPROVED | Countdown Display Semantics: 초를 표시하지 않고 전체 남은 분을 floor; 양수 1분 미만은 LessThanMinute, 1시간 이상은 hours/minutes로 정규화, 0분 표시 없이 exact transition에 새 상태 사용 | 한국어 문자열 조합은 A8 Desktop presentation 책임; Header UI 미구현 |
 | A8 | APPROVED | Current Status Header Presentation Text: v1 한국어 단일 언어, CurrentTimeText/StatusText 분리, invariant `HH:mm:ss`, 아래 5상태 문구와 countdown 한국어 변환 | Core는 localized text를 소유하지 않음; 다국어 infrastructure는 현재 범위 밖, refresh lifecycle은 A9, Header XAML은 미구현 |
-| A9 | APPROVED | Current Status Header Refresh Lifecycle: 약 1초 DispatcherTimer, Start 즉시 refresh, cycle당 snapshot 1회와 동일 snapshot pipeline, 표시 ViewModel/loop 분리, missed tick replay 없음, 아래 Start/Stop/Dispose 계약 | Tray hide는 refresh 유지, Show 즉시 refresh (ADR 0020); suspend/resume detection은 DEFERRED |
+| A9 | APPROVED | Current Status Header Refresh Lifecycle: 약 1초 DispatcherTimer, Start 즉시 refresh, cycle당 snapshot 1회와 동일 snapshot pipeline, 표시 ViewModel/loop 분리, missed tick replay 없음, 아래 Start/Stop/Dispose 계약 | Tray hide는 refresh 유지, Show 즉시 refresh (ADR 0020); KRISS resume 재동기화는 ADR 0024, notification resume은 유보 |
 
 ## Approved Decisions — P1–P10
 

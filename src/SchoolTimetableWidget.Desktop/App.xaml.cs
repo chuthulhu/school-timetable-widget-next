@@ -18,7 +18,9 @@ namespace SchoolTimetableWidget.Desktop;
 /// <summary>Owns the single application clock and shared status refresh lifetime.</summary>
 public partial class App : Application
 {
-    internal IApplicationClock ApplicationClock { get; private set; } = new PcFallbackApplicationClock();
+    internal IApplicationClock ApplicationClock { get; private set; } =
+        new SynchronizedApplicationClock(new PcFallbackApplicationClock(), TimeProvider.System);
+    private ClockSynchronizationCoordinator? _clockSynchronization;
     private CurrentStatusRefreshLoop? _statusRefreshLoop;
     private JsonProfileStore? _profileStore;
     private WindowsSingleInstance? _instance;
@@ -112,6 +114,14 @@ public partial class App : Application
             _statusRefreshLoop.Start();
             MainWindow.Show();
             _instance!.Listen(Dispatcher, _trayLifecycle.Show);
+            if (!preview)
+            {
+                var clock = (SynchronizedApplicationClock)ApplicationClock;
+                _clockSynchronization = new ClockSynchronizationCoordinator(clock,
+                    new NtpClient(clock, TimeProvider.System, new UdpNtpNetwork(TimeProvider.System)),
+                    TimeProvider.System, new WindowsResumeSignal());
+                _ = _clockSynchronization.Start();
+            }
         }
         catch
         {
@@ -122,6 +132,7 @@ public partial class App : Application
 
     protected override void OnSessionEnding(SessionEndingCancelEventArgs e)
     {
+        _clockSynchronization?.Dispose();
         _trayLifecycle?.SessionEnding();
         base.OnSessionEnding(e);
         e.Cancel = false;
@@ -129,6 +140,7 @@ public partial class App : Application
 
     private void DisposeResources()
     {
+        _clockSynchronization?.Dispose();
         // Stop activation first; release ownership only after profile resources are closed.
         try { _instance?.StopListening(); }
         finally
