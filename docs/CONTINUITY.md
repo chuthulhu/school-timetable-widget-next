@@ -102,17 +102,24 @@ See [Persistence](PERSISTENCE.md), [ADR 0019](adr/0019-machine-local-window-plac
 
 ## Future teacher profiles and groups — deferred decision
 
-TeacherTimetableProfile is a future ownership concept with stable ProfileId, DisplayName
-and teacher timetable data. DisplayName is not identity. TimetableGroup would have stable
-GroupId, DisplayName and ProfileId references; one profile may belong to multiple groups,
-and groups do not duplicate timetable data. A future school importer may create/update
-several profiles with explicit identity mapping.
+**DEFERRED — FOUNDATION READY (2026-09-29); NOT IMPLEMENTED.**
+[Teacher Profile / Group Foundation](TEACHER-PROFILE-GROUP-FOUNDATION.md) and
+[ADR 0023](adr/0023-teacher-profile-group-ownership.md) now settle stable opaque
+ProfileId/GroupId, many-to-many ProfileId references and logical teacher timetable ownership
+by (ProfileId, SemesterId). School/semester schedules should not be duplicated per teacher.
 
-The exact ownership relation between teacher profiles, Semester Sets and school schedules
-has not been settled by the Product Contract. Do not infer a final hierarchy/schema diagram,
-add types/UI now, or bump v5 to v6 merely to reserve this boundary.
-See [Architecture](ARCHITECTURE.md#future-teacher-profiles-and-groups--2026-09-10)
-and the remaining-only [roadmap](FEATURE-MAP.md#remaining-work).
+The current product is still implicit single-teacher. Semester Sets remain completed;
+profile v5, backup v1, ActiveSemester semantics and all user-visible behavior are unchanged.
+Physical nesting, selection hierarchy/UX, global versus per-profile active semester and
+future migration/backup compatibility remain deferred. No implementation authorization,
+schema v6, migration code or speculative types are introduced by this foundation.
+
+Foundation verification (2026-09-29): `dotnet restore`, `dotnet build --no-restore` and
+`dotnet test --no-build --logger "console;verbosity=normal"` exited 0; 1,083 passed,
+0 failed/skipped, build warnings/errors 0. Changed-document local file/heading links and
+`git diff --check` passed. Diff scope is README/docs/ADR only: production source, tests,
+schema, importer and recovery code are unchanged. Self-audit found no outstanding P1/P2
+or contract conflict within this scope. No native input/rendering verification was performed.
 
 ## Resuming safely
 

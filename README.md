@@ -18,6 +18,9 @@ WPF + .NET 10 LTS + CommunityToolkit.Mvvm으로 개발 중이며, hosted runtime
 - 여러 줄 내용의 화면 맞춤, 창 위치/선호 크기 저장, tray 숨김/표시, 단일 인스턴스,
   명시적 Windows 자동 시작 등록. **X는 숨김, tray의 종료는 완전 종료**입니다.
 
+Teacher Profiles / Groups는 [foundation 문서](docs/TEACHER-PROFILE-GROUP-FOUNDATION.md)만 확정했으며
+구현은 **DEFERRED**입니다. 현재 제품은 implicit single-teacher로 동작합니다.
+
 정확한 구현/미구현 범위는 [Feature Map](docs/FEATURE-MAP.md),
 저장 데이터의 소유권은 [Continuity](docs/CONTINUITY.md)를 따릅니다.
 

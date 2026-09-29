@@ -37,8 +37,8 @@ Profile schema v1–v4 in older milestone records describes prior writers, not t
 
 | Feature | Status / remaining boundary |
 | --- | --- |
-| Teacher profiles/groups | FUTURE / NOT IMPLEMENTED; stable ProfileId/GroupId, references without data duplication; ownership relative to Semester Sets deferred |
-| Multi-teacher import | FUTURE; explicit creation/update mapping of several profiles, not current candidate selection into one Base week |
+| Teacher profiles/groups | DEFERRED — FOUNDATION READY / NOT IMPLEMENTED; stable IDs, many-to-many references and (ProfileId, SemesterId) logical ownership; [Foundation](TEACHER-PROFILE-GROUP-FOUNDATION.md), [ADR 0023](adr/0023-teacher-profile-group-ownership.md) |
+| Multi-teacher import | DEFERRED; future explicit creation/update mapping of several profiles and their relevant SemesterId timetables; current single-candidate Base import unchanged |
 | KRISS synchronization | PLANNED; endpoint/client/correction/retry/resync and sync UX deferred; PC fallback is implemented |
 | Suspend/resume integration | DEFERRED; OS detection and sync/notification behavior not implemented |
 | Class notifications | PLANNED; scheduling/dedup/resume and actual Windows delivery; first-close tray notice is a different feature |
@@ -56,7 +56,8 @@ Profile schema v1–v4 in older milestone records describes prior writers, not t
 
 No new implementation or schema change is authorized by this inventory.
 [Continuity future boundary](CONTINUITY.md#future-teacher-profiles-and-groups--deferred-decision)
-records the teacher/group constraints without deciding their future schema.
+records the approved logical ownership; physical schema and selection design remain deferred.
+Semester Sets remain COMPLETED; the teacher/group foundation adds no implemented feature.
 
 ## Clock/Status presentation — 2026-09-10
 

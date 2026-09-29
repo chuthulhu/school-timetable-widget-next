@@ -410,3 +410,12 @@ all inactive semesters and global settings. Old applications need not read v5.
 Atomic replacement, expected-byte guard, exclusive lease, degraded and Recovery Required semantics
 are unchanged. No semester mutation accesses machine-local settings or OS autostart.
 Verification is recorded in [Semester Sets](SEMESTER-SETS.md).
+
+## Future teacher ownership — foundation only, 2026-09-29
+
+The current portable profile aggregate remains implicit single-teacher, schema v5.
+[Foundation](TEACHER-PROFILE-GROUP-FOUNDATION.md) and [ADR 0023](adr/0023-teacher-profile-group-ownership.md)
+define future logical (ProfileId, SemesterId) timetable ownership without selecting physical
+JSON nesting. Lossless future migration assigns all existing semester-specific teacher
+weekly/date timetables to one implicit/default Teacher Profile. No schema v6, migration code,
+selected-teacher field, startup rewrite or current persistence change is introduced.

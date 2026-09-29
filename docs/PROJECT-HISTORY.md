@@ -33,3 +33,13 @@ The baseline commit is ef6c977abbfdd9725183614701bb90bc3c03a5a8.
 The continuity milestone updates documentation and one obsolete bootstrap status message only;
 application source, test expectations, dependencies and schema are unchanged.
 Its cleanup and clean-clone evidence are recorded in [Continuity verification](CONTINUITY-VERIFICATION.md).
+
+## Teacher Profile / Group foundation — 2026-09-29
+
+The docs-only milestone starting at 96081ff defines future identities, references and
+logical teacher/semester ownership in [Foundation](TEACHER-PROFILE-GROUP-FOUNDATION.md)
+and [ADR 0023](adr/0023-teacher-profile-group-ownership.md). Implementation remains DEFERRED;
+Semester Sets remain completed, and current source, schema v5 and backup v1 are unchanged.
+[Continuity](CONTINUITY.md) records the 1,083-test regression and documentation checks.
+Locate this milestone with `git log -- docs/adr/0023-teacher-profile-group-ownership.md`;
+the implementation baseline remains ef6c977.

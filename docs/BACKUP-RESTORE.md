@@ -159,3 +159,11 @@ snapshot, whole rollback and Recovery Required preserve every semester and the a
 Display is restored globally; viewed week is preserved. Font cache/window/tray/autostart remain
 excluded. The 4 MiB backup bound and standalone .stwpreset contract remain unchanged.
 [Semester verification](SEMESTER-SETS.md) records migration and all-semester recovery evidence.
+
+## Future teacher coverage — foundation only, 2026-09-29
+
+[Foundation](TEACHER-PROFILE-GROUP-FOUNDATION.md) requires future Full Profile Backup, once
+multi-teacher support is implemented, to include all profiles, groups and semester-specific
+teacher timetable data alongside other portable inputs. Schema/backup compatibility belongs
+to that future migration milestone. Current .stwbackup v1, embedded profile v5 exports,
+v4/v5 reads, whole-profile recovery and machine-local exclusions remain unchanged.

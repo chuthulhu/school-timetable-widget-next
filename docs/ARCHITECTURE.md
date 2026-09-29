@@ -874,38 +874,20 @@ parse/validation no partial modification, all-or-nothing Apply를 지킨다.
 
 ## Future teacher profiles and groups — 2026-09-10
 
-Current boundary (reviewed 2026-09-29): still NOT IMPLEMENTED. TeacherTimetableProfile
-would have stable ProfileId, DisplayName and a timetable ownership boundary.
-TimetableGroup would have stable GroupId, DisplayName and ProfileId references.
-DisplayName is never identity; membership may be many-to-many without copying timetable data.
-The exact relationship to current Semester Sets and school schedules is a deferred product
-decision. The examples below are not an approved final hierarchy.
-No schema v6, UI or model implementation follows from documenting this boundary.
+Current boundary updated 2026-09-29: **DEFERRED — FOUNDATION READY; NOT IMPLEMENTED**.
+[Foundation](TEACHER-PROFILE-GROUP-FOUNDATION.md) and
+[ADR 0023](adr/0023-teacher-profile-group-ownership.md) define stable opaque ProfileId and
+GroupId, label-independent identity, many-to-many membership by reference, and teacher
+WeeklyTimetable/date timetable ownership by (ProfileId, SemesterId). Group deletion does
+not delete profiles or their data. School/semester base and date PeriodSchedules should
+not be unnecessarily copied per teacher.
 
-**FUTURE REQUIREMENT — NOT IMPLEMENTED.** 현재 Editing Foundation scope는 확대하지 않는다.
-향후 여러 교사 timetable profile을 저장하고 `3학년 담임`, `과학교사`, `내가 자주 확인하는 교사`
-같은 그룹 안에서 교사별 탭으로 전환하여 볼 수 있어야 한다.
-
-- WeeklyTimetable 자체에는 teacher/group 개념을 넣지 않는다. 상위 소유 개념으로
-  `TeacherTimetableProfile`(예: stable ProfileId, DisplayName, WeeklyTimetable)을 둘 수 있다.
-  이 명칭/필드 예시는 future design 방향이며 이번에 타입을 생성하지 않는다.
-- DisplayName은 identity/key가 아니다. 동명이인과 이름 변경을 위해 stable profile identity를 사용한다.
-- TimetableGroup은 timetable data를 복제하지 않고 teacher profile reference를 보유한다.
-  동일 profile은 여러 group에 동시에 속할 수 있다(예: 3학년 담임 + 과학교사).
-- 학교 importer가 여러 teacher row-pair를 감지하면, 향후 한 번의 import에서 여러 profile을
-  선택적으로 생성/갱신하는 구조를 고려한다. 후보 label/이름 의미로 identity를 추정하지 않는다.
-  생성/기존 stable profile mapping 및 update 선택 UX는 후속 설계이며 multi-import 구현은 없다.
-- DateOnly timetable override는 향후 teacher profile별로 적용할 수 있어야 한다.
-  교사의 특정일 수업 변경과 학교의 특정일 PeriodSchedule/일과 변경은 별개 concern이다.
-  Timetable override와 schedule override를 같은 데이터로 합치지 않는다.
-- 선택된 teacher profile의 effective timetable + 해당 날짜의 effective period schedule을
-  같은 IApplicationClock snapshot/date에서 resolve하여 Header/Current Highlight 등에서
-  일관되게 소비한다. 기존 future effective-day configuration 원칙과 결합한다.
-- Persistence 설계는 앱에 WeeklyTimetable 하나만 존재한다는 schema/coupling을 만들지 않는다.
-  현재 canonical cell value와 edit session은 profile/group과 독립적이며, 명시적 weekly 소유자
-  adapter는 앱 전체 singleton을 뜻하지 않는다. 새 profile selection service는 구현하지 않는다.
-- 이번 milestone에 TeacherTimetableProfile, TimetableGroup, multi-tab UI,
-  multi-teacher persistence/import, group comparison UI를 추가하지 않는다.
+Current SemesterSet/ProfileSnapshot and v5 DTOs remain the valid implicit single-teacher
+implementation. WeeklyTimetable values and importer candidate labels carry no teacher
+identity. The future logical boundary does not dictate JSON nesting, selection hierarchy,
+per-profile/global active semester, new types or a refactor. Future effective resolution
+continues to use the common Application Clock snapshot. Teacher/group UI and multi-profile
+import implementation remain deferred; no earlier tab example fixes MainWindow UX.
 
 ## Bulk Timetable Input — implementation, 2026-09-10
 

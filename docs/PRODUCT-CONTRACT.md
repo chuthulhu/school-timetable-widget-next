@@ -1038,3 +1038,24 @@ state remain separate. v1-v4 profiles load as one neutral 기본 학기 without 
 next successful save writes v5. All semesters must validate or the whole profile degrades.
 Backup envelope v1 carries embedded profile v5 and all semesters/active ID; old v1/v4 backups
 remain restorable. Full restore/rollback/recovery preserve the entire collection and global data.
+
+## Teacher Profile / Group foundation — approved 2026-09-29
+
+**FOUNDATION ONLY / IMPLEMENTATION DEFERRED.** The explicit foundation-only milestone and
+[ADR 0023](adr/0023-teacher-profile-group-ownership.md) approve the minimum future contract in
+[Teacher Profile / Group Foundation](TEACHER-PROFILE-GROUP-FOUNDATION.md).
+TeacherTimetableProfile uses stable opaque ProfileId independent of DisplayName;
+TimetableGroup uses stable opaque GroupId and ProfileId references with many-to-many membership.
+Rename preserves identity/membership; group deletion does not delete profiles or timetables.
+Teacher-specific weekly/date timetables belong logically to (ProfileId, SemesterId).
+Base/date PeriodSchedules have school/semester meaning and should not be duplicated per teacher.
+
+Current v5 SemesterSet ownership and ActiveSemester semantics remain valid and unchanged.
+The product still has an implicit single teacher, with no default-teacher UI. Physical JSON
+nesting, selector hierarchy/UX, selected-profile persistence, per-profile/global active semester
+and future schema/backup compatibility remain deferred. Future migration must preserve all
+existing teacher timetable data across every semester under one implicit/default profile;
+future full backups include all profiles, groups and semester-specific teacher timetable data.
+Future school-wide import can create/update multiple profiles and their relevant semester
+weeks with explicit identity mapping; current importer behavior stays unchanged.
+No schema v6, migration, UI, importer, backup change or speculative code is authorized here.

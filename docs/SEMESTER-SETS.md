@@ -291,3 +291,12 @@ stw-semester-approved-tests.log. Source changes are the same ones reviewed nativ
 changes only document observations. Final self-audit found no outstanding P1/P2 in this scope.
 The user's conditional ordinary main commit/push authorization is satisfied; no force push,
 other branch, remote/system/credential change is authorized or required.
+
+## Future teacher boundary — foundation only, 2026-09-29
+
+Semester Sets remain **COMPLETED** and the current v5 ownership/ActiveSemester behavior is
+unchanged. [Foundation](TEACHER-PROFILE-GROUP-FOUNDATION.md) and
+[ADR 0023](adr/0023-teacher-profile-group-ownership.md) define future teacher timetable ownership
+by (ProfileId, SemesterId), retaining stable SemesterId and school/semester schedule meaning.
+This does not require refactoring today's valid single-teacher SemesterSet. Teacher Profiles /
+Groups remain DEFERRED; physical nesting and selection design are future decisions.

@@ -28,3 +28,4 @@ Current delivery: [Feature Map](../FEATURE-MAP.md).
 | [ADR 0020 — Close-to-tray, explicit exit and session single instance](0020-tray-lifecycle-single-instance.md) | Accepted |
 | [ADR 0021 — Per-user Windows autostart registration](0021-per-user-windows-autostart.md) | Accepted |
 | [ADR 0022 — Semester ownership and active semester](0022-semester-ownership.md) | Accepted |
+| [ADR 0023 — Teacher profile/group future ownership boundary](0023-teacher-profile-group-ownership.md) | Accepted — foundation only; implementation deferred |

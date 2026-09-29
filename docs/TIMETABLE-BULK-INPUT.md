@@ -271,3 +271,12 @@ normal shutdown. This was a diagnostic comparison issue, not an app failure.
 - Both automatic and required limited native gates are satisfied. The user's
   original authorization permits committing this milestone and a normal
   fast-forward push to origin/main. No force push or configuration change allowed.
+
+## Current semester target and future teachers — 2026-09-29
+
+Current Apply targets one captured active-semester Base week, as implemented by
+[Semester Sets](SEMESTER-SETS.md). Candidate labels remain display-only; selecting a teacher
+row pair does not create a Teacher Profile. Parser, UI and Apply behavior are unchanged.
+[Foundation](TEACHER-PROFILE-GROUP-FOUNDATION.md) records only the future boundary for creating/
+updating several profiles and their relevant SemesterId timetables with explicit identity
+mapping. Multi-profile import and its UX remain DEFERRED.
