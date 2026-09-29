@@ -16,6 +16,7 @@ public sealed class WeeklyTimetableEditor
     public CellEditSession BeginEdit(TimetableCellViewModel cell)
     {
         if (ActiveSession is not null) throw new InvalidOperationException("A cell edit is already open.");
+        var semesterId = _owner.GetSemesterId?.Invoke();
         var slot = _owner.GetSlot(cell);
         CellEditSession session;
         var label = $"{_owner.WeekdayHeaders[(int)slot.Day]}요일 {slot.PeriodNumber}교시";
@@ -28,7 +29,7 @@ public sealed class WeeklyTimetableEditor
         {
             var baseline = _owner.CommittedTimetable[slot.Day, slot.PeriodNumber];
             session = new CellEditSession($"편집 대상: 기본 시간표\n{label}", baseline.Value,
-                value => _owner.TryCommitCell(baseline, value), () => _owner.CommitError);
+                value => semesterId == _owner.GetSemesterId?.Invoke() && _owner.TryCommitCell(baseline, value), () => _owner.CommitError);
         }
         ActiveSession = session;
         session.Completed += OnCompleted;

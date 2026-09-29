@@ -361,3 +361,12 @@ IMPLEMENTED — 1,032/1,032 automated tests passed; user native UX approved.
 Tray checkbox explicitly manages one per-user HKCU Run value; default OFF, explicit stale
 repair, normal visible startup and existing single instance. No portable-data changes or
 installer/updater. [Autostart](AUTOSTART.md), [ADR 0021](adr/0021-per-user-windows-autostart.md).
+
+## Semester Sets — 2026-09-18
+
+Implemented; 1,083/1,083 automated tests passed, warnings/errors 0; user native UX approved 2026-09-29. This supersedes the earlier
+Semester Sets PLANNED rows. Stable semester identity, ordered library/active selection, create
+with optional base copy, rename and protected inactive delete; scoped edits/import/overrides;
+v5 persistence, v1-v4 migration and whole-library backup/restore. Global display/lunch and
+machine-local window/tray/autostart remain independent. No multi-teacher/date ranges/auto-selection.
+[ADR 0022](adr/0022-semester-ownership.md), [current evidence](SEMESTER-SETS.md).

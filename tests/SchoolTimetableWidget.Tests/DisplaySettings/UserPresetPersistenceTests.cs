@@ -38,9 +38,9 @@ public class UserPresetPersistenceTests
         expected.Remove("display");
         Assert.Null(profile.SaveLunch(profile.Current.ShowLunch));
         var saved = JsonNode.Parse(File.ReadAllBytes(temp.File))!;
-        Assert.Equal(4, saved["schemaVersion"]!.GetValue<int>());
+        Assert.Equal(5, saved["schemaVersion"]!.GetValue<int>());
         var actualProfile = saved["profile"]!.AsObject(); actualProfile.Remove("display"); actualProfile.Remove("displayPresets");
-        Assert.True(JsonNode.DeepEquals(expected, actualProfile));
+        Assert.True(JsonNode.DeepEquals(expected, Semesters.SemesterTests.LegacyFields(actualProfile)));
     }
     [Fact]
     public void ApplyRestartSelectAndResetRestoreExactPayloadAndKeepMissingFontIdentity()

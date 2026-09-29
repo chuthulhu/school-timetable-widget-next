@@ -7,10 +7,11 @@ public sealed class PeriodScheduleEditor(RuntimePeriodSchedule target, Action re
 {
     public PeriodScheduleEditSession CreateSession()
     {
+        var semesterId = target.GetSemesterId?.Invoke();
         var baseline = target.Current;
         return new(baseline, candidate =>
         {
-            if (!target.TryReplace(baseline, candidate)) return false;
+            if (semesterId != target.GetSemesterId?.Invoke() || !target.TryReplace(baseline, candidate)) return false;
             refreshAfterApply();
             return true;
         }, () => target.CommitError);

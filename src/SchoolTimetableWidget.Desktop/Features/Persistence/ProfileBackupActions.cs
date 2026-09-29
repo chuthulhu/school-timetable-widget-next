@@ -114,8 +114,8 @@ public sealed class ProfileBackupActions(ProfileRuntime runtime, IApplicationClo
         var configurations = new[] { candidate.Display }.Concat(candidate.DisplayPresets.Items.Select(p => p.Display));
         var fonts = configurations.SelectMany(d => new[] { d.Time.Font, d.Date.Font, d.Weekday.Font, d.Status.Font }).Distinct();
         var lines = fonts.Select(font => font.Family + " — " + new PresetImportFont("", font, runtime.Display.Fonts.IsAvailable(font)).Status);
-        return $"이 백업에는 다음 데이터가 있습니다.\n\n기본 시간표: 35칸\n기본 일과: 7교시\n날짜별 변경: {candidate.Overrides.Count}일\n사용자 프리셋: {candidate.DisplayPresets.Items.Count}개\n표시 스타일: {style}\n점심시간 표시: {(candidate.ShowLunch ? "켬" : "끔")}\n\n글꼴(표시 설정과 모든 프리셋):\n" +
-            string.Join("\n", lines) + "\n\n온라인 글꼴은 자동 다운로드하지 않습니다. 필요한 글꼴은 표시 설정에서 다운로드할 수 있습니다.\n\n현재 데이터를 이 백업으로 교체합니다. 현재 보고 있는 주는 유지됩니다.";
+        return $"이 백업에는 다음 데이터가 있습니다.\n\n학기: {candidate.SemesterSets.Count}개\n현재 학기: {candidate.ActiveSemester.DisplayName}\n기본 시간표: 학기마다 35칸\n기본 일과: 학기마다 7교시\n날짜별 변경: 전체 {candidate.SemesterSets.Sum(s => s.Overrides.Count)}일\n사용자 프리셋: {candidate.DisplayPresets.Items.Count}개\n표시 스타일: {style}\n점심시간 표시: {(candidate.ShowLunch ? "켬" : "끔")}\n\n글꼴(표시 설정과 모든 프리셋):\n" +
+            string.Join("\n", lines) + "\n\n온라인 글꼴은 자동 다운로드하지 않습니다. 필요한 글꼴은 표시 설정에서 다운로드할 수 있습니다.\n\n현재의 모든 학기와 공통 설정을 이 백업으로 교체합니다. 현재 보고 있는 주는 유지됩니다.";
     }
     private void Run(Action action)
     {

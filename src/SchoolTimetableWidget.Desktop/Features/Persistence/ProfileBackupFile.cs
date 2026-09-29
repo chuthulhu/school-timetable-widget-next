@@ -23,7 +23,7 @@ public static class ProfileBackupFile
     public static byte[] Export(ProfileSnapshot committed)
     {
         using var profile = JsonDocument.Parse(ProfileJson.Serialize(committed));
-        var bytes = JsonSerializer.SerializeToUtf8Bytes(new Envelope(Version, 4, profile.RootElement.GetProperty("profile")), Options);
+        var bytes = JsonSerializer.SerializeToUtf8Bytes(new Envelope(Version, 5, profile.RootElement.GetProperty("profile")), Options);
         if (bytes.Length > MaximumBytes) throw new InvalidDataException("백업 데이터가 파일 크기 제한(4 MiB)을 초과합니다.");
         _ = Import(bytes);
         return bytes;
@@ -36,12 +36,12 @@ public static class ProfileBackupFile
         try
         {
             var envelope = JsonSerializer.Deserialize<Envelope>(bytes, Options) ?? throw new JsonException();
-            if (envelope.BackupFileVersion != Version || envelope.ProfileSchemaVersion != 4)
+            if (envelope.BackupFileVersion != Version || envelope.ProfileSchemaVersion is not (4 or 5))
                 throw new InvalidDataException("이 버전의 앱에서 지원하지 않는 백업 파일입니다.");
             using var output = new MemoryStream();
             using (var writer = new Utf8JsonWriter(output))
             {
-                writer.WriteStartObject(); writer.WriteNumber("schemaVersion", 4);
+                writer.WriteStartObject(); writer.WriteNumber("schemaVersion", envelope.ProfileSchemaVersion);
                 writer.WritePropertyName("profile"); envelope.Profile.WriteTo(writer); writer.WriteEndObject();
             }
             return ProfileJson.Deserialize(output.ToArray());

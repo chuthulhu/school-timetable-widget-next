@@ -8,6 +8,7 @@ public sealed record EffectiveDayConfiguration
     internal EffectiveDayConfiguration(DateOnly date, WeeklyTimetable timetable,
         PeriodSchedule schedule, DateSpecificOverride? dateOverride)
     { Date = date; Timetable = timetable; Schedule = schedule; DateOverride = dateOverride; }
+    public Guid? SemesterId { get; init; }
     public DateOnly Date { get; }
     public WeeklyTimetable Timetable { get; }
     public PeriodSchedule Schedule { get; }

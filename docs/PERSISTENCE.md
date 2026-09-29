@@ -378,3 +378,19 @@ Autostart is machine/user-specific OS registration, not a persisted boolean. Pro
 registration. Degraded/Recovery Required blocks remain while the independent tray toggle works;
 no profile save, recovery marker removal or snapshot update results. Hidden is runtime-only.
 [Autostart](AUTOSTART.md), [ADR 0021](adr/0021-per-user-windows-autostart.md).
+
+## Schema v5 semesters — 2026-09-18
+
+[ADR 0022](adr/0022-semester-ownership.md) supersedes the v4 writer. profile contains semesterSets,
+activeSemesterId, presentation, display and displayPresets. Each semester contains semesterId,
+displayName, timetable, periodSchedule and dateOverrides using the prior exact cell/date/time
+representations. Creation order is persisted; IDs/names must be unique and active ID must exist.
+All semesters validate before any I/O; malformed inactive data rejects the entire profile.
+
+Strict v1-v4 readers preserve their prior field rules and upgrade only in memory to one neutral
+기본 학기. Default/migrated single data uses one deterministic nonempty ID; newly created semesters
+use fresh GUIDs. Startup does not rewrite. Any successful subsequent save writes v5 and preserves
+all inactive semesters and global settings. Old applications need not read v5.
+Atomic replacement, expected-byte guard, exclusive lease, degraded and Recovery Required semantics
+are unchanged. No semester mutation accesses machine-local settings or OS autostart.
+Verification is recorded in [Semester Sets](SEMESTER-SETS.md).

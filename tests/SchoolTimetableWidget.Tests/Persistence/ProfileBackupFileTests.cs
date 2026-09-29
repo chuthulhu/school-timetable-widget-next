@@ -37,7 +37,7 @@ public class ProfileBackupFileTests
         var root = JsonNode.Parse(bytes)!;
         Assert.Equal(new[] { "backupFileVersion", "profileSchemaVersion", "profile" }, root.AsObject().Select(p => p.Key));
         Assert.Equal(1, root["backupFileVersion"]!.GetValue<int>());
-        Assert.Equal(4, root["profileSchemaVersion"]!.GetValue<int>());
+        Assert.Equal(5, root["profileSchemaVersion"]!.GetValue<int>());
     }
 
     [Theory]
@@ -60,7 +60,7 @@ public class ProfileBackupFileTests
     {
         var root = JsonNode.Parse(ProfileBackupFile.Export(Sample()))!;
         var profile = root["profile"]!;
-        Assert.Equal(new[] { "timetable", "periodSchedule", "dateOverrides", "presentation", "display", "displayPresets" },
+        Assert.Equal(new[] { "semesterSets", "activeSemesterId", "presentation", "display", "displayPresets" },
             profile.AsObject().Select(p => p.Key));
         var text = root.ToJsonString();
         foreach (var forbidden in new[] { "currentTime", "currentStatus", "countdown", "highlight", "viewedWeek",
@@ -89,11 +89,11 @@ public class ProfileBackupFileTests
             case "empty": bytes = []; break;
             case "oversized": bytes = new byte[ProfileBackupFile.MaximumBytes + 1]; break;
             case "future": node["backupFileVersion"] = 2; break;
-            case "profileVersion": node["profileSchemaVersion"] = 5; break;
+            case "profileVersion": node["profileSchemaVersion"] = 6; break;
             case "missing": profile.AsObject().Remove("presentation"); break;
-            case "timetable": profile["timetable"]!.AsArray().RemoveAt(0); break;
-            case "period": profile["periodSchedule"]![0]!["end"] = "10:30:00.0000000"; break;
-            case "override": profile["dateOverrides"]![0]!["date"] = "2026-02-30"; break;
+            case "timetable": profile["semesterSets"]![0]!["timetable"]!.AsArray().RemoveAt(0); break;
+            case "period": profile["semesterSets"]![0]!["periodSchedule"]![0]!["end"] = "10:30:00.0000000"; break;
+            case "override": profile["semesterSets"]![0]!["dateOverrides"]![0]!["date"] = "2026-02-30"; break;
             case "display": profile["display"]!["settings"]!["time"]!["size"] = 1000; break;
             case "font": profile["display"]!["settings"]!["time"]!["font"]!["familyId"] = "unknown"; break;
             case "duplicateId": profile["displayPresets"]!.AsArray().Add(profile["displayPresets"]![0]!.DeepClone()); break;

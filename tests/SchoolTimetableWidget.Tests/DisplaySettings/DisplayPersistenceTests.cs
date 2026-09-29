@@ -32,17 +32,17 @@ public class DisplayPersistenceTests
             Assert.True(profile.LoadResult.CanWrite); Assert.Empty(profile.LoadResult.Notice);
             Assert.Equal(DisplayPresets.Create(DisplayPreset.Standard), profile.Current.Display);
             var expected = JsonNode.Parse(original)!["profile"];
-            var restored = JsonNode.Parse(ProfileJson.Serialize(profile.Current))!["profile"]!;
+            var restored = Semesters.SemesterTests.LegacyFields(JsonNode.Parse(ProfileJson.Serialize(profile.Current))!["profile"]!);
             restored.AsObject().Remove("display");
             restored.AsObject().Remove("displayPresets");
             Assert.True(JsonNode.DeepEquals(expected, restored)); // all cells, schedules, dates, lunch and precision
             Assert.Equal(original, File.ReadAllBytes(temp.File)); Assert.Equal(modified, File.GetLastWriteTimeUtc(temp.File));
             Assert.Null(profile.SaveDisplay(DisplayPresets.Create(DisplayPreset.Digital)));
             var saved = JsonNode.Parse(File.ReadAllBytes(temp.File))!;
-            Assert.Equal(4, saved["schemaVersion"]!.GetValue<int>());
+            Assert.Equal(5, saved["schemaVersion"]!.GetValue<int>());
             saved["profile"]!.AsObject().Remove("display");
             saved["profile"]!.AsObject().Remove("displayPresets");
-            Assert.True(JsonNode.DeepEquals(expected, saved["profile"]));
+            Assert.True(JsonNode.DeepEquals(expected, Semesters.SemesterTests.LegacyFields(saved["profile"]!)));
         }
         using var restart = new JsonProfileStore(temp.Directory);
         Assert.Equal(DisplayPreset.Digital, restart.Load().Snapshot.Display.Preset.BuiltIn);

@@ -6,6 +6,7 @@ namespace SchoolTimetableWidget.Desktop.Features.PeriodScheduleEditing;
 public sealed class RuntimePeriodSchedule
 {
     private readonly Func<PeriodSchedule, string?>? _persist;
+    public Func<Guid>? GetSemesterId { get; set; }
     public string? CommitError { get; private set; }
     public RuntimePeriodSchedule(PeriodSchedule initial, Func<PeriodSchedule, string?>? persist = null)
     {

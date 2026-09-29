@@ -31,7 +31,7 @@ public class ProfileBackupViewTests
         var source = Path.Combine(temp.Directory, "input.stwbackup"); var backup = ProfileBackupFile.Export(ProfileBackupFileTests.Sample()); File.WriteAllBytes(source, backup);
         var before = File.ReadAllBytes(temp.File); var dialogs = new Dialogs { Path = source, Confirm = confirm };
         var actions = new ProfileBackupActions(runtime, Clock(), dialogs); actions.Restore();
-        Assert.Contains("현재 데이터를 이 백업으로 교체", dialogs.Summary); Assert.Contains("다운로드 필요", dialogs.Summary);
+        Assert.Contains("현재의 모든 학기와 공통 설정을 이 백업으로 교체", dialogs.Summary); Assert.Contains("다운로드 필요", dialogs.Summary);
         Assert.Contains("35칸", dialogs.Summary); Assert.Contains("7교시", dialogs.Summary);
         Assert.Equal(backup, File.ReadAllBytes(source)); Assert.False(Directory.Exists(Path.Combine(temp.Directory, "fonts")));
         if (!confirm) { Assert.Equal(before, File.ReadAllBytes(temp.File)); Assert.Equal(0, refreshes); }
@@ -82,7 +82,7 @@ public class ProfileBackupViewTests
         {
             "malformed" => "{"u8.ToArray(),
             "unsupported" => MutateBackup(root => root["backupFileVersion"] = 500),
-            "semantic" => MutateBackup(root => root["profile"]!["periodSchedule"]![0]!["end"] = "10:30:00.0000000"),
+            "semantic" => MutateBackup(root => root["profile"]!["semesterSets"]![0]!["periodSchedule"]![0]!["end"] = "10:30:00.0000000"),
             _ => throw new ArgumentOutOfRangeException(nameof(kind))
         };
         File.WriteAllBytes(input, inputBytes);

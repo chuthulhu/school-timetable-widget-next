@@ -1,5 +1,6 @@
 using SchoolTimetableWidget.Desktop.Features.DisplaySettings;
 using System.Globalization;
+using SchoolTimetableWidget.Core.Features.Semesters;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 using SchoolTimetableWidget.Core.Features.Periods;
@@ -24,13 +25,9 @@ public static class ProfileJson
 
     public static byte[] Serialize(ProfileSnapshot value)
     {
-        var document = new Document(4, new Profile(
-            value.Timetable.Cells.Select(Cell.From).ToArray(), Period.From(value.Schedule),
-            value.Overrides.Select(e => new Override(
-                e.Date.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture),
-                e.Timetable is null ? null : e.Timetable.Values.Select((v, i) => new Cell(e.Day.ToString(), i + 1, v.SubjectText, v.ClassText)).ToArray(),
-                e.Schedule is null ? null : Period.From(e.Schedule))).ToArray(), new Presentation(value.ShowLunch), DisplayV3.From(value.Display),
-                value.DisplayPresets.Items.Select(UserPreset.From).ToArray()));
+        var document = new DocumentV5(5, new ProfileV5(value.SemesterSets.Select(Semester.From).ToArray(),
+            value.ActiveSemesterId.ToString("D"), new Presentation(value.ShowLunch), DisplayV3.From(value.Display),
+            value.DisplayPresets.Items.Select(UserPreset.From).ToArray()));
         var bytes = JsonSerializer.SerializeToUtf8Bytes(document, Options);
         // Validate the complete storage document before any file I/O.
         _ = Deserialize(bytes);
@@ -42,6 +39,14 @@ public static class ProfileJson
         using var json = JsonDocument.Parse(bytes.ToArray(), new JsonDocumentOptions { AllowDuplicateProperties = false });
         if (!json.RootElement.TryGetProperty("schemaVersion", out var version) || !version.TryGetInt32(out var number))
             throw new JsonException("Missing schema version.");
+        if (number == 5)
+        {
+            var current = JsonSerializer.Deserialize<DocumentV5>(bytes, Options) ?? throw new JsonException("Null document.");
+            var p = current.Profile;
+            return new(p.SemesterSets.Select(e => e is null ? throw new JsonException("Null semester.") : e.ToDomain()),
+                ParseId(p.ActiveSemesterId), p.Presentation.ShowLunchBetweenPeriods4And5, p.Display.ToValue(),
+                new UserDisplayPresetLibrary(p.DisplayPresets.Select(e => e is null ? throw new JsonException("Null preset.") : e.ToValue())));
+        }
         if (number is not (1 or 2 or 3 or 4)) throw new UnsupportedProfileVersionException();
         var document = number switch
         {
@@ -51,11 +56,18 @@ public static class ProfileJson
             _ => JsonSerializer.Deserialize<Document>(bytes, Options) ?? throw new JsonException("Null document.")
         };
         var profile = document.Profile;
-        if (profile.Timetable.Any(c => c is null) || profile.DateOverrides.Any(e => e is null))
-            throw new JsonException("Null array entry.");
-        var week = new WeeklyTimetable(profile.Timetable.Select(c => c.ToDomain()));
-        var schedule = Period.ToDomain(profile.PeriodSchedule);
-        var overrides = profile.DateOverrides.Select(entry =>
+        var semester = ReadSemester(ProfileSnapshot.DefaultSemesterId, "기본 학기", profile.Timetable, profile.PeriodSchedule, profile.DateOverrides);
+        return new([semester], semester.SemesterId, profile.Presentation.ShowLunchBetweenPeriods4And5, profile.Display.ToValue(),
+            new UserDisplayPresetLibrary(profile.DisplayPresets.Select(p => p is null
+                ? throw new JsonException("Null user preset.") : p.ToValue())));
+    }
+
+    private static SemesterSet ReadSemester(Guid id, string name, Cell[] timetable, Period[] periods, Override[] dateOverrides)
+    {
+        if (timetable.Any(c => c is null) || dateOverrides.Any(e => e is null)) throw new JsonException("Null array entry.");
+        var week = new WeeklyTimetable(timetable.Select(c => c.ToDomain()));
+        var schedule = Period.ToDomain(periods);
+        var overrides = dateOverrides.Select(entry =>
         {
             var date = DateOnly.ParseExact(entry.Date, "yyyy-MM-dd", CultureInfo.InvariantCulture);
             DayTimetable? day = null;
@@ -70,9 +82,19 @@ public static class ProfileJson
             }
             return new DateSpecificOverride(date, day, entry.PeriodSchedule is null ? null : Period.ToDomain(entry.PeriodSchedule));
         });
-        return new(week, schedule, overrides, profile.Presentation.ShowLunchBetweenPeriods4And5, profile.Display.ToValue(),
-            new UserDisplayPresetLibrary(profile.DisplayPresets.Select(p => p is null
-                ? throw new JsonException("Null user preset.") : p.ToValue())));
+        return new(id, name, week, schedule, overrides);
+    }
+    private sealed record DocumentV5(int SchemaVersion, ProfileV5 Profile);
+    private sealed record ProfileV5(Semester[] SemesterSets, string ActiveSemesterId,
+        Presentation Presentation, DisplayV3 Display, UserPreset[] DisplayPresets);
+    private sealed record Semester(string SemesterId, string DisplayName, Cell[] Timetable, Period[] PeriodSchedule, Override[] DateOverrides)
+    {
+        public static Semester From(SemesterSet value) => new(value.SemesterId.ToString("D"), value.DisplayName,
+            value.Timetable.Cells.Select(Cell.From).ToArray(), Period.From(value.Schedule),
+            value.Overrides.Select(e => new Override(e.Date.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture),
+                e.Timetable is null ? null : e.Timetable.Values.Select((v, i) => new Cell(e.Day.ToString(), i + 1, v.SubjectText, v.ClassText)).ToArray(),
+                e.Schedule is null ? null : Period.From(e.Schedule))).ToArray());
+        public SemesterSet ToDomain() => ReadSemester(ParseId(SemesterId), DisplayName, Timetable, PeriodSchedule, DateOverrides);
     }
 
     private sealed record Document(int SchemaVersion, Profile Profile);

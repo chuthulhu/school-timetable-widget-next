@@ -29,6 +29,8 @@ public sealed class TimetableImportSession : ObservableObject
         CancelCommand = new RelayCommand(Cancel);
     }
 
+    public string TargetSemesterName { get; init; } = "기본 학기";
+    public string TargetLabel => "대상 학기: " + TargetSemesterName;
     public TimetableImportMode Mode { get; }
     public string ModeLabel => Mode == TimetableImportMode.School ? "학교 시간표 가져오기" : "표준 양식 가져오기";
     public bool IsSchool => Mode == TimetableImportMode.School;

@@ -13,6 +13,7 @@ public sealed class RuntimeDateOverrides
         _persist = persist;
         foreach (var entry in initial ?? []) _entries.Add(entry.Date, entry);
     }
+    public Func<Guid>? GetSemesterId { get; set; }
     public string? CommitError { get; private set; }
     public DateSpecificOverride? Get(DateOnly date) => _entries.GetValueOrDefault(date);
 

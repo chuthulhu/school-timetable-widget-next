@@ -70,12 +70,12 @@ public class FontCatalogTests
         Assert.Equal(bytes, File.ReadAllBytes(temp.File)); Assert.Equal(modified, File.GetLastWriteTimeUtc(temp.File));
         var before = session.Current;
         Assert.Null(session.SaveLunch(before.ShowLunch));
-        var saved = File.ReadAllBytes(temp.File); Assert.Equal(4, JsonNode.Parse(saved)!["schemaVersion"]!.GetValue<int>());
+        var saved = File.ReadAllBytes(temp.File); Assert.Equal(5, JsonNode.Parse(saved)!["schemaVersion"]!.GetValue<int>());
         var after = ProfileJson.Deserialize(saved);
         Assert.Equal(before.Display, after.Display); Assert.Equal(before.DisplayPresets.Items, after.DisplayPresets.Items);
         var expected = JsonNode.Parse(bytes)!["profile"]!.AsObject(); expected.Remove("display"); expected.Remove("displayPresets");
         var actual = JsonNode.Parse(saved)!["profile"]!.AsObject(); actual.Remove("display"); actual.Remove("displayPresets");
-        Assert.True(JsonNode.DeepEquals(expected, actual));
+        Assert.True(JsonNode.DeepEquals(expected, Semesters.SemesterTests.LegacyFields(actual)));
     }
     [Theory]
     [InlineData(2)] [InlineData(3)]

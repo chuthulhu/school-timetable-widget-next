@@ -130,6 +130,6 @@ public class DisplayPresetImportTransactionTests
         using var reopenedStore = new JsonProfileStore(targetDir.Directory); var reopened = new ProfileSession(reopenedStore);
         var restored = Assert.Single(reopened.Current.DisplayPresets.Items);
         Assert.Equal(original, restored); Assert.Equal(DisplayPreset.Standard, reopened.Current.Display.Preset.BuiltIn);
-        Assert.Equal(4, System.Text.Json.Nodes.JsonNode.Parse(File.ReadAllBytes(targetDir.File))!["schemaVersion"]!.GetValue<int>());
+        Assert.Equal(5, System.Text.Json.Nodes.JsonNode.Parse(File.ReadAllBytes(targetDir.File))!["schemaVersion"]!.GetValue<int>());
     }
 }

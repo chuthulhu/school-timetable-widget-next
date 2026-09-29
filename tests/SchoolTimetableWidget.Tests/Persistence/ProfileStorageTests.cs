@@ -38,11 +38,11 @@ public class ProfileStorageTests
             Assert.Equal(lunch, ProfileJson.Deserialize(bytes).ShowLunch);
             Assert.False(bytes.AsSpan().StartsWith(Encoding.UTF8.Preamble));
             var parsed = JsonNode.Parse(bytes)!;
-            Assert.Equal(4, (int)parsed["schemaVersion"]!);
-            Assert.Equal("2026-09-07", (string?)parsed["profile"]!["dateOverrides"]![0]!["date"]);
-            Assert.Equal("09:00:00.0000123", (string?)parsed["profile"]!["periodSchedule"]![0]!["start"]);
+            Assert.Equal(5, (int)parsed["schemaVersion"]!);
+            Assert.Equal("2026-09-07", (string?)parsed["profile"]!["semesterSets"]![0]!["dateOverrides"]![0]!["date"]);
+            Assert.Equal("09:00:00.0000123", (string?)parsed["profile"]!["semesterSets"]![0]!["periodSchedule"]![0]!["start"]);
             Assert.Equal(new[] { "schemaVersion", "profile" }, parsed.AsObject().Select(p => p.Key));
-            Assert.Equal(new[] { "timetable", "periodSchedule", "dateOverrides", "presentation", "display", "displayPresets" }, parsed["profile"]!.AsObject().Select(p => p.Key));
+            Assert.Equal(new[] { "semesterSets", "activeSemesterId", "presentation", "display", "displayPresets" }, parsed["profile"]!.AsObject().Select(p => p.Key));
         }
         finally { CultureInfo.CurrentCulture = originalCulture; }
     }
@@ -109,11 +109,11 @@ public class ProfileStorageTests
         foreach (var (name, mutate) in mutations)
         {
             var document = JsonNode.Parse(ProfileJson.Serialize(Sample()))!;
-            mutate(document["profile"]!);
+            mutate(name.Contains("option") || name is "extra state" or "null profile child" ? document["profile"]! : document["profile"]!["semesterSets"]![0]!);
             yield return [name, document.ToJsonString(), ProfileLoadState.Invalid];
         }
         var future = JsonNode.Parse(ProfileJson.Serialize(Sample()))!;
-        future["schemaVersion"] = 5;
+        future["schemaVersion"] = 6;
         yield return ["future version", future.ToJsonString(), ProfileLoadState.Unsupported];
     }
 

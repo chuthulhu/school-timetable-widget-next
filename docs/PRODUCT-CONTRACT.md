@@ -1003,3 +1003,29 @@ Failure never implies success. Startup always shows MainWindow with existing pla
 taskbar and degraded/recovery behavior. Hidden state is runtime only. X/Exit/second launch
 never change registration. No installer/updater, hidden start, delay, scheduler, service,
 elevation or policy bypass. [Contract and evidence](AUTOSTART.md).
+
+## Semester Sets — approved 2026-09-18
+
+[ADR 0022](adr/0022-semester-ownership.md) supersedes prior single-dataset and semester
+PLANNED entries for this milestone. Implementation/verification: [Semester Sets](SEMESTER-SETS.md).
+
+Profile contains one or more ordered SemesterSets and a valid ActiveSemesterId. Each stable
+GUID identifies a user-named semester containing its base 35 cells, seven periods and independent
+date timetable/period overrides. Names are plain labels, trimmed on input, nonblank, at most
+80 UTF-16 code units and unique by ordinal case-insensitive comparison. No dates or auto-selection.
+
+A compact main selector explicitly switches after successful whole-profile persistence. Viewed
+week and global style remain unchanged; actual Application Clock today resolves the active
+semester for status/countdown/highlight. Editors pin semester ID plus source/date/slot and reject
+stale targets. Bulk import is captured-semester Base-only and identifies the target in preview.
+
+Create defaults to empty timetable, copies active base periods and never copies date overrides.
+The optional default-OFF timetable copy copies only base cells. Creation and activation are one
+transaction. Rename preserves ID/data/order. Delete requires confirmation and rejects active or
+last semester. No fallback activation, reorder, undo/trash or multi-teacher implementation.
+
+Lunch, display and preset/font selections remain global. Window/tray/autostart and cache/recovery
+state remain separate. v1-v4 profiles load as one neutral 기본 학기 without startup rewriting;
+next successful save writes v5. All semesters must validate or the whole profile degrades.
+Backup envelope v1 carries embedded profile v5 and all semesters/active ID; old v1/v4 backups
+remain restorable. Full restore/rollback/recovery preserve the entire collection and global data.

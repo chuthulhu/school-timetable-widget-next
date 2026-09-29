@@ -143,3 +143,17 @@ Recovery Required workflows. Restored content may increase or shrink measured mi
 applied geometry; it cannot replace preferred geometry. The existing export destination guard
 also protects the local window-state file. No backup/profile schema change. See
 [ADR 0019](adr/0019-machine-local-window-placement.md) and [Window Placement](WINDOW-PLACEMENT.md).
+
+## Semester collection backup — 2026-09-18
+
+The envelope is still backupFileVersion 1. New exports use profileSchemaVersion 5 and contain
+all semesters, ordered IDs/names, ActiveSemesterId and global profile data. Strict v4 embedded
+profiles in existing v1 backups remain readable as one neutral 기본 학기 with all original inputs.
+The envelope meaning is unchanged, so no backup version bump is needed (ADR 0022).
+
+Preview includes semester count, active name and total date override count and explicitly says
+all current semesters and common settings will be replaced. Full validation, pre-restore v5
+snapshot, whole rollback and Recovery Required preserve every semester and the active ID.
+Display is restored globally; viewed week is preserved. Font cache/window/tray/autostart remain
+excluded. The 4 MiB backup bound and standalone .stwpreset contract remain unchanged.
+[Semester verification](SEMESTER-SETS.md) records migration and all-semester recovery evidence.

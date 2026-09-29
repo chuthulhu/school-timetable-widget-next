@@ -27,6 +27,7 @@
         </Grid.RowDefinitions>
         <currentStatus:CurrentStatusHeaderView x:Name="StatusHeader" />
         <StackPanel Grid.Row="1">
+        <ContentControl x:Name="SemesterControl" />
         <TextBlock x:Name="PersistenceNotice" TextWrapping="Wrap" Padding="10" Background="#FFF4D6" Foreground="#573900" Visibility="Collapsed" />
         <Button x:Name="RecoveryButton" Content="복원 전 상태로 되돌리기" Command="{x:Static backup:BackupCommands.Recover}" HorizontalAlignment="Left" Padding="12,6" Margin="10,2" Visibility="Collapsed"/>
         </StackPanel>

@@ -24,6 +24,7 @@ public partial class MainWindow : Window
         StatusHeader.DataContext = headerViewModel;
         Timetable.DataContext = timetableViewModel;
         Timetable.ScheduleEditor = scheduleEditor;
+        if (runtime is not null) SemesterControl.Content = new Features.Semesters.SemesterSelector(runtime.Semesters, this);
         if (runtime is not null && clock is not null)
         {
             var actions = new ProfileBackupActions(runtime, clock, backupDialogs ?? new WindowsBackupDialogs(this),

@@ -1,4 +1,5 @@
 using SchoolTimetableWidget.Desktop.Infrastructure.Windows;
+using SchoolTimetableWidget.Desktop.Features.Semesters;
 using SchoolTimetableWidget.Desktop.Features.DisplaySettings;
 using SchoolTimetableWidget.Core.Features.SchoolDays;
 using SchoolTimetableWidget.Desktop.Features.DateOverrides;
@@ -21,6 +22,11 @@ public sealed class ProfileRuntime
         Timetable = new(initial.Timetable, session.SaveTimetable);
         Schedule = new(initial.Schedule, session.SaveSchedule);
         Overrides = new(initial.Overrides, session.SaveOverrides);
+        Timetable.GetSemesterId = () => Session.Current.ActiveSemesterId;
+        Timetable.GetSemesterName = () => Session.Current.ActiveSemester.DisplayName;
+        Schedule.GetSemesterId = () => Session.Current.ActiveSemesterId;
+        Overrides.GetSemesterId = () => Session.Current.ActiveSemesterId;
+        Semesters = new(session, PublishSemester, () => CanReplace);
         Timetable.ConfigureDateOverrides(Overrides.Get);
         Lunch = new(refresh, initial.ShowLunch, session.SaveLunch);
         DateEditor = new(Overrides, () => Timetable.CommittedTimetable, () => Schedule.Current, date =>
@@ -31,6 +37,7 @@ public sealed class ProfileRuntime
         Timetable.Editor.DateEditor = DateEditor;
         ScheduleEditor = new(Schedule, refresh);
     }
+    public SemesterManagement Semesters { get; }
     public RuntimeDisplaySettings Display { get; }
     public ProfileSession Session { get; }
     public WeeklyTimetableViewModel Timetable { get; }
@@ -71,14 +78,26 @@ public sealed class ProfileRuntime
         Display.RestoreValues(value.Display, value.DisplayPresets);
         Timetable.RestoreValue(value.Timetable);
     }
+    private void PublishSemester(ProfileSnapshot value)
+    {
+        Overrides.RestoreValues(value.Overrides);
+        Schedule.RestoreValue(value.Schedule);
+        Timetable.RestoreValue(value.Timetable);
+        Timetable.NotifyRestored();
+        _refresh();
+    }
     private void Publish(ProfileSnapshot value)
     {
         RestoreValues(value);
         var failures = new List<Exception>();
-        foreach (var notify in new Action[] { Timetable.NotifyRestored, Display.NotifyRestored, Lunch.NotifyRestored, _refresh })
+        foreach (var notify in new Action[] { Timetable.NotifyRestored, Display.NotifyRestored, Lunch.NotifyRestored, Semesters.NotifyRestored, _refresh })
             try { notify(); } catch (Exception error) { failures.Add(error); }
         if (failures.Count != 0) throw new AggregateException(failures);
     }
-    public EffectiveDayConfiguration Resolve(DateOnly date) =>
-        EffectiveDayResolver.Resolve(date, Timetable.CommittedTimetable, Schedule.Current, Overrides.Get(date));
+    public EffectiveDayConfiguration Resolve(DateOnly date)
+    {
+        var semester = Session.Current.ActiveSemester;
+        return EffectiveDayResolver.Resolve(date, semester.Timetable, semester.Schedule,
+            semester.Overrides.FirstOrDefault(e => e.Date == date)) with { SemesterId = semester.SemesterId };
+    }
 }

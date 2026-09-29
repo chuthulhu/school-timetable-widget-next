@@ -11,6 +11,8 @@ public sealed partial class WeeklyTimetableViewModel : CommunityToolkit.Mvvm.Com
     private TimetableCellViewModel? _currentCell;
     private bool _publishing;
     private readonly Func<WeeklyTimetable, string?>? _persist;
+    public Func<string>? GetSemesterName { get; set; }
+    public Func<Guid>? GetSemesterId { get; set; }
     public string? CommitError { get; private set; }
 
     public WeeklyTimetableViewModel(WeeklyTimetable timetable, Func<WeeklyTimetable, string?>? persist = null)

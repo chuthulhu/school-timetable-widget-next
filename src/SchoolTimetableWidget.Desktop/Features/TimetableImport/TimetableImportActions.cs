@@ -10,8 +10,10 @@ public sealed class TimetableImportActions(ISpreadsheetClipboard clipboard, Func
 {
     public TimetableImportSession CreateSession(WeeklyTimetableViewModel target, TimetableImportMode mode)
     {
+        var semesterId = target.GetSemesterId?.Invoke();
         var baseline = target.CommittedTimetable;
-        return new(mode, next => target.TryReplaceTimetable(baseline, next), () => target.CommitError);
+        return new(mode, next => semesterId == target.GetSemesterId?.Invoke() && target.TryReplaceTimetable(baseline, next), () => target.CommitError)
+        { TargetSemesterName = target.GetSemesterName?.Invoke() ?? "기본 학기" };
     }
 
     public void ReadClipboard(TimetableImportSession session)

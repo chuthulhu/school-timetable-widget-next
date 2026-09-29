@@ -11,10 +11,11 @@ public sealed class DateOverrideEditor(RuntimeDateOverrides target, Func<WeeklyT
 {
     public DateOverrideEditSession CreateSession(DateOnly date)
     {
+        var semesterId = target.GetSemesterId?.Invoke();
         var baseline = target.Get(date);
         return new(date, getBaseTimetable(), getBaseSchedule(), baseline, candidate =>
         {
-            if (!target.TryReplace(date, baseline, candidate)) return false;
+            if (semesterId != target.GetSemesterId?.Invoke() || !target.TryReplace(date, baseline, candidate)) return false;
             refreshAfterApply(date);
             return true;
         }, () => target.CommitError);
@@ -22,6 +23,7 @@ public sealed class DateOverrideEditor(RuntimeDateOverrides target, Func<WeeklyT
 
     public CellEditSession CreateCellSession(DateSpecificOverride displayed, int period, string slotLabel)
     {
+        var semesterId = target.GetSemesterId?.Invoke();
         var baseline = displayed.Timetable ?? throw new ArgumentException("No timetable component.", nameof(displayed));
         var date = displayed.Date;
         var label = FormattableString.Invariant($"편집 대상: {date:yyyy년 MM월 dd일} 시간표\n{slotLabel}");
@@ -29,6 +31,7 @@ public sealed class DateOverrideEditor(RuntimeDateOverrides target, Func<WeeklyT
         return new(label, baseline[period], value =>
         {
             error = null;
+            if (semesterId != target.GetSemesterId?.Invoke()) return false;
             var current = target.Get(date);
             if (current is null || !ReferenceEquals(current.Timetable, baseline)) return false;
             var next = new DateSpecificOverride(date, baseline.WithCell(period, value), current.Schedule);

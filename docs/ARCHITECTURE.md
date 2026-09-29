@@ -1452,3 +1452,22 @@ the actual apphost EXE. WindowsTrayIcon refreshes on opening and handles explici
 App composes these only inside primary initialization; visible startup remains unchanged.
 No profile, backup, recovery, placement or MainWindowViewModel responsibilities are added.
 [ADR 0021](adr/0021-per-user-windows-autostart.md), [verification](AUTOSTART.md).
+
+## Semester ownership — 2026-09-18
+
+Core Features/Semesters/SemesterSet owns immutable instructional values. ProfileSnapshot owns
+ordered validated SemesterSets, active identity and global presentation/display/library. Its
+single-dataset constructor is only the default/legacy input adapter; compatibility accessors
+project the active semester. All save callbacks replace one semester in the latest complete
+snapshot, preserving other semesters and global committed settings.
+
+Desktop Features/Semesters/SemesterManagement owns create/activate/rename/delete transactions.
+The compact selector and owned management/name windows delegate to it; MainWindow only composes
+the control. ProfileRuntime loads all active owners before notifying and refreshing, preserving
+stable cells/viewed week/global runtime display. Effective day resolves from one immutable active
+semester and carries its ID for coherent-source evidence. Editors capture that ID independently
+of shared immutable base references, preserving stale-rejection behavior.
+
+ProfileJson retains strict separate v1-v4 DTOs and adds v5 semester DTOs. Backup envelope stays v1,
+with embedded schema 4 or 5 routing. Existing atomic save, recovery marker and rollback mechanisms
+remain whole-profile operations. [ADR 0022](adr/0022-semester-ownership.md), [evidence](SEMESTER-SETS.md).
