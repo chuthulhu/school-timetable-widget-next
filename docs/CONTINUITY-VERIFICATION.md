@@ -37,8 +37,28 @@ Original checkout after removing old generated outputs: dotnet restore, dotnet b
 .NET/Windows Desktop runtime 10.0.12. The existing bootstrap control-flow suite separately
 passed 18/18 isolated cases; it invoked no real installer or SDK command.
 
-The committed fresh-checkout gate is pending in this first documentation commit; its measured
-result will be added in a follow-up evidence commit before either repository is pushed.
+Committed fresh-checkout gate: f890046ea3da274258baef749099095fcd6e3956, created with
+`git clone --no-local` into a unique TEMP directory and checked out detached. Initial
+tracked/untracked status was clean and no Git object alternates were present. Only committed
+files were copied; original build outputs, local scratch and prior native fixtures were absent.
+README, CONTINUITY and DEVELOPMENT were read from this checkout, and their relative document
+links were checked. The documented CLI restore/build/test sequence all exited 0:
+**1,083 passed, 0 failed/skipped; build warnings/errors 0**. `git diff --check` passed and
+the checkout remained clean apart from newly generated ignored build output.
+
+This follow-up records measured evidence only; no source, test, dependency, SDK or bootstrap
+change follows the verified handoff commit. Final main/remote identity is established by Git
+push/readback rather than embedding a self-referential commit SHA in this file.
+The fresh checkout used the existing Windows x64 SDK 10.0.401/runtime 10.0.12 installation
+and normal NuGet cache/feed; it does not prove a blank Windows installation or empty package
+cache. It does prove that no original working-tree scratch or AI session memory was needed.
+
+A separate read-only review checked source/document agreement, retained future requirements,
+Git history, links/anchors and new-path/secret exposure; no actionable findings remained.
+New handoff documents and added lines contain no personal workspace paths, actual timetable
+records or credential material detected by the targeted audit. Historical tool names/session
+observations are evidence attribution, not dependencies for continuation. Source/tests and
+font/license assets are unchanged from the implementation baseline.
 The reference commands are in [Development](DEVELOPMENT.md). No native foreground run is required
 for this documentation/chore milestone. Automated WPF object/event, fake-store and isolated
 process tests do not establish native keyboard/IME, shell notification delivery, actual login
