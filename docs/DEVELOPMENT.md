@@ -342,3 +342,9 @@ Codex가 먼저 정상 앱을 직접 실행하고 process 상태를 확인한다
 Focus/IME 확인 시 입력과 Tab/버튼 이동은 앱 안에서 연속 수행한 뒤 chat으로 돌아온다.
 자동 object/event tests를 native 동작 통과로 취급하지 않는다.
 결과와 범위는 [Editing verification](TIMETABLE-EDITING-FOUNDATION.md)에 기록한다.
+
+## Codex cloud development
+
+See [Cloud development](CLOUD-DEVELOPMENT.md) for the Linux SDK/setup command,
+network hosts, Windows CI and the native verification boundary. The existing
+Windows workflow above remains the full application verification requirement.

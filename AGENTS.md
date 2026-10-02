@@ -36,3 +36,11 @@ Never describe activation, keyboard/pointer injection, clipboard changes or fore
 as background checks. Coordinate native input only when needed and not already authorized.
 Report evidence methods and changed test conditions precisely; do not generalize a historical
 tool discovery/visibility failure. Protect production data and terminate only owned diagnostics.
+
+## Cloud development
+
+Follow [Cloud development](docs/CLOUD-DEVELOPMENT.md) for Linux setup and the
+Windows CI gate. Linux setup builds Core only; the existing full test project
+requires Windows. Do not retarget the app or remove tests to make Linux pass.
+Report Core/cross-build evidence separately from Windows test/native evidence.
+Keep real profiles, backups, recovery evidence and credentials out of Git.
