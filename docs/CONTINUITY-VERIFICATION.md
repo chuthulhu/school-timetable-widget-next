@@ -17,9 +17,11 @@ This proves committed-checkout completeness for the Linux pure-source tests and 
 source compilation on the existing SDK/cache. It does **not** prove execution of the
 Windows integration suite/bootstrap or native UI/IME/OS behavior. Independent source review
 found no actionable production issue; two integration-test assumptions were corrected.
-Windows runtime verification is pending: automatic approval review rejected remote upload
-because specific remote-export authorization was absent. No remote branch/PR/merge exists
-for this change. Documentation-only follow-up records this scope without changing code.
+Windows runtime verification is pending. Automatic approval review initially rejected remote
+upload; the user subsequently authorized upload/push/updates after security review. That
+review found no credential/privacy signatures in changed files or commit diffs, and no
+actual profile/backup/credential files. Repository identity/ownership matched origin.
+Documentation-only follow-up records this scope without changing code.
 
 ## KRISS committed-checkout gate — 2026-09-29
 

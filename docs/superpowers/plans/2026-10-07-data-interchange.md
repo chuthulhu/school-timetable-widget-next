@@ -102,3 +102,6 @@ The cloud checkout is dedicated to this chat; work on codex/data-interchange.
   bypass through another connector; draft PR/remote CI require that approval.
 - Ruling: retain the three projects and add CoreOnlyTests mode rather than a fourth test
   assembly — preserves ADR 0005 project count; Windows defaults remain full coverage.
+- Follow-up: user authorized GitHub upload/push/updates after security review. Changed-file
+  and commit-diff credential/privacy checks passed, origin matched the connected owned repo;
+  proceed with the new branch and draft PR to run Windows CI.

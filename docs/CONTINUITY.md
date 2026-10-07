@@ -45,10 +45,11 @@ replacement does not emit timetable ContentChanged, and restart must release the
 profile-store lease first. Both assertions/lifetimes are corrected; their Windows runtime
 execution is still pending. No additional actionable production finding was reported.
 
-Remote push was blocked by automatic approval review: this request authorized local
-development but not this specific upload. Changes are committed locally on
-`codex/data-interchange`; Windows CI cannot run the new commit until upload is authorized.
-No merge, remote update or native desktop operation was performed.
+Remote push was initially blocked by automatic approval review. On 2026-10-07 the user
+authorized GitHub upload/push/updates after security review. Review of changed files and
+commit diffs found no credential/privacy signatures or actual user-data files; the connected
+GitHub repository identity and ownership matched origin. The `codex/data-interchange` branch
+is ready for upload and draft PR/CI; main merge and native desktop operations are separate.
 
 The sandbox originally denied VSTest local sockets; the same test assembly's xUnit
 in-process runner succeeded. With network permissions VSTest also ran. NuGet's initial
