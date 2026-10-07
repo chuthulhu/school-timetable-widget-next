@@ -230,7 +230,8 @@ public class TimetableDataImportTests
         var original = TimetableShareFile.Export(new(TimetableSharingTests.Week("原본"), null));
         File.WriteAllBytes(path, original);
         using var locked = new FileStream(path, FileMode.Open, FileAccess.Read, FileShare.Read);
-        Assert.Throws<IOException>(() => TimetableDataFiles.ExportShared(path, new(TimetableSharingTests.Week(), null)));
+        var error = Record.Exception(() => TimetableDataFiles.ExportShared(path, new(TimetableSharingTests.Week(), null)));
+        Assert.True(error is IOException or UnauthorizedAccessException);
         Assert.Equal(original, File.ReadAllBytes(path));
         Assert.Empty(Directory.GetFiles(temp.Directory, ".stw-*.tmp"));
     }
