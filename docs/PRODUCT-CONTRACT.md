@@ -542,6 +542,13 @@ Manifest/schema/checksum, archive 여부, naming, durability/recovery 구현은 
 지원할 경우 raw timetable과 구분한다. P10의 선택적 파일 export/import 기능 자체는 APPROVED다.
 새 파일 format, versioning, 부분 time 항목의 정확한 대체/보충 UX는 DEFERRED다.
 
+2026-10-07 data-processing follow-up: [ADR 0025](adr/0025-data-interchange-foundation.md)
+defines `.stwshare` v1 with complete optional timetable/period components, strict UTF-8
+validation, a 4 MiB limit, lossless native tick precision and selected Base-only replacement.
+Raw C3/C4 legacy conversion and supplementation reports are implemented as processing
+foundation. User-facing preview/selection, source discovery and full five-file migration
+remain deferred. This follow-up adds no native desktop interaction or profile v6.
+
 ## Installation / Lifecycle
 
 **APPROVED — A1:** 일반 사용자 단위 설치, Windows 시작 시 실행 옵션, 정상 uninstall.
