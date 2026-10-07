@@ -29,8 +29,10 @@ requirements; this page tracks delivery, not approval. Historical progression is
 | Tray / single instance | X hides, explicit Exit, hidden refresh, secondary activation; [Lifecycle](TRAY-LIFECYCLE.md) |
 | Windows autostart | Explicit tray toggle, exact per-user OS registration/read-back; [Autostart](AUTOSTART.md) |
 | Semester Sets | Ordered stable identities, explicit switch/create/copy/rename/inactive delete, scoped edits, v5 storage/all-semester restore; [Semesters](SEMESTER-SETS.md) |
+| Data interchange processing/transaction foundation | Raw legacy timetable/time conversion, strict .stwshare v1, selective Base replacement and bounded/atomic file I/O; **UI not connected**; [Data interchange](DATA-INTERCHANGE.md) |
 
-Automated baseline: 1,161 tests; native approvals cover only scenarios documented in the
+Previous Windows automated baseline: 1,161 tests; current data-foundation evidence is in
+[Continuity](CONTINUITY.md). Native approvals cover only scenarios documented in the
 linked evidence. “Implemented” does not imply release readiness or all native paths verified.
 Profile schema v1–v4 in older milestone records describes prior writers, not the current writer.
 
@@ -43,8 +45,8 @@ Profile schema v1–v4 in older milestone records describes prior writers, not t
 | KRISS diagnostic UX | Source/status UI remains deferred; no new setting or sync popup. Limited native UX accepted for current clock |
 | Notification suspend/resume integration | DEFERRED; clock resync implemented under ADR 0024, notification replay/dedup remains separate |
 | Class notifications | PLANNED; must consume the shared KRISS-capable Application Clock; scheduling/dedup/resume and actual Windows delivery remain; first-close tray notice is a different feature |
-| Legacy migration / legacy backup import | PLANNED; immutable source, preview and all-or-nothing conversion; native v1–v4 migration is already implemented |
-| Selective timetable/period file sharing | PLANNED under P10; distinct from implemented preset files and full-profile backups |
+| Legacy migration / legacy backup import | Raw timetable/time processing and commit foundation implemented; source discovery, user preview/selection and full five-file/backup conversion remain PLANNED; native v1–v4 migration already implemented |
+| Selective timetable/period file sharing | .stwshare v1 codec/file/transaction foundation implemented; user preview/selection and menu integration remain PLANNED; distinct from presets/full backups |
 | Installer / updater | DEFERRED; technology, distribution/signing/rollback, uninstall data policy and supported OS matrix |
 | Move lock / final z-order | DEFERRED; placement/tray do not implement move locking |
 | Colors/themes/opacity and final visual design | PLANNED; existing typography/display settings are implemented, full theme/highlight editor is not |

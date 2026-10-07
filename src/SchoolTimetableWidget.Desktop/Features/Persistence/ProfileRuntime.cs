@@ -5,6 +5,7 @@ using SchoolTimetableWidget.Core.Features.SchoolDays;
 using SchoolTimetableWidget.Desktop.Features.DateOverrides;
 using SchoolTimetableWidget.Desktop.Features.PeriodScheduleEditing;
 using SchoolTimetableWidget.Desktop.Features.Timetable;
+using SchoolTimetableWidget.Core.Features.DataInterchange;
 
 namespace SchoolTimetableWidget.Desktop.Features.Persistence;
 
@@ -47,6 +48,14 @@ public sealed class ProfileRuntime
     public DateOverrideEditor DateEditor { get; }
     public PeriodScheduleEditor ScheduleEditor { get; }
     public bool CanReplace => !Display.HasActiveSession && Timetable.Editor.ActiveSession is null;
+    public string? ImportData(TimetableDataPackage package, ProfileSnapshot reviewedSnapshot, bool useTimetable, bool useSchedule)
+    {
+        if (!CanReplace) return "편집 창을 닫은 뒤 가져와 주세요.";
+        var error = Session.ImportData(package, reviewedSnapshot, useTimetable, useSchedule);
+        if (error is not null) return error;
+        PublishSemester(Session.Current);
+        return null;
+    }
     public string? Restore(ProfileSnapshot candidate)
     {
         if (!CanReplace) return "편집 창을 닫은 뒤 복원해 주세요.";

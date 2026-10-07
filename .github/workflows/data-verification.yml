@@ -1,0 +1,50 @@
+name: Data and Windows verification
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  core:
+    name: Core data tests (Linux)
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          persist-credentials: false
+      - uses: actions/setup-dotnet@v6
+        with:
+          global-json-file: global.json
+      - run: dotnet test tests/SchoolTimetableWidget.Tests/SchoolTimetableWidget.Tests.csproj -p:CoreOnlyTests=true --logger "console;verbosity=normal"
+
+  windows:
+    name: Full suite (Windows)
+    runs-on: windows-latest
+    timeout-minutes: 20
+    defaults:
+      run:
+        shell: pwsh
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          persist-credentials: false
+      - uses: actions/setup-dotnet@v6
+        with:
+          global-json-file: global.json
+      - run: dotnet restore SchoolTimetableWidget.sln
+      - run: dotnet build SchoolTimetableWidget.sln --no-restore -p:CoreOnlyTests=false
+      - run: dotnet test SchoolTimetableWidget.sln --no-build -p:CoreOnlyTests=false --logger "console;verbosity=normal"
+      - run: pwsh -NoProfile -File ./tests/bootstrap-dev.Tests.ps1
+      - name: Upload failure evidence
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: windows-test-results
+          path: '**/TestResults/**'
+          if-no-files-found: ignore

@@ -2,6 +2,8 @@
 
 Current implementation: Semester Sets, portable profile v5, display/preset/font support,
 full backup/recovery, machine-local placement, tray/single instance and Windows autostart.
+Data interchange now has a pure processing and durable-transaction foundation, with UI
+integration deferred; [Data interchange](DATA-INTERCHANGE.md), [ADR 0025](adr/0025-data-interchange-foundation.md).
 Read [Continuity](CONTINUITY.md) for the current snapshot and [Feature Map](FEATURE-MAP.md)
 for implemented versus remaining scope. [Product Contract](PRODUCT-CONTRACT.md) and
 [Accepted ADRs](adr/README.md) remain authoritative.
@@ -59,6 +61,10 @@ Desktop → Core
 Tests   → Core
 Tests   → Desktop  (Phase 0.6 presentation contract tests)
 ```
+
+ADR 0025 adds a CoreOnlyTests mode to the existing test project, not another assembly.
+That mode targets net10.0 and removes the Desktop reference through an explicit source
+allowlist. Windows defaults retain all presentation/integration tests and their runtime.
 
 | Project | 책임 / 현재 범위 |
 | --- | --- |
