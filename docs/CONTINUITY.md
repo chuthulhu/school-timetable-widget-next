@@ -37,6 +37,8 @@ Local Linux evidence: Core-only baseline 215 tests; current suite 299 passed, 0 
 Full Windows-targeted source also compiled on Linux, warnings/errors 0. A Core-only run does
 not establish Desktop transactions, Windows runtime or native input/rendering. Full Windows
 integration/bootstrap results are pending the data-verification CI run.
+An independent clone of committed source at `2071161` repeated both local checks;
+[committed-checkout evidence](CONTINUITY-VERIFICATION.md) records the exact scope.
 
 Independent source review found two incorrect integration-test assumptions: schedule-only
 replacement does not emit timetable ContentChanged, and restart must release the original
