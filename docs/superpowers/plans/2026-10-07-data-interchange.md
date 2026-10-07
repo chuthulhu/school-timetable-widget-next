@@ -37,10 +37,10 @@ LegacyImportCandidate.cs, DataJson.cs; add Tests/DataInterchange/LegacyImportTes
 Produces: `LegacyTimetableImporter.Import(string, string?) -> LegacyImportCandidate`,
 with immutable Timetable, Schedule and Reports (Code, Path, Message).
 
-- [ ] Enable Core-only tests and run existing pure tests as a baseline.
-- [ ] Add tests for lossless text, missing/default reports, normalization and invalid JSON.
-- [ ] Run tests and observe missing converter failures.
-- [ ] Implement complete strict conversion and rerun the Core-only suite.
+- [x] Enable Core-only tests and run existing pure tests as a baseline.
+- [x] Add tests for lossless text, missing/default reports, normalization and invalid JSON.
+- [x] Run tests and observe missing converter failures.
+- [x] Implement complete strict conversion and rerun the Core-only suite.
 
 ## Task 2: Selective sharing
 
@@ -50,9 +50,9 @@ Tests/DataInterchange/TimetableSharingTests.cs.
 Produces: package `ApplyTo(SemesterSet, bool, bool) -> SemesterSet`;
 `TimetableShareFile.Export(TimetableDataPackage) -> byte[]`, `Import(byte[]) -> package`.
 
-- [ ] Add failing selection, exact round-trip, schema and size-bound tests.
-- [ ] Implement package selection and strict .stwshare v1 codec.
-- [ ] Run all Core-only tests, including prior conversion tests.
+- [x] Add failing selection, exact round-trip, schema and size-bound tests.
+- [x] Implement package selection and strict .stwshare v1 codec.
+- [x] Run all Core-only tests, including prior conversion tests.
 
 ## Task 3: Files and durable replacement
 
@@ -64,10 +64,10 @@ Produces: bounded read-only file operations and atomic export;
 `ProfileSession.ImportData(package, reviewedSnapshot, bool, bool) -> string?`;
 matching ProfileRuntime method with persist-before-publish and one refresh.
 
-- [ ] Add failing tests for failure/retry, stale baseline, disk/runtime agreement, isolation
+- [x] Add failing tests for failure/retry, stale baseline, disk/runtime agreement, isolation
   and unchanged source files. Use existing real TEMP store with fault injection.
-- [ ] Add adapters and existing-session commit integration without native UI changes.
-- [ ] Compile the full solution and run full Windows tests via CI.
+- [x] Add adapters and existing-session commit integration without native UI changes.
+- [x] Compile the full solution and run full Windows tests via CI.
 
 ## Task 4: Verification and handoff
 
@@ -75,10 +75,10 @@ Files: .github/workflows/data-verification.yml, docs/DATA-INTERCHANGE.md,
 docs/adr/0025-data-interchange-foundation.md; update README, FEATURE-MAP, CONTINUITY,
 DEVELOPMENT, ARCHITECTURE and ADR index.
 
-- [ ] Record Linux Core-only results and full Windows CI results with exact scope.
-- [ ] Review the whole diff for contract, data safety and unexpected native changes.
-- [ ] Fix material findings with regression tests; run final checks.
-- [ ] Commit and create a draft PR, preserving main and the existing CI setup PR.
+- [x] Record Linux Core-only results and full Windows CI results with exact scope.
+- [x] Review the whole diff for contract, data safety and unexpected native changes.
+- [x] Fix material findings with regression tests; run final checks.
+- [x] Commit and create a draft PR, preserving main and the existing CI setup PR.
 
 ## Execution notes
 
@@ -94,14 +94,21 @@ The cloud checkout is dedicated to this chat; work on codex/data-interchange.
   new Unicode edge cases exposed incomplete-surrogate handling and writer normalization.
   Runtime-constructed surrogate cases now verify strict rejection. Core-only suite: 299
   passed, zero failures/skips; build warnings/errors zero.
-- Task 3 implemented and full Windows-targeted build passed on Linux. Windows tests
-  are pending execution, not declared passing. Independent review found/corrected
-  schedule-only notification and store-lease restart mistakes in the test itself.
-- Task 4 code/docs/CI workflow and independent review completed locally. Automatic approval
-  review rejected branch upload for missing specific remote-export authorization. Do not
-  bypass through another connector; draft PR/remote CI require that approval.
+- Task 3 implemented and full Windows-targeted build passed on Linux. Independent review
+  corrected schedule-only notification and store-lease restart mistakes in the tests.
+  Initial Windows CI exposed a locked-file exception-type assumption; the assertion now
+  accepts IOException or UnauthorizedAccessException and still checks original bytes and
+  temporary cleanup. No production change was needed for this correction.
+- Task 4 code/docs/CI workflow and independent review completed. Automatic approval review
+  initially rejected branch upload for missing specific remote-export authorization; the
+  user subsequently supplied that authorization, conditional on security review.
 - Ruling: retain the three projects and add CoreOnlyTests mode rather than a fourth test
   assembly — preserves ADR 0005 project count; Windows defaults remain full coverage.
 - Follow-up: user authorized GitHub upload/push/updates after security review. Changed-file
   and commit-diff credential/privacy checks passed, origin matched the connected owned repo;
-  proceed with the new branch and draft PR to run Windows CI.
+  branch uploaded and draft PR #2 created without merging main or modifying PR #1.
+- Verified commit 904aa668ab62a71c13b642820503dd2d7a0b2a6b: GitHub Actions run
+  [37587681532](https://github.com/chuthulhu/school-timetable-widget-next/actions/runs/37587681532)
+  passed Linux Core 299 and full Windows 1,263 tests (zero failures/skips), Windows build
+  warnings/errors zero, and 18 isolated bootstrap cases. Native desktop validation and
+  user-facing commands remain deferred. Canonical evidence: CONTINUITY-VERIFICATION.md.

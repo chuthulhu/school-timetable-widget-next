@@ -34,22 +34,29 @@ Profile v5, existing backup/preset formats and all native window/tray/input/OS c
 unchanged. Full five-file legacy migration and teacher/group implementation remain deferred.
 
 Local Linux evidence: Core-only baseline 215 tests; current suite 299 passed, 0 failed/skipped.
-Full Windows-targeted source also compiled on Linux, warnings/errors 0. A Core-only run does
-not establish Desktop transactions, Windows runtime or native input/rendering. Full Windows
-integration/bootstrap results are pending the data-verification CI run.
+Full Windows-targeted source also compiled on Linux, warnings/errors 0. GitHub Actions
+[run 37587681532](https://github.com/chuthulhu/school-timetable-widget-next/actions/runs/37587681532)
+at `904aa668ab62a71c13b642820503dd2d7a0b2a6b` passed Linux Core 299 and full Windows
+1,263 tests (0 failed/skipped), Windows build warnings/errors 0, and 18 isolated bootstrap
+cases. These verify data/runtime transactions on a Windows runner, not native user-PC input,
+tray/window interaction or rendering acceptance.
 An independent clone of committed source at `2071161` repeated both local checks;
 [committed-checkout evidence](CONTINUITY-VERIFICATION.md) records the exact scope.
 
 Independent source review found two incorrect integration-test assumptions: schedule-only
 replacement does not emit timetable ContentChanged, and restart must release the original
-profile-store lease first. Both assertions/lifetimes are corrected; their Windows runtime
-execution is still pending. No additional actionable production finding was reported.
+profile-store lease first. Initial Windows CI additionally exposed a locked-file test assuming
+only IOException; it now accepts the documented file-access failure variants while retaining
+original-byte and temporary-cleanup assertions. All corrected tests passed on Windows.
+No additional actionable production finding was reported.
 
 Remote push was initially blocked by automatic approval review. On 2026-10-07 the user
 authorized GitHub upload/push/updates after security review. Review of changed files and
 commit diffs found no credential/privacy signatures or actual user-data files; the connected
 GitHub repository identity and ownership matched origin. The `codex/data-interchange` branch
-is ready for upload and draft PR/CI; main merge and native desktop operations are separate.
+is uploaded with [draft PR #2](https://github.com/chuthulhu/school-timetable-widget-next/pull/2).
+Subsequent GitHub uploads/pushes/updates are authorized after security review; main merge
+and native desktop operations are separate.
 
 The sandbox originally denied VSTest local sockets; the same test assembly's xUnit
 in-process runner succeeded. With network permissions VSTest also ran. NuGet's initial
@@ -111,7 +118,8 @@ The platform project registry pins the subsequently verified/pushed handoff revi
 Repository paths in this table are relative to the corresponding project under `src/`.
 Tests mirror the feature areas under `tests/SchoolTimetableWidget.Tests/`.
 `App.xaml.cs` is the composition/lifetime entry; MainWindow composes feature views.
-Core remains independent of WPF/Toolkit/Desktop. Tests reference Core and Desktop and run on Windows.
+Core remains independent of WPF/Toolkit/Desktop. Full tests reference Core and Desktop on
+Windows; explicit CoreOnlyTests mode runs the selected pure tests on Linux.
 
 ## Persistence boundaries
 

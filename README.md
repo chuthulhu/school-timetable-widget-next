@@ -43,8 +43,8 @@ dotnet test --no-build
 
 새 PC 준비, 선택적 bootstrap, 격리된 TEMP profile 실행과 정상 실행 방법은
 [Development](docs/DEVELOPMENT.md)를 읽으세요.
-직전 Windows 전체 검증은 **1,161 tests, 실패/skip 0, build warning/error 0**이며,
-새 데이터 처리 기능의 Linux/Windows 검증 결과는 Continuity의 최신 절을 따릅니다.
+현재 자동 검증은 **Windows 1,263 tests, Linux Core 299 tests, 실패/skip 0**이며,
+Windows build warning/error 0, 격리된 bootstrap 검증 18개 통과입니다.
 검증 commit과 증거 한계는 [Continuity](docs/CONTINUITY.md)에 기록합니다.
 
 Linux에서도 순수 데이터 테스트를 실행할 수 있습니다. 이 실행은 Windows 전체 테스트를 대신하지 않습니다:
