@@ -38,6 +38,16 @@ Full Windows-targeted source also compiled on Linux, warnings/errors 0. A Core-o
 not establish Desktop transactions, Windows runtime or native input/rendering. Full Windows
 integration/bootstrap results are pending the data-verification CI run.
 
+Independent source review found two incorrect integration-test assumptions: schedule-only
+replacement does not emit timetable ContentChanged, and restart must release the original
+profile-store lease first. Both assertions/lifetimes are corrected; their Windows runtime
+execution is still pending. No additional actionable production finding was reported.
+
+Remote push was blocked by automatic approval review: this request authorized local
+development but not this specific upload. Changes are committed locally on
+`codex/data-interchange`; Windows CI cannot run the new commit until upload is authorized.
+No merge, remote update or native desktop operation was performed.
+
 The sandbox originally denied VSTest local sockets; the same test assembly's xUnit
 in-process runner succeeded. With network permissions VSTest also ran. NuGet's initial
 audit warning cleared after a force restore routed through the inherited proxy. No audit

@@ -85,3 +85,20 @@ DEVELOPMENT, ARCHITECTURE and ADR index.
 User requested autonomous development on 2026-10-07 after reviewing priorities and
 verification boundaries. Continue inline without repeated design/step confirmations.
 The cloud checkout is dedicated to this chat; work on codex/data-interchange.
+
+## Execution evidence — 2026-10-07
+
+- Task 1 implemented: existing pure baseline 215 passed; new legacy conversion tests
+  first failed compilation for the absent API, then passed with exact text/default reports.
+- Task 2 implemented: absent package/codec failures observed before implementation;
+  new Unicode edge cases exposed incomplete-surrogate handling and writer normalization.
+  Runtime-constructed surrogate cases now verify strict rejection. Core-only suite: 299
+  passed, zero failures/skips; build warnings/errors zero.
+- Task 3 implemented and full Windows-targeted build passed on Linux. Windows tests
+  are pending execution, not declared passing. Independent review found/corrected
+  schedule-only notification and store-lease restart mistakes in the test itself.
+- Task 4 code/docs/CI workflow and independent review completed locally. Automatic approval
+  review rejected branch upload for missing specific remote-export authorization. Do not
+  bypass through another connector; draft PR/remote CI require that approval.
+- Ruling: retain the three projects and add CoreOnlyTests mode rather than a fourth test
+  assembly — preserves ADR 0005 project count; Windows defaults remain full coverage.

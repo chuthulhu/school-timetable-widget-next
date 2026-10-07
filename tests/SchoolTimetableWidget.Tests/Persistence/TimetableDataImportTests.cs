@@ -24,7 +24,14 @@ public class TimetableDataImportTests
         Assert.Null(session.SaveLunch(true));
         var reviewed = session.Current;
         var refreshes = 0;
-        var runtime = new ProfileRuntime(session, () => refreshes++, _ => { });
+        ProfileRuntime? runtime = null;
+        runtime = new ProfileRuntime(session, () =>
+        {
+            refreshes++;
+            Assert.Equal(File.ReadAllBytes(temp.File), ProfileJson.Serialize(session.Current));
+            Assert.Same(session.Current.Timetable, runtime!.Timetable.CommittedTimetable);
+            Assert.Same(session.Current.Schedule, runtime.Schedule.Current);
+        }, _ => { });
         var package = new TimetableDataPackage(TimetableSharingTests.Week(), TimetableSharingTests.Schedule());
         var writesBefore = renames;
         var notifications = 0;
@@ -38,7 +45,7 @@ public class TimetableDataImportTests
         Assert.Null(runtime.ImportData(package, reviewed, timetable, schedule));
         Assert.Equal(writesBefore + 1, renames);
         Assert.Equal(1, refreshes);
-        Assert.True(notifications > 0);
+        Assert.Equal(timetable, notifications > 0);
         Assert.Same(timetable ? package.Timetable : reviewed.Timetable, session.Current.Timetable);
         Assert.Same(schedule ? package.Schedule : reviewed.Schedule, session.Current.Schedule);
         Assert.Same(other, session.Current.SemesterSets.Single(s => s.SemesterId == other.SemesterId));
@@ -46,8 +53,11 @@ public class TimetableDataImportTests
         Assert.Same(reviewed.Display, session.Current.Display);
         Assert.Same(reviewed.DisplayPresets, session.Current.DisplayPresets);
         Assert.Equal(reviewed.ShowLunch, session.Current.ShowLunch);
+        store.Dispose();
         using var restarted = new JsonProfileStore(temp.Directory);
-        Assert.Equal(ProfileJson.Serialize(session.Current), ProfileJson.Serialize(restarted.Load().Snapshot));
+        var restart = restarted.Load();
+        Assert.Equal(ProfileLoadState.Loaded, restart.State);
+        Assert.Equal(ProfileJson.Serialize(session.Current), ProfileJson.Serialize(restart.Snapshot));
     }
 
     [Fact]
