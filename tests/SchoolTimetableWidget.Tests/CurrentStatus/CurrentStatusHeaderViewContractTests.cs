@@ -99,7 +99,12 @@ public class CurrentStatusHeaderViewContractTests
         try
         {
             var grid = Assert.IsType<Grid>(window.Content);
-            Assert.Equal(3, grid.Children.Count);
+            Assert.Equal(4, grid.Children.Count);
+            var resizeRim = Assert.Single(grid.Children.OfType<Border>());
+            Assert.Equal(3, Grid.GetRowSpan(resizeRim));
+            Assert.Equal(new Thickness(6), resizeRim.BorderThickness);
+            Assert.Equal(1, ((System.Windows.Media.SolidColorBrush)resizeRim.BorderBrush).Color.A);
+            Assert.False(resizeRim.IsHitTestVisible);
             Assert.Equal(Visibility.Collapsed, ((TextBlock)window.FindName("PersistenceNotice")).Visibility);
             var header = Assert.IsType<CurrentStatusHeaderView>(window.FindName("StatusHeader"));
             var timetable = Assert.IsType<WeeklyTimetableView>(window.FindName("Timetable"));
