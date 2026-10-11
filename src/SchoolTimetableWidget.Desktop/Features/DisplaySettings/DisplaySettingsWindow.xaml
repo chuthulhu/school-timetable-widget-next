@@ -6,7 +6,7 @@
         Title="표시 설정" Width="730" Height="640" MinWidth="640" MinHeight="420"
         WindowStartupLocation="CenterOwner" ShowInTaskbar="False" FontSize="14">
     <Window.Resources>
-
+        <BooleanToVisibilityConverter x:Key="BooleanVisibility"/>
         <DataTemplate x:Key="TypographyEditor">
             <GroupBox Header="{Binding Label}" Margin="0,0,0,10" Padding="10">
                 <StackPanel>
@@ -55,7 +55,6 @@
             </GroupBox>
         </DataTemplate>
 
-        <BooleanToVisibilityConverter x:Key="BooleanVisibility"/>
         <Style TargetType="Button">
             <Setter Property="Padding" Value="16,7"/>
             <Setter Property="MinWidth" Value="76"/>
