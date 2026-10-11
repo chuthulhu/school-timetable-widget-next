@@ -19,6 +19,64 @@ public class DisplayPersistenceTests
         return memory.ToArray();
     }
 
+    [Theory]
+    [InlineData("version")] [InlineData("null")] [InlineData("missing")] [InlineData("extra")]
+    [InlineData("opacity")] [InlineData("font")]
+    public void InvalidOrFutureTableSettingsPreserveOriginalAndBlockSave(string kind)
+    {
+        using var temp = new TempProfile();
+        var node = JsonNode.Parse(ProfileJson.Serialize(ProfileStorageTests.Sample()))!;
+        var settings = node["profile"]!["display"]!["settings"]!;
+        var table = settings["table"]!;
+        switch (kind)
+        {
+            case "version": table["version"] = 2; break;
+            case "null": settings["table"] = null; break;
+            case "missing": table.AsObject().Remove("currentOpacity"); break;
+            case "extra": table["futureSetting"] = true; break;
+            case "opacity": table["headerOpacity"] = 1.1; break;
+            case "font": table["cell"]!["font"]!["source"] = "FutureFont"; break;
+        }
+        var original = Encoding.UTF8.GetBytes(node.ToJsonString()); File.WriteAllBytes(temp.File, original);
+        using var store = new JsonProfileStore(temp.Directory); var profile = new ProfileSession(store);
+        Assert.False(profile.LoadResult.CanWrite); Assert.NotNull(profile.SaveDisplay(DisplayPresets.Create(DisplayPreset.Digital)));
+        Assert.Equal(original, File.ReadAllBytes(temp.File));
+    }
+
+    [Theory]
+    [InlineData(1)] [InlineData(2)] [InlineData(3)] [InlineData(4)]
+    public void OldProfileIsBackedUpExactlyBeforeFirstSettingsExtension(int version)
+    {
+        using var stream = typeof(DisplayPersistenceTests).Assembly.GetManifestResourceStream(
+            $"SchoolTimetableWidget.Tests.DisplaySettings.profile-v{version}.json")!;
+        using var memory = new MemoryStream(); stream.CopyTo(memory); var original = memory.ToArray();
+        using var temp = new TempProfile(); File.WriteAllBytes(temp.File, original);
+        using var store = new JsonProfileStore(temp.Directory); var profile = new ProfileSession(store);
+        Assert.Null(profile.SaveLunch(profile.Current.ShowLunch));
+        Assert.Equal(original, File.ReadAllBytes(Assert.Single(Directory.GetFiles(temp.Directory, "profile-before-table-*.json"))));
+        Assert.Null(profile.SaveLunch(!profile.Current.ShowLunch));
+        Assert.Single(Directory.GetFiles(temp.Directory, "profile-before-table-*.json"));
+    }
+
+    [Fact]
+    public void TableAppearanceRoundTripsWithoutChangingSemesterInputs()
+    {
+        var original = ProfileStorageTests.Sample();
+        var display = original.Display with { Table = TableAppearance.Default with
+        {
+            HeaderOpacity = 120d / 255, CellOpacity = 30d / 255,
+            CurrentOpacity = 150d / 255, BorderOpacity = 200d / 255,
+            Header = TableAppearance.Default.Header with { Font = new(FontSourceKind.System, "없는 머리글 글꼴") },
+            Cell = TableAppearance.Default.Cell with { Font = new(FontSourceKind.System, "없는 본문 글꼴") }
+        }};
+        var candidate = new ProfileSnapshot(original.SemesterSets, original.ActiveSemesterId,
+            original.ShowLunch, display, original.DisplayPresets);
+        var restored = ProfileJson.Deserialize(ProfileJson.Serialize(candidate));
+        Assert.Equal(display, restored.Display);
+        Assert.True(JsonNode.DeepEquals(JsonNode.Parse(ProfileJson.Serialize(original))!["profile"]!["semesterSets"],
+            JsonNode.Parse(ProfileJson.Serialize(restored))!["profile"]!["semesterSets"]));
+    }
+
     [Fact]
     public void V1LoadsAllInputsExactlyWithoutRewriteOrDegradationAndNextSaveWritesV4()
     {

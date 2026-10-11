@@ -32,7 +32,7 @@ internal sealed class WindowPlacementSession(IWindowStateStore? store)
         if (!IsInteracting) return;
         IsInteracting = false;
         if (observed is not { IsValid: true } || _start is null) return;
-        var moved = _move && (observed.Left != _start.Left || observed.Top != _start.Top || observed.MonitorHint != _start.MonitorHint);
+        var moved = !Preferred.MoveLocked && _move && (observed.Left != _start.Left || observed.Top != _start.Top || observed.MonitorHint != _start.MonitorHint);
         var horizontal = _edge is 1 or 2 or 4 or 5 or 7 or 8;
         var vertical = _edge is >= 3 and <= 8;
         var resizedWidth = horizontal && Math.Abs(observed.Width - _start.Width) > 0.5;
@@ -53,9 +53,20 @@ internal sealed class WindowPlacementSession(IWindowStateStore? store)
 
     public void Reset(string? monitorHint)
     {
-        Preferred = PreferredWindowBounds.Default with { MonitorHint = monitorHint };
+        Preferred = PreferredWindowBounds.Default with { MonitorHint = monitorHint, MoveLocked = Preferred.MoveLocked };
         _dirty = true;
         Flush();
+    }
+
+    public bool TrySetPreferences(double width, double height, bool moveLocked)
+    {
+        if (IsInteracting) return false;
+        var candidate = Preferred with { Width = width, Height = height, MoveLocked = moveLocked };
+        if (!candidate.IsValid) return false;
+        if (store is not null && !store.Save(candidate)) return false;
+        Preferred = candidate;
+        _dirty = false;
+        return true;
     }
 
     public void Flush()

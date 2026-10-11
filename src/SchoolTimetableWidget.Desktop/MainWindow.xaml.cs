@@ -20,7 +20,15 @@ public partial class MainWindow : Window
         InitializeComponent();
         PersistenceNotice.Text = persistenceNotice;
         PersistenceNotice.Visibility = persistenceNotice.Length == 0 ? Visibility.Collapsed : Visibility.Visible;
-        if (display is not null) StatusHeader.Fonts = display.Fonts;
+        if (display is not null)
+        {
+            StatusHeader.Fonts = display.Fonts;
+            Timetable.Fonts = display.Fonts;
+            Timetable.Appearance = display.Current.Table;
+            EventHandler appearanceChanged = (_, _) => Timetable.Appearance = display.Current.Table;
+            display.Changed += appearanceChanged;
+            Closed += (_, _) => display.Changed -= appearanceChanged;
+        }
         StatusHeader.DataContext = headerViewModel;
         Timetable.DataContext = timetableViewModel;
         Timetable.ScheduleEditor = scheduleEditor;

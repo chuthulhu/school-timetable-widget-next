@@ -44,7 +44,14 @@ public class SemesterTests
             Assert.True(JsonNode.DeepEquals(old[field], now["semesterSets"]![0]![field]));
         Assert.True(JsonNode.DeepEquals(old["presentation"], now["presentation"]));
         if (version == 4)
-            foreach (var field in new[] { "display", "displayPresets" }) Assert.True(JsonNode.DeepEquals(old[field], now[field]));
+        {
+            Assert.Equal(TableAppearance.Default, session.Current.Display.Table);
+            Assert.All(session.Current.DisplayPresets.Items, p => Assert.Equal(TableAppearance.Default, p.Display.Table));
+            var legacyShape = now.DeepClone();
+            legacyShape["display"]!["settings"]!.AsObject().Remove("table");
+            foreach (var preset in legacyShape["displayPresets"]!.AsArray()) preset!["settings"]!.AsObject().Remove("table");
+            foreach (var field in new[] { "display", "displayPresets" }) Assert.True(JsonNode.DeepEquals(old[field], legacyShape[field]));
+        }
         var canonical = ProfileJson.Serialize(session.Current);
         Assert.Equal(bytes, File.ReadAllBytes(temp.File)); Assert.Equal(modified, File.GetLastWriteTimeUtc(temp.File));
         Assert.Null(session.SaveLunch(session.Current.ShowLunch));

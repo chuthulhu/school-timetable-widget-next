@@ -39,6 +39,7 @@ public static class ProfileJson
         using var json = JsonDocument.Parse(bytes.ToArray(), new JsonDocumentOptions { AllowDuplicateProperties = false });
         if (!json.RootElement.TryGetProperty("schemaVersion", out var version) || !version.TryGetInt32(out var number))
             throw new JsonException("Missing schema version.");
+        ValidateTableShapes(json.RootElement);
         if (number == 5)
         {
             var current = JsonSerializer.Deserialize<DocumentV5>(bytes, Options) ?? throw new JsonException("Null document.");
@@ -60,6 +61,21 @@ public static class ProfileJson
         return new([semester], semester.SemesterId, profile.Presentation.ShowLunchBetweenPeriods4And5, profile.Display.ToValue(),
             new UserDisplayPresetLibrary(profile.DisplayPresets.Select(p => p is null
                 ? throw new JsonException("Null user preset.") : p.ToValue())));
+    }
+
+    private static void ValidateTableShapes(JsonElement node)
+    {
+        if (node.ValueKind == JsonValueKind.Array)
+        { foreach (var item in node.EnumerateArray()) ValidateTableShapes(item); }
+        else if (node.ValueKind == JsonValueKind.Object)
+        {
+            foreach (var property in node.EnumerateObject())
+            {
+                if (property.Name == "table" && property.Value.ValueKind != JsonValueKind.Object)
+                    throw new JsonException("Invalid table settings.");
+                ValidateTableShapes(property.Value);
+            }
+        }
     }
 
     private static SemesterSet ReadSemester(Guid id, string name, Cell[] timetable, Period[] periods, Override[] dateOverrides)
@@ -197,17 +213,30 @@ public static class ProfileJson
             return new(id, Name, Settings.ToValue(DisplayPresetReference.User(id)));
         }
     }
+    private sealed record TableDto(int Version, Typography Header, Typography Cell,
+        double HeaderOpacity, double CellOpacity, double CurrentOpacity, double BorderOpacity)
+    {
+        public static TableDto From(TableAppearance value) => new(1, Typography.From(value.Header), Typography.From(value.Cell),
+            value.HeaderOpacity, value.CellOpacity, value.CurrentOpacity, value.BorderOpacity);
+        public TableAppearance ToValue()
+        {
+            if (Version != 1) throw new JsonException("Unsupported table appearance version.");
+            var value = new TableAppearance(Header.ToValue(), Cell.ToValue(), HeaderOpacity, CellOpacity, CurrentOpacity, BorderOpacity);
+            value.Validate();
+            return value;
+        }
+    }
     private sealed record DisplayPayload(string Layout, Typography Time, Typography Date, Typography Weekday,
-        Typography Status, bool Use24Hour, bool ShowSeconds, bool ShowDate, bool ShowWeekday, bool ShowStatus)
+        Typography Status, bool Use24Hour, bool ShowSeconds, bool ShowDate, bool ShowWeekday, bool ShowStatus, TableDto? Table = null)
     {
         public static DisplayPayload From(DisplayConfiguration value) => new(value.Layout.ToString(),
             Typography.From(value.Time), Typography.From(value.Date), Typography.From(value.Weekday), Typography.From(value.Status),
-            value.Use24Hour, value.ShowSeconds, value.ShowDate, value.ShowWeekday, value.ShowStatus);
+            value.Use24Hour, value.ShowSeconds, value.ShowDate, value.ShowWeekday, value.ShowStatus, TableDto.From(value.Table));
         public DisplayConfiguration ToValue(DisplayPresetReference reference)
         {
             var value = new DisplayConfiguration(reference, ParseName<DisplayLayout>(Layout),
                 Time.ToValue(), Date.ToValue(), Weekday.ToValue(), Status.ToValue(),
-                Use24Hour, ShowSeconds, ShowDate, ShowWeekday, ShowStatus);
+                Use24Hour, ShowSeconds, ShowDate, ShowWeekday, ShowStatus) { Table = Table?.ToValue() ?? TableAppearance.Default };
             value.Validate();
             return value;
         }

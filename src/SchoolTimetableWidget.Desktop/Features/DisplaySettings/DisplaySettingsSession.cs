@@ -19,7 +19,13 @@ public sealed class DisplaySettingsSession : ObservableObject
         _baselinePresets = Presets = owner.CommittedPresets;
         Load(_baseline);
     }
+    private ElementTypographyDraft[] _tableElements = [];
     public IReadOnlyList<ElementTypographyDraft> Elements => _elements;
+    public IReadOnlyList<ElementTypographyDraft> TableElements => _tableElements;
+    public double HeaderOpacity { get => _configuration.Table.HeaderOpacity; set => Change(_configuration with { Table = _configuration.Table with { HeaderOpacity = value } }); }
+    public double CellOpacity { get => _configuration.Table.CellOpacity; set => Change(_configuration with { Table = _configuration.Table with { CellOpacity = value } }); }
+    public double CurrentOpacity { get => _configuration.Table.CurrentOpacity; set => Change(_configuration with { Table = _configuration.Table with { CurrentOpacity = value } }); }
+    public double BorderOpacity { get => _configuration.Table.BorderOpacity; set => Change(_configuration with { Table = _configuration.Table with { BorderOpacity = value } }); }
     public DisplayPresetReference Preset { get => _configuration.Preset; set { if (value is not null && value != Preset && !IsClosed) Load(Presets.Resolve(value)); } }
     public UserDisplayPresetLibrary Presets { get; private set; }
     public bool CanManageSelected => !IsClosed && Preset.UserId is not null;
@@ -77,7 +83,7 @@ public sealed class DisplaySettingsSession : ObservableObject
     {
         if (!TryApply()) return false;
         IsClosed = true;
-        foreach (var element in _elements) element.Dispose();
+        foreach (var element in _elements.Concat(_tableElements)) element.Dispose();
         return true;
     }
     public void Cancel()
@@ -86,7 +92,7 @@ public sealed class DisplaySettingsSession : ObservableObject
         Presets = _baselinePresets;
         Load(_baseline);
         IsClosed = true;
-        foreach (var element in _elements) element.Dispose();
+        foreach (var element in _elements.Concat(_tableElements)) element.Dispose();
     }
     public bool TrySaveAs(string name) => EditLibrary(() =>
     {
@@ -122,7 +128,9 @@ public sealed class DisplaySettingsSession : ObservableObject
             new PresetImportFont("시간", preset.Display.Time.Font, _owner.Fonts.IsAvailable(preset.Display.Time.Font)),
             new PresetImportFont("날짜", preset.Display.Date.Font, _owner.Fonts.IsAvailable(preset.Display.Date.Font)),
             new PresetImportFont("요일", preset.Display.Weekday.Font, _owner.Fonts.IsAvailable(preset.Display.Weekday.Font)),
-            new PresetImportFont("상태", preset.Display.Status.Font, _owner.Fonts.IsAvailable(preset.Display.Status.Font))
+            new PresetImportFont("상태", preset.Display.Status.Font, _owner.Fonts.IsAvailable(preset.Display.Status.Font)),
+            new PresetImportFont("표 머리글", preset.Display.Table.Header.Font, _owner.Fonts.IsAvailable(preset.Display.Table.Header.Font)),
+            new PresetImportFont("표 셀", preset.Display.Table.Cell.Font, _owner.Fonts.IsAvailable(preset.Display.Table.Cell.Font))
         };
         return new(preset, collision, fonts);
     }
@@ -183,10 +191,11 @@ public sealed class DisplaySettingsSession : ObservableObject
     }
     private void Load(DisplayConfiguration value)
     {
-        foreach (var element in _elements) { element.PropertyChanged -= ElementChanged; element.Dispose(); }
+        foreach (var element in _elements.Concat(_tableElements)) { element.PropertyChanged -= ElementChanged; element.Dispose(); }
         _configuration = value;
         _elements = [new("시간", value.Time, _owner.Fonts), new("날짜", value.Date, _owner.Fonts), new("요일", value.Weekday, _owner.Fonts), new("상태", value.Status, _owner.Fonts)];
-        foreach (var element in _elements) element.PropertyChanged += ElementChanged;
+        _tableElements = [new("표 머리글", value.Table.Header, _owner.Fonts), new("표 셀", value.Table.Cell, _owner.Fonts)];
+        foreach (var element in _elements.Concat(_tableElements)) element.PropertyChanged += ElementChanged;
         Preview();
         OnPropertyChanged(string.Empty);
         OnPropertyChanged(nameof(Preset));
@@ -202,14 +211,15 @@ public sealed class DisplaySettingsSession : ObservableObject
     private void ElementChanged(object? sender, PropertyChangedEventArgs e) { if (!IsClosed) Preview(); }
     private void Preview() { if (TryCandidate(out var candidate)) _owner.Preview(candidate!); }
     private static IEnumerable<FontSelection> FontsOf(DisplayConfiguration value) =>
-        [value.Time.Font, value.Date.Font, value.Weekday.Font, value.Status.Font];
+        [value.Time.Font, value.Date.Font, value.Weekday.Font, value.Status.Font, value.Table.Header.Font, value.Table.Cell.Font];
     private bool TryCandidate(out DisplayConfiguration? candidate)
     {
         candidate = null;
         try
         {
             var value = _configuration with { Time = _elements[0].Create(), Date = _elements[1].Create(),
-                Weekday = _elements[2].Create(), Status = _elements[3].Create() };
+                Weekday = _elements[2].Create(), Status = _elements[3].Create(),
+                Table = _configuration.Table with { Header = _tableElements[0].Create(), Cell = _tableElements[1].Create() } };
             value.Validate();
             candidate = value;
             ErrorText = "";

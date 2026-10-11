@@ -6,6 +6,55 @@
         Title="표시 설정" Width="730" Height="640" MinWidth="640" MinHeight="420"
         WindowStartupLocation="CenterOwner" ShowInTaskbar="False" FontSize="14">
     <Window.Resources>
+
+        <DataTemplate x:Key="TypographyEditor">
+            <GroupBox Header="{Binding Label}" Margin="0,0,0,10" Padding="10">
+                <StackPanel>
+                    <Grid>
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*"/>
+                            <ColumnDefinition Width="76"/>
+                            <ColumnDefinition Width="90"/>
+                            <ColumnDefinition Width="94"/>
+                        </Grid.ColumnDefinitions>
+                        <Grid.RowDefinitions><RowDefinition Height="Auto"/><RowDefinition Height="Auto"/></Grid.RowDefinitions>
+                        <StackPanel Orientation="Horizontal" Margin="0,0,0,5">
+                            <ComboBox x:Name="FontSourceSelector" Width="140"
+                                      ItemsSource="{x:Static local:DisplayChoices.FontSources}" DisplayMemberPath="Label" SelectedValuePath="Value"
+                                      SelectedValue="{Binding Source, Mode=TwoWay}" AutomationProperties.Name="{Binding Label, StringFormat={}{0} 글꼴 종류}"/>
+                        </StackPanel>
+                        <TextBlock Grid.Column="1" Text="글자 크기" Margin="8,0,0,5"/>
+                        <TextBlock Grid.Column="2" Text="굵기" Margin="8,0,0,5"/>
+                        <TextBlock Grid.Column="3" Text="글자 모양" Margin="8,0,0,5"/>
+                        <ComboBox x:Name="FontSelector" Grid.Row="1" IsEditable="{Binding IsSystem}" IsTextSearchEnabled="True"
+                                  ItemsSource="{Binding Families}"
+                                  Text="{Binding Family, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                                  AutomationProperties.Name="{Binding Label, StringFormat={}{0} 글꼴}"/>
+                        <TextBox x:Name="SizeInput" Grid.Row="1" Grid.Column="1" Margin="8,0,0,0" Padding="6,4"
+                                 Text="{Binding SizeText, UpdateSourceTrigger=PropertyChanged}"
+                                 AutomationProperties.Name="{Binding Label, StringFormat={}{0} 글자 크기}"/>
+                        <ComboBox x:Name="WeightSelector" Grid.Row="1" Grid.Column="2" Margin="8,0,0,0"
+                                  ItemsSource="{x:Static local:DisplayChoices.Weights}" DisplayMemberPath="Label" SelectedValuePath="Value"
+                                  SelectedValue="{Binding Weight, Mode=TwoWay}"
+                                  AutomationProperties.Name="{Binding Label, StringFormat={}{0} 굵기}"/>
+                        <ComboBox x:Name="StyleSelector" Grid.Row="1" Grid.Column="3" Margin="8,0,0,0"
+                                  ItemsSource="{x:Static local:DisplayChoices.Styles}" DisplayMemberPath="Label" SelectedValuePath="Value"
+                                  SelectedValue="{Binding Style, Mode=TwoWay}"
+                                  AutomationProperties.Name="{Binding Label, StringFormat={}{0} 글자 모양}"/>
+                    </Grid>
+                    <DockPanel Margin="0,6,0,0">
+                        <Button x:Name="DownloadFontButton" DockPanel.Dock="Right" Content="{Binding DownloadLabel}"
+                                IsEnabled="{Binding CanDownload}" Click="DownloadFont_Click"
+                                Visibility="{Binding IsOnline, Converter={StaticResource BooleanVisibility}}"/>
+                        <TextBlock Text="{Binding FontStatus}" Foreground="#755000" FontSize="12" TextWrapping="Wrap" VerticalAlignment="Center"/>
+                    </DockPanel>
+                    <Expander Header="글꼴 정보 / 라이선스" FontSize="12" Margin="0,4,0,0">
+                        <TextBlock Text="{Binding FontInformation}" TextWrapping="Wrap" Foreground="#555555"/>
+                    </Expander>
+                </StackPanel>
+            </GroupBox>
+        </DataTemplate>
+
         <BooleanToVisibilityConverter x:Key="BooleanVisibility"/>
         <Style TargetType="Button">
             <Setter Property="Padding" Value="16,7"/>
@@ -28,7 +77,7 @@
             <RowDefinition Height="Auto"/>
         </Grid.RowDefinitions>
         <StackPanel Margin="0,0,0,14">
-            <TextBlock Text="시계와 날짜를 원하는 모습으로" FontSize="21" FontWeight="SemiBold"/>
+            <TextBlock Text="시계와 시간표를 원하는 모습으로" FontSize="21" FontWeight="SemiBold"/>
             <TextBlock Text="변경하면 시간표 화면에 미리 보여요. 적용 또는 확인을 누르면 저장됩니다."
                        Margin="0,7,0,0" TextWrapping="Wrap"/>
         </StackPanel>
@@ -59,58 +108,21 @@
                     <CheckBox x:Name="StatusCheckBox" Content="상태 표시" IsChecked="{Binding ShowStatus}"/>
                 </WrapPanel>
                 <TextBlock Text="24시간제를 끄면 오전·오후를 함께 표시합니다." Foreground="#555555" Margin="0,0,0,12"/>
-                <ItemsControl x:Name="ElementEditors" ItemsSource="{Binding Elements}">
-                    <ItemsControl.ItemTemplate>
-                        <DataTemplate>
-                            <GroupBox Header="{Binding Label}" Margin="0,0,0,10" Padding="10">
-                                <StackPanel>
-                                    <Grid>
-                                        <Grid.ColumnDefinitions>
-                                            <ColumnDefinition Width="*"/>
-                                            <ColumnDefinition Width="76"/>
-                                            <ColumnDefinition Width="90"/>
-                                            <ColumnDefinition Width="94"/>
-                                        </Grid.ColumnDefinitions>
-                                        <Grid.RowDefinitions><RowDefinition Height="Auto"/><RowDefinition Height="Auto"/></Grid.RowDefinitions>
-                                        <StackPanel Orientation="Horizontal" Margin="0,0,0,5">
-                                            <ComboBox x:Name="FontSourceSelector" Width="140"
-                                                      ItemsSource="{x:Static local:DisplayChoices.FontSources}" DisplayMemberPath="Label" SelectedValuePath="Value"
-                                                      SelectedValue="{Binding Source, Mode=TwoWay}" AutomationProperties.Name="{Binding Label, StringFormat={}{0} 글꼴 종류}"/>
-                                        </StackPanel>
-                                        <TextBlock Grid.Column="1" Text="글자 크기" Margin="8,0,0,5"/>
-                                        <TextBlock Grid.Column="2" Text="굵기" Margin="8,0,0,5"/>
-                                        <TextBlock Grid.Column="3" Text="글자 모양" Margin="8,0,0,5"/>
-                                        <ComboBox x:Name="FontSelector" Grid.Row="1" IsEditable="{Binding IsSystem}" IsTextSearchEnabled="True"
-                                                  ItemsSource="{Binding Families}"
-                                                  Text="{Binding Family, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
-                                                  AutomationProperties.Name="{Binding Label, StringFormat={}{0} 글꼴}"/>
-                                        <TextBox x:Name="SizeInput" Grid.Row="1" Grid.Column="1" Margin="8,0,0,0" Padding="6,4"
-                                                 Text="{Binding SizeText, UpdateSourceTrigger=PropertyChanged}"
-                                                 AutomationProperties.Name="{Binding Label, StringFormat={}{0} 글자 크기}"/>
-                                        <ComboBox x:Name="WeightSelector" Grid.Row="1" Grid.Column="2" Margin="8,0,0,0"
-                                                  ItemsSource="{x:Static local:DisplayChoices.Weights}" DisplayMemberPath="Label" SelectedValuePath="Value"
-                                                  SelectedValue="{Binding Weight, Mode=TwoWay}"
-                                                  AutomationProperties.Name="{Binding Label, StringFormat={}{0} 굵기}"/>
-                                        <ComboBox x:Name="StyleSelector" Grid.Row="1" Grid.Column="3" Margin="8,0,0,0"
-                                                  ItemsSource="{x:Static local:DisplayChoices.Styles}" DisplayMemberPath="Label" SelectedValuePath="Value"
-                                                  SelectedValue="{Binding Style, Mode=TwoWay}"
-                                                  AutomationProperties.Name="{Binding Label, StringFormat={}{0} 글자 모양}"/>
-                                    </Grid>
-                                    <DockPanel Margin="0,6,0,0">
-                                        <Button x:Name="DownloadFontButton" DockPanel.Dock="Right" Content="{Binding DownloadLabel}"
-                                                IsEnabled="{Binding CanDownload}" Click="DownloadFont_Click"
-                                                Visibility="{Binding IsOnline, Converter={StaticResource BooleanVisibility}}"/>
-                                        <TextBlock Text="{Binding FontStatus}" Foreground="#755000" FontSize="12" TextWrapping="Wrap" VerticalAlignment="Center"/>
-                                    </DockPanel>
-                                    <Expander Header="글꼴 정보 / 라이선스" FontSize="12" Margin="0,4,0,0">
-                                        <TextBlock Text="{Binding FontInformation}" TextWrapping="Wrap" Foreground="#555555"/>
-                                    </Expander>
-                                </StackPanel>
-                            </GroupBox>
-                        </DataTemplate>
-                    </ItemsControl.ItemTemplate>
-                </ItemsControl>
-                <TextBlock Text="글자 크기: 시간 10~96, 날짜·요일·상태 8~48" Foreground="#555555"/>
+                <ItemsControl x:Name="ElementEditors" ItemsSource="{Binding Elements}" ItemTemplate="{StaticResource TypographyEditor}"/>
+                <ItemsControl x:Name="TableElementEditors" ItemsSource="{Binding TableElements}" ItemTemplate="{StaticResource TypographyEditor}"/>
+                <GroupBox Header="표 불투명도 · 왼쪽 0%, 오른쪽 100%" Margin="0,8">
+                    <StackPanel Margin="10">
+                        <TextBlock Text="머리글 배경"/>
+                        <Slider x:Name="HeaderOpacitySlider" Minimum="0" Maximum="1" Value="{Binding HeaderOpacity, Mode=TwoWay}" AutomationProperties.Name="머리글 배경 불투명도"/>
+                        <TextBlock Text="일반 셀 배경"/>
+                        <Slider x:Name="CellOpacitySlider" Minimum="0" Maximum="1" Value="{Binding CellOpacity, Mode=TwoWay}" AutomationProperties.Name="일반 셀 배경 불투명도"/>
+                        <TextBlock Text="현재 교시 배경"/>
+                        <Slider x:Name="CurrentOpacitySlider" Minimum="0" Maximum="1" Value="{Binding CurrentOpacity, Mode=TwoWay}" AutomationProperties.Name="현재 교시 배경 불투명도"/>
+                        <TextBlock Text="표 테두리"/>
+                        <Slider x:Name="BorderOpacitySlider" Minimum="0" Maximum="1" Value="{Binding BorderOpacity, Mode=TwoWay}" AutomationProperties.Name="표 테두리 불투명도"/>
+                    </StackPanel>
+                </GroupBox>
+                <TextBlock Text="글자 크기: 시간 10~96, 날짜·요일·상태·표 8~48" Foreground="#555555"/>
             </StackPanel>
         </ScrollViewer>
         <TextBlock Grid.Row="2" Text="{Binding ErrorText}" TextWrapping="Wrap" Foreground="#A32323" Margin="0,10"/>

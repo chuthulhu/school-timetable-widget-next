@@ -16,6 +16,46 @@ namespace SchoolTimetableWidget.Tests.DisplaySettings;
 public class DisplayViewTests
 {
     [Fact]
+    public void TablePreviewApplyCancelPreservesExactOpacityAndIndependentFonts() => HighlightTestDispatcher.Run(() =>
+    {
+        var owner = DisplayModelTests.Owner(); var session = owner.Open();
+        session.HeaderOpacity = 120d / 255; session.CellOpacity = 30d / 255;
+        session.CurrentOpacity = 150d / 255; session.BorderOpacity = 200d / 255;
+        session.TableElements[0].Family = "없는 머리글 글꼴";
+        session.TableElements[1].Family = "없는 본문 글꼴";
+        Assert.Equal(120d / 255, owner.Current.Table.HeaderOpacity);
+        Assert.Equal("없는 머리글 글꼴", owner.Current.Table.Header.Font.Family);
+        Assert.Equal("없는 본문 글꼴", owner.Current.Table.Cell.Font.Family);
+        Assert.True(session.TryApply()); var baseline = owner.Committed;
+        session.HeaderOpacity = 0; session.TableElements[1].Family = "다른 글꼴";
+        session.Cancel(); Assert.Equal(baseline, owner.Current);
+    });
+
+    [Fact]
+    public void TableBrushOpacityNeverFadesTextOrWholeWindow() => HighlightTestDispatcher.Run(() =>
+    {
+        var owner = DisplayModelTests.Owner(); var model = new WeeklyTimetableViewModel(WeeklyTimetable.Empty());
+        var window = new MainWindow(new(), model, display: owner);
+        try
+        {
+            var session = owner.Open(); session.HeaderOpacity = .2; session.CellOpacity = .3;
+            session.CurrentOpacity = .4; session.BorderOpacity = .5;
+            var table = (WeeklyTimetableView)window.FindName("Timetable");
+            Layout((FrameworkElement)window.Content, 800, 600);
+            var cell = Descendants<Border>(table).First(b => b.Child is TextBlock && b.DataContext is TimetableCellViewModel);
+            // A separate minimal hit surface preserves blank-cell interaction on the layered widget.
+            Assert.Equal(1, ((SolidColorBrush)table.Background).Color.A);
+            Assert.Equal(.3, cell.Background.Opacity); Assert.Equal(.5, cell.BorderBrush.Opacity);
+            Assert.Equal(1, cell.Opacity); Assert.Equal(1, ((TextBlock)cell.Child).Opacity); Assert.Equal(1, window.Opacity);
+            Assert.Equal(.2, ((Border)table.FindName("CornerHeader")).Background.Opacity);
+            model.Cells[0].SetIsCurrent(true); Drain(table);
+            Assert.Equal(.4, cell.Background.Opacity);
+            session.Cancel();
+        }
+        finally { window.Close(); }
+    });
+
+    [Fact]
     public void DialogSelectorsAndPerElementInputsPreviewAndApplyWithoutClosing() => HighlightTestDispatcher.Run(() =>
     {
         var owner = DisplayModelTests.Owner(); var session = owner.Open();
