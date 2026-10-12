@@ -8,7 +8,8 @@
              xmlns:display="clr-namespace:SchoolTimetableWidget.Desktop.Features.DisplaySettings"
              xmlns:dates="clr-namespace:SchoolTimetableWidget.Desktop.Features.DateOverrides"
              xmlns:windows="clr-namespace:SchoolTimetableWidget.Desktop.Infrastructure.Windows"
-             FontSize="16" MinWidth="500">
+             FontSize="16" MinWidth="500" Background="#01000000">
+    <!-- Minimal layered-window hit surface keeps empty cells interactive when their brush is zero-alpha. -->
     <UserControl.CommandBindings>
         <CommandBinding Command="{x:Static dates:DateOverrideCommands.Edit}" Executed="DateOverride_Executed" CanExecute="DateOverride_CanExecute" />
         <CommandBinding Command="{x:Static dates:DateOverrideCommands.Lunch}" Executed="Lunch_Executed" CanExecute="Lunch_CanExecute" />
@@ -23,6 +24,8 @@
     <UserControl.ContextMenu>
         <ContextMenu>
             <MenuItem Header="표시 설정..." InputGestureText="Ctrl+," Command="{x:Static display:DisplaySettingsCommands.Open}"
+                      CommandTarget="{Binding PlacementTarget, RelativeSource={RelativeSource AncestorType=ContextMenu}}"/>
+            <MenuItem Header="창 설정..." Command="{x:Static windows:WindowPlacementCommands.Settings}"
                       CommandTarget="{Binding PlacementTarget, RelativeSource={RelativeSource AncestorType=ContextMenu}}"/>
             <MenuItem Header="창 위치/크기 초기화" Command="{x:Static windows:WindowPlacementCommands.Reset}"
                       CommandTarget="{Binding PlacementTarget, RelativeSource={RelativeSource AncestorType=ContextMenu}}"/>
@@ -51,6 +54,18 @@
         </ContextMenu>
     </UserControl.ContextMenu>
     <UserControl.Resources>
+        <Style x:Key="TableHeaderText" TargetType="TextBlock">
+            <Setter Property="FontFamily" Value="{DynamicResource TableHeaderFont}"/>
+            <Setter Property="FontSize" Value="{DynamicResource TableHeaderSize}"/>
+            <Setter Property="FontWeight" Value="{DynamicResource TableHeaderWeight}"/>
+            <Setter Property="FontStyle" Value="{DynamicResource TableHeaderStyle}"/>
+        </Style>
+        <Style x:Key="TableCellText" TargetType="TextBlock">
+            <Setter Property="FontFamily" Value="{DynamicResource TableCellFont}"/>
+            <Setter Property="FontSize" Value="{DynamicResource TableCellSize}"/>
+            <Setter Property="FontWeight" Value="{DynamicResource TableCellWeight}"/>
+            <Setter Property="FontStyle" Value="{DynamicResource TableCellStyle}"/>
+        </Style>
         <Style x:Key="WeekArrow" TargetType="Button">
             <Setter Property="Background" Value="Transparent"/>
             <Setter Property="Foreground" Value="#485563"/>
@@ -75,16 +90,16 @@
         </Style>
         <!-- Candidate spacing only; content participates in WPF measurement. -->
         <Style x:Key="SlotBorder" TargetType="Border">
-            <Setter Property="BorderBrush" Value="{DynamicResource {x:Static SystemColors.ControlLightBrushKey}}" />
+            <Setter Property="BorderBrush" Value="{DynamicResource TableBorderBrush}" />
             <Setter Property="BorderThickness" Value="0,0,1,1" />
             <Setter Property="Padding" Value="8,6" />
         </Style>
         <Style x:Key="BodySlotBorder" TargetType="Border" BasedOn="{StaticResource SlotBorder}">
-            <Setter Property="Background" Value="Transparent" />
+            <Setter Property="Background" Value="{DynamicResource TableCellBrush}" />
             <Style.Triggers>
                 <!-- Render-only candidate: no thickness, font, padding or template changes. -->
                 <DataTrigger Binding="{Binding IsCurrent, Mode=OneWay}" Value="True">
-                    <Setter Property="Background" Value="#FFF3CD" />
+                    <Setter Property="Background" Value="{DynamicResource TableCurrentBrush}" />
                 </DataTrigger>
             </Style.Triggers>
         </Style>
@@ -112,25 +127,25 @@
             </Setter>
         </Style>
         <Style x:Key="DateHeaderBorder" TargetType="Border" BasedOn="{StaticResource SlotBorder}">
-            <Setter Property="Background" Value="{DynamicResource {x:Static SystemColors.ControlBrushKey}}" />
+            <Setter Property="Background" Value="{DynamicResource TableHeaderBrush}" />
             <Style.Triggers>
                 <DataTrigger Binding="{Binding IsToday}" Value="True">
-                    <Setter Property="Background" Value="#E5EFF6" />
+                    <Setter Property="Background" Value="{DynamicResource TableTodayHeaderBrush}" />
                 </DataTrigger>
             </Style.Triggers>
         </Style>
         <DataTemplate x:Key="DateHeaderTemplate">
             <Border Style="{StaticResource DateHeaderBorder}">
                 <StackPanel VerticalAlignment="Center">
-                    <TextBlock Text="{Binding DateText}" FontSize="15" FontWeight="SemiBold" TextAlignment="Center" VerticalAlignment="Center" TextWrapping="NoWrap" />
-                    <TextBlock Text="{Binding WeekdayText}" FontSize="13" Margin="0,3,0,0" Foreground="#52606D" TextAlignment="Center" VerticalAlignment="Center" TextWrapping="NoWrap" />
+                    <TextBlock Text="{Binding DateText}" Style="{StaticResource TableHeaderText}" TextAlignment="Center" VerticalAlignment="Center" TextWrapping="NoWrap" />
+                    <TextBlock Text="{Binding WeekdayText}" Style="{StaticResource TableHeaderText}" Margin="0,3,0,0" Foreground="#52606D" TextAlignment="Center" VerticalAlignment="Center" TextWrapping="NoWrap" />
                 </StackPanel>
             </Border>
         </DataTemplate>
         <DataTemplate x:Key="HeaderTemplate">
             <Border Style="{StaticResource SlotBorder}"
-                    Background="{DynamicResource {x:Static SystemColors.ControlBrushKey}}">
-                <TextBlock Text="{Binding Mode=OneWay}" TextAlignment="Center"
+                    Background="{DynamicResource TableHeaderBrush}">
+                <TextBlock Style="{StaticResource TableHeaderText}" Text="{Binding Mode=OneWay}" TextAlignment="Center"
                            VerticalAlignment="Center" TextWrapping="NoWrap" />
             </Border>
         </DataTemplate>
@@ -146,7 +161,7 @@
             <RowDefinition Height="*" />
         </Grid.RowDefinitions>
         <Border x:Name="CornerHeader" Style="{StaticResource SlotBorder}"
-                Background="{DynamicResource {x:Static SystemColors.ControlBrushKey}}">
+                Background="{DynamicResource TableHeaderBrush}">
             <Button x:Name="PreviousWeekButton" Content="‹" Style="{StaticResource WeekArrow}" Command="{Binding PreviousWeekCommand}"
                     ToolTip="이전 주" AutomationProperties.Name="이전 주" Padding="0" MinHeight="28" />
         </Border>
@@ -186,7 +201,7 @@
                                                 ToolTip="더블클릭/F2로 표시된 대상 편집 · 우클릭으로 가져오기/일과/날짜별 예외 · Ctrl+V 학교 양식 · 적용 성공 시 저장"
                                                 AutomationProperties.Name="{Binding SlotLabel}">
                         <Border Style="{StaticResource BodySlotBorder}" MinHeight="44">
-                            <TextBlock Text="{Binding DisplayText, Mode=OneWay}"
+                            <TextBlock Style="{StaticResource TableCellText}" Text="{Binding DisplayText, Mode=OneWay}"
                                        TextAlignment="Center" VerticalAlignment="Center"
                                        TextWrapping="Wrap" TextTrimming="None" />
                         </Border>

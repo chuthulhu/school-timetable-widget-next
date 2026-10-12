@@ -59,7 +59,8 @@ internal sealed class WpfWidgetWindow : IWidgetWindow
         _placement.PrepareForShow();
         _window.Show();
         WindowContentMinimum.Refresh(_window);
-        _window.Activate(); // Best effort; no topmost or OS focus-policy workaround.
+        _window.Activate(); // Explicit tray/second-instance action only.
+        NativeWindowPlacement.KeepBelowApplications(_window);
     }
     public void Hide() => _window.Hide();
     public void Dispose()

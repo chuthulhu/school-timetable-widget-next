@@ -1,5 +1,56 @@
 # Continuity and workspace verification
 
+## Data interchange CI gate — 2026-10-07
+
+Verified commit: `904aa668ab62a71c13b642820503dd2d7a0b2a6b`, branch
+`codex/data-interchange`, [draft PR #2](https://github.com/chuthulhu/school-timetable-widget-next/pull/2).
+GitHub Actions [run 37587681532](https://github.com/chuthulhu/school-timetable-widget-next/actions/runs/37587681532)
+checked out repository source with credentials persistence disabled and selected SDK 10.0.401
+under global.json. Both jobs completed successfully:
+
+- Linux Core-only: **299 passed, 0 failed/skipped**.
+- Windows full solution: restore/build/test succeeded; **1,263 passed, 0 failed/skipped,
+  0 build warnings/errors**.
+- Windows bootstrap control flow: **18 isolated cases passed**, using injected commands;
+  no actual installer or SDK command was invoked by those bootstrap cases.
+
+The initial run passed 1,262/1,263 Windows tests and exposed a test requiring exactly
+IOException for a locked destination. Windows returned UnauthorizedAccessException from
+File.Move instead. The test now checks either documented file-access failure while still
+requiring unchanged destination bytes and no leftover temporary file. Production code did
+not change for this correction; the complete rerun above passed.
+
+This verifies Core codecs, Desktop data/persistence integration and the existing full suite
+on GitHub-hosted Windows. It does **not** prove a blank user-PC installation, live KRISS
+connectivity, or native window/tray/IME interaction acceptance. No user's desktop input was
+controlled. User-facing import/share commands remain deferred.
+
+The user authorized GitHub upload/push/updates after security review. Changed-file and
+commit-diff checks found no credential/privacy signatures or actual user-data files, and
+connected repository identity/ownership matched origin. The reviewed branch is uploaded;
+main was not merged. Documentation-only follow-up records this evidence.
+
+## Data interchange local committed-checkout gate — 2026-10-07
+
+Verified commit: `20711610f0f1b6b29cf971d10eecea6519cac21c`, on
+`codex/data-interchange`. A new empty TEMP directory was populated with
+`git clone --no-local` from the committed repository; no original bin/obj or untracked
+files were copied. Linux x64 SDK 10.0.400 and the existing NuGet cache were used.
+
+`dotnet test tests/SchoolTimetableWidget.Tests/SchoolTimetableWidget.Tests.csproj
+-p:CoreOnlyTests=true` passed **299 tests, 0 failed/skipped**. Full solution cross-build
+with `-m:1 -p:EnableWindowsTargeting=true -p:CoreOnlyTests=false` passed with
+**0 warnings/errors**. Changed-document local links, workflow YAML and `git diff --check`
+passed. No XAML/native window/tray/input/OS adapter files changed.
+
+This proves committed-checkout completeness for the Linux pure-source tests and Windows
+source compilation on the existing SDK/cache. It does **not** prove execution of the
+Windows integration suite/bootstrap or native UI/IME/OS behavior. Independent source review
+found no actionable production issue; two integration-test assumptions were corrected.
+The later CI gate above verifies the Windows suite. Automatic approval review initially
+rejected remote upload; the user's subsequent authorization and security review allowed the
+branch upload and CI execution recorded above.
+
 ## KRISS committed-checkout gate — 2026-09-29
 
 Implementation commit: `da3aedca70bd4e5668ffdf7e331a62b34f743733`

@@ -92,7 +92,7 @@ public class ClockSynchronizationTests
         public readonly System.Threading.Channels.Channel<int> Entered = System.Threading.Channels.Channel.CreateUnbounded<int>();
         private TaskCompletionSource<NtpSyncResult> _completion = new(TaskCreationOptions.RunContinuationsAsynchronously);
         public Task<NtpSyncResult> SynchronizeAsync(CancellationToken token)
-        { Token = token; Entered.Writer.TryWrite(++Calls); return _completion.Task; }
+        { Token = token; var completion = _completion.Task; Entered.Writer.TryWrite(++Calls); return completion; }
         public void Complete(bool success)
         {
             var completion = _completion; _completion = new(TaskCreationOptions.RunContinuationsAsynchronously);

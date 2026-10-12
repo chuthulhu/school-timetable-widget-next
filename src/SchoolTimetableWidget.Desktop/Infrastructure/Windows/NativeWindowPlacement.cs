@@ -70,6 +70,37 @@ internal sealed class NativeWindowPlacement(Window window) : IWindowPlacementDes
             Math.Max(1, (int)Math.Floor(bounds.Width * dpi)), Math.Max(1, (int)Math.Floor(bounds.Height * dpi)), 0x0014));
     }
 
+    // Event-driven z-order only. Never activate on a timer or change any dialog's HWND.
+    internal static bool HasVisibleDialog(Window owner)
+    {
+        var handle = new WindowInteropHelper(owner).Handle;
+        return owner.OwnedWindows.Cast<Window>().Any(w => w.IsVisible) ||
+            (handle != 0 && !IsWindowEnabled(handle));
+    }
+    internal static void KeepBelowApplications(Window owner)
+    {
+        var handle = new WindowInteropHelper(owner).Handle;
+        if (handle != 0 && owner.IsVisible && !HasVisibleDialog(owner))
+            Check(SetWindowPos(handle, new nint(1), 0, 0, 0, 0, 0x0013)); // HWND_BOTTOM, no move/size/activate
+    }
+    internal static void KeepPositionBelowApplications(Window owner, nint position)
+    {
+        if (position == 0 || HasVisibleDialog(owner)) return;
+        var value = Marshal.PtrToStructure<WindowPosition>(position);
+        value.InsertAfter = new nint(1); // HWND_BOTTOM
+        value.Flags = (value.Flags | 0x0010u) & ~0x0004u; // no activate, permit z-order
+        Marshal.StructureToPtr(value, position, false);
+    }
+    [StructLayout(LayoutKind.Sequential)]
+    private struct WindowPosition
+    {
+        public nint Window, InsertAfter;
+        public int X, Y, Width, Height;
+        public uint Flags;
+    }
+    [DllImport("user32.dll")] [return: MarshalAs(UnmanagedType.Bool)]
+    private static extern bool IsWindowEnabled(nint window);
+
     private static WindowWorkArea WorkArea(MonitorInfo info, double scale) => new(info.Device,
         info.WorkArea.Left, info.WorkArea.Top, info.WorkArea.Right - info.WorkArea.Left,
         info.WorkArea.Bottom - info.WorkArea.Top, scale, (info.Flags & 1) != 0);

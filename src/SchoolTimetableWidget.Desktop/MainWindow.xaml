@@ -7,10 +7,12 @@
         xmlns:timetable="clr-namespace:SchoolTimetableWidget.Desktop.Features.Timetable"
         xmlns:windows="clr-namespace:SchoolTimetableWidget.Desktop.Infrastructure.Windows"
         windows:WindowContentMinimum.IsEnabled="True"
-        Title="School Timetable Widget" Height="600" Width="800" ShowInTaskbar="False">
+        Title="School Timetable Widget" Height="600" Width="800" ShowInTaskbar="False" WindowStyle="None" AllowsTransparency="True" Background="Transparent" ResizeMode="CanResize">
     <Window.ContextMenu>
         <ContextMenu>
             <MenuItem Header="표시 설정..." InputGestureText="Ctrl+," Command="{x:Static display:DisplaySettingsCommands.Open}"
+                      CommandTarget="{Binding PlacementTarget, RelativeSource={RelativeSource AncestorType=ContextMenu}}"/>
+            <MenuItem Header="창 설정..." Command="{x:Static windows:WindowPlacementCommands.Settings}"
                       CommandTarget="{Binding PlacementTarget, RelativeSource={RelativeSource AncestorType=ContextMenu}}"/>
             <MenuItem Header="창 위치/크기 초기화" Command="{x:Static windows:WindowPlacementCommands.Reset}"
                       CommandTarget="{Binding PlacementTarget, RelativeSource={RelativeSource AncestorType=ContextMenu}}"/>
@@ -32,5 +34,8 @@
         <Button x:Name="RecoveryButton" Content="복원 전 상태로 되돌리기" Command="{x:Static backup:BackupCommands.Recover}" HorizontalAlignment="Left" Padding="12,6" Margin="10,2" Visibility="Collapsed"/>
         </StackPanel>
         <timetable:WeeklyTimetableView x:Name="Timetable" Grid.Row="2" />
+        <!-- A one-alpha resize rim gives layered HWND edges native hit-test coverage.
+             The transparent interior retains native transparent-area behavior. -->
+        <Border Grid.RowSpan="3" BorderThickness="6" BorderBrush="#01000000" IsHitTestVisible="False"/>
     </Grid>
 </Window>

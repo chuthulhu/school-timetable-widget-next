@@ -48,6 +48,18 @@ public class ProfileStorageTests
     }
 
     [Fact]
+    public void PresetOnlyAppearanceUpgradeStillBacksUpOriginalProfile()
+    {
+        using var temp = new TempProfile();
+        var node = JsonNode.Parse(ProfileJson.Serialize(ProfileBackupFileTests.Sample()))!;
+        node["profile"]!["displayPresets"]![0]!["settings"]!.AsObject().Remove("table");
+        var original = System.Text.Encoding.UTF8.GetBytes(node.ToJsonString()); File.WriteAllBytes(temp.File, original);
+        using var store = new JsonProfileStore(temp.Directory); var session = new ProfileSession(store);
+        Assert.Null(session.SaveLunch(session.Current.ShowLunch));
+        Assert.Equal(original, File.ReadAllBytes(Assert.Single(Directory.GetFiles(temp.Directory, "profile-before-table-*.json"))));
+    }
+
+    [Fact]
     public void MissingDoesNotCreateProfileAndFirstSaveRestoresEmptyDefaults()
     {
         using var temp = new TempProfile();
