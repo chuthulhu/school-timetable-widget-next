@@ -97,3 +97,20 @@ Evidence logs, exact changed-file inventory, source hashes, patch and restoratio
 kept outside the repository to respect file scope.
 The review found no remaining actionable source defect in the inspected scope. This does not
 replace the pending Windows test run and native acceptance list above.
+
+### Subsequent Windows evidence — 2026-10-19
+
+The dated pending statements above describe the 2026-10-08 checkpoint. At source
+`5f90852e263b61ec44813ae925769b9e192e4398`, Windows Debug build and the full
+1,294-test suite passed on a laptop; 18 isolated bootstrap cases passed too.
+[The native verification report](../WINDOWS-NATIVE-VERIFICATION-2026-10-19.md)
+records scoped 100% DPI checks and the precise evidence boundaries.
+
+With target foreground and pointer ownership verified, left-edge resizing worked with
+movement lock off/on and transparent-cell double-click opened the editor. Initial
+no-change pointer observations are not confirmed resize/input defects. Actual screen
+captures at 21:26–21:30 KST showed desktop icons through transparent cells, with poor
+contrast where black text overlapped dark background/icons. Window-only captures had
+not established that composition. Actual Korean IME composition and 150/200% DPI remain
+unverified, alongside the report's other untested combinations. No behavioral decision,
+source code, deployment or complete native acceptance is introduced by this evidence note.

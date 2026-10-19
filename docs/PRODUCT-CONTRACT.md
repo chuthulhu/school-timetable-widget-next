@@ -1072,7 +1072,10 @@ No schema v6, migration, UI, importer, backup change or speculative code is auth
 
 The user approved this implementation scope explicitly. [ADR 0026](adr/0026-widget-appearance-and-window-interaction.md)
 supersedes earlier exclusions for table typography, brush opacity, movement lock and numeric size.
-Implementation is source/cross-build verified; native Windows acceptance remains unexecuted.
+Implementation was initially source/cross-build verified. Scoped Windows runtime and
+native checks were subsequently executed on 2026-10-19; [dated evidence and remaining
+limits](WINDOWS-NATIVE-VERIFICATION-2026-10-19.md) distinguish those checks from complete
+native acceptance. This evidence update does not change the approved behavior below.
 
 - Table header background, ordinary cell background, current-period background and border have
   independent finite 0–1 opacity. Only brushes receive it; text and Window.Opacity stay opaque.

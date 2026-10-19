@@ -23,6 +23,26 @@ not authoritative and are not needed to build or resume development.
 
 ## Verified implementation baseline
 
+### Laptop Windows verification — 2026-10-19
+
+Source `5f90852e263b61ec44813ae925769b9e192e4398` was checked on a Windows x64
+laptop with SDK 10.0.402. Debug restore/build succeeded with zero warnings/errors;
+the full Windows suite passed **1,294/1,294** and the isolated bootstrap passed
+**18 cases** on 2026-10-19. These are prior execution results, not tests rerun for
+this documentation update. [Dated native verification](WINDOWS-NATIVE-VERIFICATION-2026-10-19.md)
+records timestamps, the 19-item scope and local evidence filenames.
+
+Synthetic TEMP-profile checks confirmed scoped editing/save/restart, preview/cancel,
+independent typography, body drag, tray lifecycle and left-edge resizing with movement
+lock both off and on. After verifying foreground and coordinate ownership, transparent
+cell double-click also opened its editor. Earlier unproductive pointer attempts are
+not established product defects. At 21:26–21:30 KST, actual screen-region captures
+confirmed desktop composition through transparent cells; black text overlapping dark
+desktop icons had poor readability. Actual Korean IME composition and 150/200% DPI
+remain unverified. This is partial native verification, not all-item acceptance or a
+completed end-user installation/deployment. Diagnostic processes exited through the tray;
+normal profile/autostart remained untouched. No screenshots or user data are committed.
+
 ### Data interchange foundation — 2026-10-07
 
 User instruction: continue development while excluding direct native desktop behavior

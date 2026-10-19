@@ -1,5 +1,20 @@
 # Continuity and workspace verification
 
+## Laptop Debug and scoped native checks — 2026-10-19
+
+Verified source: `5f90852e263b61ec44813ae925769b9e192e4398`, isolated detached checkout,
+Windows x64 / SDK 10.0.402. The full Windows TRX records 1,294 executed/passed,
+zero failed/not executed, at **16:40:54–16:41:24 KST**. Debug build had zero
+warnings/errors; 18 isolated bootstrap cases also passed. The later documentation
+update did not rerun those tests. See the [dated verification report](WINDOWS-NATIVE-VERIFICATION-2026-10-19.md)
+for commands, subsequent GUI sessions, the 19-item checklist and unresolved limits.
+
+The report distinguishes native pointer/keyboard evidence from automation and actual
+screen composition from window-only capture. Verified foreground/coordinate ownership
+resolved earlier resize and transparent-cell double-click uncertainty within the tested
+conditions. Korean IME composition, 150/200% DPI and broader interaction combinations
+remain unverified. No end-user installer, deployment or complete native acceptance is claimed.
+
 ## Data interchange CI gate — 2026-10-07
 
 Verified commit: `904aa668ab62a71c13b642820503dd2d7a0b2a6b`, branch
