@@ -542,6 +542,13 @@ Manifest/schema/checksum, archive 여부, naming, durability/recovery 구현은 
 지원할 경우 raw timetable과 구분한다. P10의 선택적 파일 export/import 기능 자체는 APPROVED다.
 새 파일 format, versioning, 부분 time 항목의 정확한 대체/보충 UX는 DEFERRED다.
 
+2026-10-07 data-processing follow-up: [ADR 0025](adr/0025-data-interchange-foundation.md)
+defines `.stwshare` v1 with complete optional timetable/period components, strict UTF-8
+validation, a 4 MiB limit, lossless native tick precision and selected Base-only replacement.
+Raw C3/C4 legacy conversion and supplementation reports are implemented as processing
+foundation. User-facing preview/selection, source discovery and full five-file migration
+remain deferred. This follow-up adds no native desktop interaction or profile v6.
+
 ## Installation / Lifecycle
 
 **APPROVED — A1:** 일반 사용자 단위 설치, Windows 시작 시 실행 옵션, 정상 uninstall.
@@ -1059,3 +1066,46 @@ future full backups include all profiles, groups and semester-specific teacher t
 Future school-wide import can create/update multiple profiles and their relevant semester
 weeks with explicit identity mapping; current importer behavior stays unchanged.
 No schema v6, migration, UI, importer, backup change or speculative code is authorized here.
+
+
+## Widget appearance and window interaction — approved 2026-10-08
+
+The user approved this implementation scope explicitly. [ADR 0026](adr/0026-widget-appearance-and-window-interaction.md)
+supersedes earlier exclusions for table typography, brush opacity, movement lock and numeric size.
+Implementation was initially source/cross-build verified. Scoped Windows runtime and
+native checks were subsequently executed on 2026-10-19; [dated evidence and remaining
+limits](WINDOWS-NATIVE-VERIFICATION-2026-10-19.md) distinguish those checks from complete
+native acceptance. This evidence update does not change the approved behavior below.
+
+- Table header background, ordinary cell background, current-period background and border have
+  independent finite 0–1 opacity. Only brushes receive it; text and Window.Opacity stay opaque.
+- Header and cell typography use independent logical font identities and existing fallback/catalog
+  behavior. Existing Preview/Apply/OK/Cancel, user presets and save-before-publish remain authoritative.
+- Only MainWindow is frameless with a transparent layered surface and stays below other applications.
+  Event-driven z-order correction uses no timer or foreground activation. Suspend correction while
+  WPF or native modal dialogs are open; settings, cell editing and file dialogs retain normal chrome.
+- A single click keeps cell focus. Body movement starts after the system DIP drag threshold;
+  double-click and F2 editing are preserved. Inputs, buttons, selectors, scrollbar/thumb and the
+  six-DIP resize rim are excluded. Move lock blocks movement while keeping resize available.
+  A one-alpha table hit surface preserves blank-cell input even with zero-alpha configurable
+  brushes (interactive table composite alpha has a 1/255 floor); unused fully transparent main
+  areas retain native transparent-area behavior.
+- Right-click **창 설정...** edits preferred width/height in DIPs and movement lock. Apply persists
+  before changing intent; failure keeps the previous preference and retryable input. Cancel/X
+  discards unapplied fields. Geometry reset retains movement lock. Current content, DPI and taskbar
+  work-area fitting remain separate from preferred size and never overwrite it automatically.
+- Profile schemas 1–5, preset v1 and backup v1 remain readable. An optional strict `table.version=1`
+  extends display payloads; absent means defaults, null/incomplete/unknown means invalid and blocked
+  writes. Both active display and user presets preserve new values across save/export/import/restore.
+  Existing strict readers reject the extension rather than silently dropping it. Window-state v1
+  adds optional `moveLocked` (absent is false); invalid/unknown local state preserves bytes and blocks
+  subsequent writes while allowing startup with runtime defaults.
+- Before the first write that extends a valid existing profile/window-state, flush an exact-byte,
+  uniquely named `profile-before-table-*.json` / `window-state-before-lock-*.json` backup beside it.
+  Backup failure blocks that write. Existing pre-restore recovery protections continue to apply.
+  Loading alone never rewrites data; no automatic restoration of an older backup is allowed.
+
+Timetable/semester/date override inputs, raw source material, data interchange internals, clock,
+tray lifecycle and operating-user settings are outside this code change. Actual Windows transparent
+rendering/input, editing versus drag, tray return, dialog visibility and 100/150/200% DPI remain
+required acceptance checks; cross-build and unshown WPF tests do not establish those outcomes.

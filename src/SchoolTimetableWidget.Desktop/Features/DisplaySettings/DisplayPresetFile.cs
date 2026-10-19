@@ -79,6 +79,16 @@ public static class DisplayPresetFile
         Require(preset, "id", "name", "settings");
         var settings = preset.GetProperty("settings");
         Require(settings, "layout", "time", "date", "weekday", "status", "use24Hour", "showSeconds", "showDate", "showWeekday", "showStatus");
+        if (settings.TryGetProperty("table", out var table))
+        {
+            Require(table, "version", "header", "cell", "headerOpacity", "cellOpacity", "currentOpacity", "borderOpacity");
+            foreach (var element in new[] { "header", "cell" })
+            {
+                var typography = table.GetProperty(element);
+                Require(typography, "font", "size", "weight", "style");
+                Require(typography.GetProperty("font"), "source", "familyId", "family");
+            }
+        }
         foreach (var element in new[] { "time", "date", "weekday", "status" })
         {
             var typography = settings.GetProperty(element);
@@ -132,19 +142,32 @@ public static class DisplayPresetFile
             new(FontDto.From(value.Font), value.Size, value.Weight.ToString(), value.Style.ToString());
         public ElementTypography ToValue() => new(Font.ToValue(), Size, Parse<DisplayFontWeight>(Weight), Parse<DisplayFontStyle>(Style));
     }
+    private sealed record TableDto(int Version, TypographyDto Header, TypographyDto Cell,
+        double HeaderOpacity, double CellOpacity, double CurrentOpacity, double BorderOpacity)
+    {
+        public static TableDto From(TableAppearance value) => new(1, TypographyDto.From(value.Header), TypographyDto.From(value.Cell),
+            value.HeaderOpacity, value.CellOpacity, value.CurrentOpacity, value.BorderOpacity);
+        public TableAppearance ToValue()
+        {
+            if (Version != 1) throw new JsonException("Unsupported table appearance version.");
+            var value = new TableAppearance(Header.ToValue(), Cell.ToValue(), HeaderOpacity, CellOpacity, CurrentOpacity, BorderOpacity);
+            value.Validate();
+            return value;
+        }
+    }
     private sealed record SettingsDto(string Layout, TypographyDto Time, TypographyDto Date,
         TypographyDto Weekday, TypographyDto Status, bool Use24Hour, bool ShowSeconds,
-        bool ShowDate, bool ShowWeekday, bool ShowStatus)
+        bool ShowDate, bool ShowWeekday, bool ShowStatus, TableDto? Table = null)
     {
         public static SettingsDto From(DisplayConfiguration value) => new(value.Layout.ToString(),
             TypographyDto.From(value.Time), TypographyDto.From(value.Date), TypographyDto.From(value.Weekday),
             TypographyDto.From(value.Status), value.Use24Hour, value.ShowSeconds, value.ShowDate,
-            value.ShowWeekday, value.ShowStatus);
+            value.ShowWeekday, value.ShowStatus, TableDto.From(value.Table));
         public DisplayConfiguration ToValue(DisplayPresetReference preset)
         {
             var result = new DisplayConfiguration(preset, Parse<DisplayLayout>(Layout), Time.ToValue(),
                 Date.ToValue(), Weekday.ToValue(), Status.ToValue(), Use24Hour, ShowSeconds,
-                ShowDate, ShowWeekday, ShowStatus);
+                ShowDate, ShowWeekday, ShowStatus) { Table = Table?.ToValue() ?? TableAppearance.Default };
             result.Validate();
             return result;
         }

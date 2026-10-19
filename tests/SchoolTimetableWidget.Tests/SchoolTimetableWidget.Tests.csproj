@@ -2,7 +2,9 @@
 
   <PropertyGroup>
     <OutputType>Exe</OutputType>
-    <TargetFramework>net10.0-windows</TargetFramework>
+    <CoreOnlyTests Condition="'$(CoreOnlyTests)' == '' and '$(OS)' != 'Windows_NT'">true</CoreOnlyTests>
+    <TargetFramework Condition="'$(CoreOnlyTests)' == 'true'">net10.0</TargetFramework>
+    <TargetFramework Condition="'$(CoreOnlyTests)' != 'true'">net10.0-windows</TargetFramework>
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
     <IsPackable>false</IsPackable>
@@ -19,12 +21,23 @@
 
   <ItemGroup>
     <Using Include="Xunit" />
-    <FrameworkReference Include="Microsoft.WindowsDesktop.App.WindowsForms" />
+    <FrameworkReference Include="Microsoft.WindowsDesktop.App.WindowsForms" Condition="'$(CoreOnlyTests)' != 'true'" />
   </ItemGroup>
 
   <ItemGroup>
     <ProjectReference Include="..\..\src\SchoolTimetableWidget.Core\SchoolTimetableWidget.Core.csproj" />
-    <ProjectReference Include="..\..\src\SchoolTimetableWidget.Desktop\SchoolTimetableWidget.Desktop.csproj" />
+    <ProjectReference Include="..\..\src\SchoolTimetableWidget.Desktop\SchoolTimetableWidget.Desktop.csproj" Condition="'$(CoreOnlyTests)' != 'true'" />
+  </ItemGroup>
+
+  <!-- Explicit allowlist: a passing Core-only run never claims WPF/Windows coverage. -->
+  <ItemGroup Condition="'$(CoreOnlyTests)' == 'true'">
+    <Compile Remove="**\*.cs" />
+    <Compile Include="DataInterchange\**\*.cs" />
+    <Compile Include="TimetableImport\ImporterTests.cs;TimetableImport\ImportFixtures.cs;TimetableImport\ClipboardTableTests.cs" />
+    <Compile Include="Timetable\WeeklyTimetableContractTests.cs" />
+    <Compile Include="Periods\CurrentPeriodContractTests.cs" />
+    <Compile Include="CurrentStatus\CurrentStatusContractTests.cs;CurrentStatus\CurrentStatusCountdownContractTests.cs" />
+    <Compile Include="Time\ApplicationClockContractTests.cs;Time\FakeApplicationClock.cs" />
   </ItemGroup>
 
   <ItemGroup><EmbeddedResource Include="DisplaySettings\profile-v1.json" /><EmbeddedResource Include="DisplaySettings\profile-v2.json" /></ItemGroup>

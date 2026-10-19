@@ -24,6 +24,21 @@ public class ProfileBackupFileTests
             preset.Display, new([preset]));
     }
 
+    [Fact]
+    public void BackupPreservesTableAppearanceAndUserPresetWithoutWindowState()
+    {
+        var original = Sample(); var table = TableAppearance.Default with
+        { HeaderOpacity = .125, CellOpacity = .25, CurrentOpacity = .5, BorderOpacity = 0,
+          Cell = TableAppearance.Default.Cell with { Font = new(FontSourceKind.System, "없는 본문 글꼴") } };
+        var preset = new UserDisplayPreset(original.DisplayPresets.Items[0].Id, "표 설정", original.Display with { Table = table });
+        var candidate = new ProfileSnapshot(original.SemesterSets, original.ActiveSemesterId,
+            original.ShowLunch, preset.Display, new([preset]));
+        var bytes = ProfileBackupFile.Export(candidate); var restored = ProfileBackupFile.Import(bytes);
+        Assert.Equal(table, restored.Display.Table); Assert.Equal(table, restored.DisplayPresets.Items[0].Display.Table);
+        Assert.Equal(ProfileJson.Serialize(candidate), ProfileJson.Serialize(restored));
+        Assert.DoesNotContain("moveLocked", Encoding.UTF8.GetString(bytes));
+    }
+
     [Theory]
     [InlineData(false)] [InlineData(true)]
     public void CompleteCanonicalRoundTrip(bool populated)

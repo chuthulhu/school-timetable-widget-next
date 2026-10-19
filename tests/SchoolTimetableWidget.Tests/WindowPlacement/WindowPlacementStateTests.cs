@@ -9,6 +9,55 @@ namespace SchoolTimetableWidget.Tests.WindowPlacement;
 public class WindowPlacementStateTests
 {
     [Fact]
+    public void MovementLockPersistsAndStillAllowsResize()
+    {
+        using var temp = new TempProfile(); var store = new JsonWindowStateStore(temp.Directory);
+        var session = new WindowPlacementSession(store);
+        Assert.True(session.TrySetPreferences(720, 640, true));
+        var start = session.Preferred;
+        session.Begin(start); session.Moving(); session.End(start with { Left = 200, Top = 300 });
+        Assert.Equal(start, session.Preferred);
+        session.Begin(start); session.Sizing(8); session.End(start with { Width = 760, Height = 690 });
+        Assert.Equal(760, session.Preferred.Width); Assert.True(session.Preferred.MoveLocked);
+        Assert.Equal(session.Preferred, new WindowPlacementSession(new JsonWindowStateStore(temp.Directory)).Preferred);
+    }
+
+    [Theory]
+    [InlineData(0, 600)] [InlineData(800, -1)] [InlineData(double.NaN, 600)] [InlineData(800, double.PositiveInfinity)]
+    public void InvalidNumericSizeCannotChangePreferenceOrCreateState(double width, double height)
+    {
+        using var temp = new TempProfile(); var store = new JsonWindowStateStore(temp.Directory);
+        var session = new WindowPlacementSession(store);
+        Assert.False(session.TrySetPreferences(width, height, true));
+        Assert.Equal(PreferredWindowBounds.Default, session.Preferred); Assert.False(File.Exists(store.FilePath));
+    }
+
+    [Fact]
+    public void UnknownWindowSettingsArePreservedAndBlockLaterWrites()
+    {
+        using var temp = new TempProfile(); var store = new JsonWindowStateStore(temp.Directory);
+        Assert.True(store.Save(PreferredWindowBounds.Default));
+        var node = JsonNode.Parse(File.ReadAllBytes(store.FilePath))!;
+        node["futureSetting"] = "keep original"; File.WriteAllText(store.FilePath, node.ToJsonString());
+        var before = File.ReadAllBytes(store.FilePath); var session = new WindowPlacementSession(new JsonWindowStateStore(temp.Directory));
+        Assert.False(session.TrySetPreferences(900, 700, true));
+        session.Reset(null); session.Flush();
+        Assert.Equal(before, File.ReadAllBytes(store.FilePath));
+    }
+
+    [Fact]
+    public void LegacyWindowStateIsBackedUpBeforeAddingLock()
+    {
+        using var temp = new TempProfile(); var store = new JsonWindowStateStore(temp.Directory);
+        Assert.True(store.Save(PreferredWindowBounds.Default));
+        var node = JsonNode.Parse(File.ReadAllBytes(store.FilePath))!; node.AsObject().Remove("moveLocked");
+        var before = System.Text.Encoding.UTF8.GetBytes(node.ToJsonString()); File.WriteAllBytes(store.FilePath, before);
+        var session = new WindowPlacementSession(new JsonWindowStateStore(temp.Directory));
+        Assert.True(session.TrySetPreferences(900, 700, true));
+        Assert.Equal(before, File.ReadAllBytes(Assert.Single(Directory.GetFiles(temp.Directory, "window-state-before-lock-*.json"))));
+    }
+
+    [Fact]
     public void MissingStateUsesDefaultWithoutCreatingFiles()
     {
         using var temp = new TempProfile();

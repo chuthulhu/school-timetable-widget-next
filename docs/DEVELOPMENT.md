@@ -29,6 +29,28 @@ Run each command only after the preceding one succeeds. PowerShell users can che
 restore/build/test sequence with failure exit codes; no additional verify script is needed.
 The KRISS implementation has 1,161 passing tests; native acceptance and baseline are in CONTINUITY.
 
+## Core-only tests on Linux or Windows
+
+The same Tests project has an explicit pure-source allowlist under
+[ADR 0025](adr/0025-data-interchange-foundation.md). `CoreOnlyTests=true` targets net10.0
+and references Core only; non-Windows hosts default to it. Windows defaults to the complete
+net10.0-windows suite. The three-project solution and production targets are unchanged.
+
+```bash
+dotnet test tests/SchoolTimetableWidget.Tests/SchoolTimetableWidget.Tests.csproj -p:CoreOnlyTests=true
+```
+
+Do not use the whole solution on Linux for this command: Desktop remains Windows-specific.
+For cross-compilation only, `dotnet build SchoolTimetableWidget.sln -p:EnableWindowsTargeting=true
+-p:CoreOnlyTests=false` can check the full source, but cannot run WPF tests there. In a sandbox
+that denies VSTest local sockets, build the Core-only project and run its executable test DLL
+with `dotnet tests/SchoolTimetableWidget.Tests/bin/Debug/net10.0/SchoolTimetableWidget.Tests.dll`.
+This is the xUnit in-process runner, not a replacement Windows runtime.
+
+The data-verification workflow runs Linux Core-only tests and Windows full tests/bootstrap
+separately. Full Windows verification must use `CoreOnlyTests=false` if the property was
+overridden in the invoking environment. Never report a Core-only count as the full suite.
+
 ## Run the desktop app
 
 For ordinary use (reads/writes the current user's normal profile):

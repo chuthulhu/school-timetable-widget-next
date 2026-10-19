@@ -70,8 +70,26 @@ public sealed partial class JsonProfileStore : IProfileStore, IProfileRecoverySt
         ObjectDisposedException.ThrowIf(_disposed, this);
         if (!_writable || _recoveryRequired || _lease is null) throw new IOException("This profile is not writable.");
         var bytes = ProfileJson.Serialize(snapshot);
+        PreserveSettingsBeforeUpgrade();
         WriteProfile(bytes);
         _state = ProfileLoadState.Loaded;
+    }
+
+    private void PreserveSettingsBeforeUpgrade()
+    {
+        if (_expectedBytes is null) return;
+        using var json = JsonDocument.Parse(_expectedBytes);
+        var profile = json.RootElement.GetProperty("profile");
+        var displayExtended = profile.TryGetProperty("display", out var display) &&
+            display.TryGetProperty("settings", out var settings) && settings.TryGetProperty("table", out _);
+        var presetsExtended = profile.TryGetProperty("displayPresets", out var presets) &&
+            presets.EnumerateArray().All(p => p.GetProperty("settings").TryGetProperty("table", out _));
+        if (json.RootElement.GetProperty("schemaVersion").GetInt32() == 5 && displayExtended && presetsExtended) return;
+        VerifyUnchanged();
+        var path = Path.Combine(DirectoryPath, $"profile-before-table-{Guid.NewGuid():N}.json");
+        using var backup = new FileStream(path, FileMode.CreateNew, FileAccess.Write, FileShare.None);
+        backup.Write(_expectedBytes);
+        backup.Flush(flushToDisk: true);
     }
 
     private void WriteProfile(byte[] bytes)
