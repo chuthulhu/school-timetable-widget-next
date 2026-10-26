@@ -89,6 +89,9 @@ public static class DisplayPresetFile
                 Require(typography.GetProperty("font"), "source", "familyId", "family");
             }
         }
+        if (settings.TryGetProperty("colors", out var colors))
+            Require(colors, "version", "headerBackground", "todayHeaderBackground", "cellBackground",
+                "currentBackground", "border", "headerText", "cellText", "clockText");
         foreach (var element in new[] { "time", "date", "weekday", "status" })
         {
             var typography = settings.GetProperty(element);
@@ -155,19 +158,34 @@ public static class DisplayPresetFile
             return value;
         }
     }
+    private sealed record ColorsDto(int Version, string HeaderBackground, string TodayHeaderBackground, string CellBackground,
+        string CurrentBackground, string Border, string HeaderText, string CellText, string ClockText)
+    {
+        public static ColorsDto From(DisplayColors value) => new(1, value.HeaderBackground.ToString(),
+            value.TodayHeaderBackground.ToString(), value.CellBackground.ToString(), value.CurrentBackground.ToString(),
+            value.Border.ToString(), value.HeaderText.ToString(), value.CellText.ToString(), value.ClockText.ToString());
+        public DisplayColors ToValue()
+        {
+            if (Version != 1) throw new JsonException("Unsupported display colors version.");
+            return new(RgbColor.Parse(HeaderBackground), RgbColor.Parse(TodayHeaderBackground), RgbColor.Parse(CellBackground),
+                RgbColor.Parse(CurrentBackground), RgbColor.Parse(Border), RgbColor.Parse(HeaderText),
+                RgbColor.Parse(CellText), RgbColor.Parse(ClockText));
+        }
+    }
     private sealed record SettingsDto(string Layout, TypographyDto Time, TypographyDto Date,
         TypographyDto Weekday, TypographyDto Status, bool Use24Hour, bool ShowSeconds,
-        bool ShowDate, bool ShowWeekday, bool ShowStatus, TableDto? Table = null)
+        bool ShowDate, bool ShowWeekday, bool ShowStatus, TableDto? Table = null, ColorsDto? Colors = null)
     {
         public static SettingsDto From(DisplayConfiguration value) => new(value.Layout.ToString(),
             TypographyDto.From(value.Time), TypographyDto.From(value.Date), TypographyDto.From(value.Weekday),
             TypographyDto.From(value.Status), value.Use24Hour, value.ShowSeconds, value.ShowDate,
-            value.ShowWeekday, value.ShowStatus, TableDto.From(value.Table));
+            value.ShowWeekday, value.ShowStatus, TableDto.From(value.Table), ColorsDto.From(value.Colors));
         public DisplayConfiguration ToValue(DisplayPresetReference preset)
         {
             var result = new DisplayConfiguration(preset, Parse<DisplayLayout>(Layout), Time.ToValue(),
                 Date.ToValue(), Weekday.ToValue(), Status.ToValue(), Use24Hour, ShowSeconds,
-                ShowDate, ShowWeekday, ShowStatus) { Table = Table?.ToValue() ?? TableAppearance.Default };
+                ShowDate, ShowWeekday, ShowStatus)
+            { Table = Table?.ToValue() ?? TableAppearance.Default, Colors = Colors?.ToValue() ?? DisplayColors.Default };
             result.Validate();
             return result;
         }

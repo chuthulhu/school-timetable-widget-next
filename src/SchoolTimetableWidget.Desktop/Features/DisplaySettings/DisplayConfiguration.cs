@@ -18,6 +18,7 @@ public sealed record DisplayConfiguration(DisplayPresetReference Preset, Display
     bool Use24Hour, bool ShowSeconds, bool ShowDate, bool ShowWeekday, bool ShowStatus)
 {
     public TableAppearance Table { get; init; } = TableAppearance.Default;
+    public DisplayColors Colors { get; init; } = DisplayColors.Default;
 
     public void Validate()
     {
@@ -28,6 +29,7 @@ public sealed record DisplayConfiguration(DisplayPresetReference Preset, Display
         ValidateElement(Status, 8, 48);
         if (Table is null) throw new ArgumentException("표 표시 설정을 확인해 주세요.");
         Table.Validate();
+        if (Colors is null) throw new ArgumentException("색상 설정을 확인해 주세요.");
     }
 
     internal static void ValidateElement(ElementTypography? element, double min, double max)
@@ -83,4 +85,28 @@ public sealed record TableAppearance(ElementTypography Header, ElementTypography
             if (!double.IsFinite(opacity) || opacity is < 0 or > 1)
                 throw new ArgumentException("표 투명도는 0~100% 사이로 선택해 주세요.");
     }
+}
+
+/// <summary>Opaque 24-bit RGB. Transparency stays in <see cref="TableAppearance"/> brush opacity.</summary>
+public readonly record struct RgbColor(byte R, byte G, byte B)
+{
+    public static RgbColor Parse(string? text) => TryParse(text, out var value) ? value
+        : throw new ArgumentException("색상은 #RRGGBB 형식으로 입력해 주세요.");
+    public static bool TryParse(string? text, out RgbColor value)
+    {
+        value = default;
+        if (text is not { Length: 7 } || text[0] != '#' || text.AsSpan(1).ContainsAnyExcept("0123456789ABCDEFabcdef".AsSpan())) return false;
+        var rgb = Convert.ToInt32(text[1..], 16);
+        value = new((byte)(rgb >> 16), (byte)(rgb >> 8), (byte)rgb);
+        return true;
+    }
+    public override string ToString() => $"#{R:X2}{G:X2}{B:X2}";
+}
+
+/// <summary>Table brushes/text and the clock area text color; the default reproduces the prior fixed look.</summary>
+public sealed record DisplayColors(RgbColor HeaderBackground, RgbColor TodayHeaderBackground, RgbColor CellBackground,
+    RgbColor CurrentBackground, RgbColor Border, RgbColor HeaderText, RgbColor CellText, RgbColor ClockText)
+{
+    public static DisplayColors Default { get; } = new(new(0xF0, 0xF0, 0xF0), new(0xE5, 0xEF, 0xF6), new(0xFF, 0xFF, 0xFF),
+        new(0xFF, 0xF3, 0xCD), new(0xE3, 0xE3, 0xE3), new(0x00, 0x00, 0x00), new(0x00, 0x00, 0x00), new(0x00, 0x00, 0x00));
 }

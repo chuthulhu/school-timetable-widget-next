@@ -48,8 +48,14 @@ public class SemesterTests
             Assert.Equal(TableAppearance.Default, session.Current.Display.Table);
             Assert.All(session.Current.DisplayPresets.Items, p => Assert.Equal(TableAppearance.Default, p.Display.Table));
             var legacyShape = now.DeepClone();
+            Assert.Equal(DisplayColors.Default, session.Current.Display.Colors);
             legacyShape["display"]!["settings"]!.AsObject().Remove("table");
-            foreach (var preset in legacyShape["displayPresets"]!.AsArray()) preset!["settings"]!.AsObject().Remove("table");
+            legacyShape["display"]!["settings"]!.AsObject().Remove("colors");
+            foreach (var preset in legacyShape["displayPresets"]!.AsArray())
+            {
+                preset!["settings"]!.AsObject().Remove("table");
+                preset["settings"]!.AsObject().Remove("colors");
+            }
             foreach (var field in new[] { "display", "displayPresets" }) Assert.True(JsonNode.DeepEquals(old[field], legacyShape[field]));
         }
         var canonical = ProfileJson.Serialize(session.Current);

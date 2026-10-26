@@ -23,6 +23,20 @@ not authoritative and are not needed to build or resume development.
 
 ## Verified implementation baseline
 
+### Display colors — 2026-10-26
+
+[ADR 0027](adr/0027-display-colors.md) adds eight editable opaque `#RRGGBB` colors. Four are
+table backgrounds, plus the border, header text, cell text and clock-area text. Background and
+border transparency stays with the ADR 0026 opacity sliders. The user approved free colors
+including text colors and deferred themes. Display payloads gain an optional strict
+`colors.version=1` object. Profile v5, preset v1 and backup v1 stay the outer versions. A
+table-extended profile is backed up to `profile-before-colors-*.json` before its first colors
+write. Defaults reproduce the previous fixed look.
+
+Verification is CI-only for this change. The cloud session could not install the SDK, so no
+local build or test ran. Results are those of the GitHub Actions run on the implementing pull
+request. No native Windows rendering, contrast, DPI or IME check has been performed.
+
 ### Main integration — 2026-10-26
 
 The user requested that every open branch be reviewed and merged into main or removed.
@@ -154,7 +168,7 @@ The platform project registry pins the subsequently verified/pushed handoff revi
 | Current Status Header, five states, countdown, date-aware highlight | Core/Desktop Features/CurrentStatus and Core Time; one shared Application Clock snapshot per refresh; initial PC fallback then KRISS-derived KST, [sync](KRISS-TIME-SYNC.md) |
 | Independent date timetable and date period overrides, optional lunch | Core Features/SchoolDays, Desktop Features/DateOverrides; [date overrides](DATE-OVERRIDES.md) |
 | Previous/next week and independent per-date columns | Desktop Features/Timetable; [week navigation](WEEK-NAVIGATION.md). Actual status remains tied to today |
-| Display customization and named user presets | Desktop Features/DisplaySettings; [display settings](DISPLAY-SETTINGS.md). Preview/Apply/OK/Cancel and stable preset IDs |
+| Display customization and named user presets | Desktop Features/DisplaySettings; [display settings](DISPLAY-SETTINGS.md). Preview/Apply/OK/Cancel and stable preset IDs; table typography/opacity ([ADR 0026](adr/0026-widget-appearance-and-window-interaction.md)) and eight RGB colors ([ADR 0027](adr/0027-display-colors.md)) |
 | Bundled/system/online fonts | Features/Fonts, Infrastructure/Fonts and Windows/FontLibrary; [catalog/licenses](FONT-CATALOG.md). Explicit download, local rendering, safe fallback |
 | One-preset import/export | DisplayPresetFile and display Draft library; [preset format](PRESET-IMPORT-EXPORT.md) |
 | Full-profile backup/restore, degraded mode, Recovery Required | Features/Persistence and Infrastructure/Persistence; [backup/recovery](BACKUP-RESTORE.md) |

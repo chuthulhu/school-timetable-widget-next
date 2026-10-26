@@ -59,16 +59,18 @@
             <Setter Property="FontSize" Value="{DynamicResource TableHeaderSize}"/>
             <Setter Property="FontWeight" Value="{DynamicResource TableHeaderWeight}"/>
             <Setter Property="FontStyle" Value="{DynamicResource TableHeaderStyle}"/>
+            <Setter Property="Foreground" Value="{DynamicResource TableHeaderTextBrush}"/>
         </Style>
         <Style x:Key="TableCellText" TargetType="TextBlock">
             <Setter Property="FontFamily" Value="{DynamicResource TableCellFont}"/>
             <Setter Property="FontSize" Value="{DynamicResource TableCellSize}"/>
             <Setter Property="FontWeight" Value="{DynamicResource TableCellWeight}"/>
             <Setter Property="FontStyle" Value="{DynamicResource TableCellStyle}"/>
+            <Setter Property="Foreground" Value="{DynamicResource TableCellTextBrush}"/>
         </Style>
         <Style x:Key="WeekArrow" TargetType="Button">
             <Setter Property="Background" Value="Transparent"/>
-            <Setter Property="Foreground" Value="#485563"/>
+            <Setter Property="Foreground" Value="{DynamicResource TableHeaderTextBrush}"/>
             <Setter Property="FontSize" Value="26"/>
             <Setter Property="BorderThickness" Value="0"/>
             <Setter Property="Cursor" Value="Hand"/>
@@ -114,7 +116,7 @@
                             <ContentPresenter Content="{TemplateBinding Content}"
                                               HorizontalAlignment="Stretch" VerticalAlignment="Stretch" />
                             <Rectangle x:Name="FocusOutline" Margin="3" Opacity="0" IsHitTestVisible="False"
-                                       Stroke="{DynamicResource {x:Static SystemColors.ControlTextBrushKey}}"
+                                       Stroke="{DynamicResource TableCellTextBrush}"
                                        StrokeThickness="1" StrokeDashArray="2,2" />
                         </Grid>
                         <ControlTemplate.Triggers>
@@ -138,7 +140,7 @@
             <Border Style="{StaticResource DateHeaderBorder}">
                 <StackPanel VerticalAlignment="Center">
                     <TextBlock Text="{Binding DateText}" Style="{StaticResource TableHeaderText}" TextAlignment="Center" VerticalAlignment="Center" TextWrapping="NoWrap" />
-                    <TextBlock Text="{Binding WeekdayText}" Style="{StaticResource TableHeaderText}" Margin="0,3,0,0" Foreground="#52606D" TextAlignment="Center" VerticalAlignment="Center" TextWrapping="NoWrap" />
+                    <TextBlock Text="{Binding WeekdayText}" Style="{StaticResource TableHeaderText}" Margin="0,3,0,0" TextAlignment="Center" VerticalAlignment="Center" TextWrapping="NoWrap" />
                 </StackPanel>
             </Border>
         </DataTemplate>

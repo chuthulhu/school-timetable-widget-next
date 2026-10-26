@@ -1109,3 +1109,30 @@ Timetable/semester/date override inputs, raw source material, data interchange i
 tray lifecycle and operating-user settings are outside this code change. Actual Windows transparent
 rendering/input, editing versus drag, tray return, dialog visibility and 100/150/200% DPI remain
 required acceptance checks; cross-build and unshown WPF tests do not establish those outcomes.
+
+## Display colors — approved 2026-10-26
+
+The user approved freely editable colors including text colors; themes are deferred.
+[ADR 0027](adr/0027-display-colors.md) records the design. This fulfils the color part of M5.
+
+- Eight colors are editable:
+  - Table backgrounds: header, today's header, ordinary cell and current period.
+  - Table border.
+  - Text: table header, table cell, and one clock-area color for time, AM/PM, date, weekday
+    and status.
+- Each color is opaque `#RRGGBB`. Background and border transparency stays with the existing
+  opacity sliders. Text is never faded, and no alpha input is offered (R11).
+- Defaults reproduce the previous appearance with fixed RGB values. Built-in presets use the
+  defaults.
+- Colors follow the existing Draft/Preview/Apply/OK/Cancel/Reset transaction. They are saved
+  with user presets, preset files, the profile and full backups. Invalid text names the color,
+  keeps the last valid preview and blocks Apply.
+- Display payloads gain an optional strict `colors` object (`version: 1` plus eight colors).
+  Absent means defaults. A null, incomplete, unknown-field, unknown-version or malformed object
+  means invalid: writes are blocked and the bytes are preserved. Before the first write that
+  adds colors to a table-extended profile, the store flushes an exact-byte
+  `profile-before-colors-*.json` beside it.
+- Themes, named palettes, a graphical picker and legacy color migration remain future work.
+
+Contrast over real desktops, the dialog at 100/150/200% DPI and keyboard/IME input in the
+color boxes remain native acceptance checks.

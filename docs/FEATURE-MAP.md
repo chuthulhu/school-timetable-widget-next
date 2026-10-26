@@ -32,6 +32,7 @@ requirements; this page tracks delivery, not approval. Historical progression is
 | Windows autostart | Explicit tray toggle, exact per-user OS registration/read-back; [Autostart](AUTOSTART.md) |
 | Semester Sets | Ordered stable identities, explicit switch/create/copy/rename/inactive delete, scoped edits, v5 storage/all-semester restore; [Semesters](SEMESTER-SETS.md) |
 | Widget appearance and window interaction | Independent 0–1 opacity for header/cell/current-period/border brushes (text stays opaque), separate header/cell typography, frameless transparent MainWindow kept below other apps by event-driven z-order, threshold body drag preserving double-click/F2 edit, move lock with resize kept, right-click **창 설정...** for preferred DIP size and lock; optional strict `table.version=1` and `moveLocked` extensions with pre-extension byte backups; [ADR 0026](adr/0026-widget-appearance-and-window-interaction.md), [partial native evidence](WINDOWS-NATIVE-VERIFICATION-2026-10-19.md) |
+| Display colors | Eight opaque `#RRGGBB` colors: four table backgrounds, border, header/cell text and clock-area text; existing Draft/Preview/Apply, presets, preset files, profile and backup; optional strict `colors.version=1` with a pre-extension byte backup; [ADR 0027](adr/0027-display-colors.md). Native verification pending |
 | Data interchange processing/transaction foundation | Raw legacy timetable/time conversion, strict .stwshare v1, selective Base replacement and bounded/atomic file I/O; **UI not connected**; [Data interchange](DATA-INTERCHANGE.md) |
 
 Latest recorded full Windows suite: 1,294 passed at `5f90852` (laptop run on 2026-10-19).
@@ -52,7 +53,7 @@ Profile schema v1–v4 in older milestone records describes prior writers, not t
 | Selective timetable/period file sharing | .stwshare v1 codec/file/transaction foundation implemented; user preview/selection and menu integration remain PLANNED; distinct from presets/full backups |
 | Installer / updater | DEFERRED; technology, distribution/signing/rollback, uninstall data policy and supported OS matrix |
 | Widget appearance/window interaction native acceptance | Move lock and stay-below z-order are implemented (ADR 0026). Korean IME composition and 150/200% DPI remain unverified, and black text over dark desktop icons read poorly through transparent cells; [evidence](WINDOWS-NATIVE-VERIFICATION-2026-10-19.md) |
-| Colors/themes and final visual design | PLANNED; table brush opacity and header/cell typography are implemented (ADR 0026), color/theme/highlight color editing is not |
+| Themes and final visual design | PLANNED; colors (ADR 0027), brush opacity and table typography (ADR 0026) are implemented, themes/named palettes and a graphical picker are not. Native contrast/DPI/IME checks for the color editor remain |
 | Title / independent AM-PM typography, additional date formats/alignment/spacing | FUTURE; current AM-PM uses Time typography; implemented format/visibility subset is listed above |
 | Arbitrary local font import / cache management UI | OPTIONAL FUTURE; curated bundled/online catalog is implemented |
 | Small rectangular paste / date-target bulk import / .xlsx template export | FUTURE; current School/Canonical Base import and TSV template copy are implemented |

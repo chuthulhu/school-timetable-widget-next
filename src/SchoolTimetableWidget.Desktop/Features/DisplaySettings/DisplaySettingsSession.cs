@@ -20,8 +20,10 @@ public sealed class DisplaySettingsSession : ObservableObject
         Load(_baseline);
     }
     private ElementTypographyDraft[] _tableElements = [];
+    private ColorDraft[] _colors = [];
     public IReadOnlyList<ElementTypographyDraft> Elements => _elements;
     public IReadOnlyList<ElementTypographyDraft> TableElements => _tableElements;
+    public IReadOnlyList<ColorDraft> Colors => _colors;
     public double HeaderOpacity { get => _configuration.Table.HeaderOpacity; set => Change(_configuration with { Table = _configuration.Table with { HeaderOpacity = value } }); }
     public double CellOpacity { get => _configuration.Table.CellOpacity; set => Change(_configuration with { Table = _configuration.Table with { CellOpacity = value } }); }
     public double CurrentOpacity { get => _configuration.Table.CurrentOpacity; set => Change(_configuration with { Table = _configuration.Table with { CurrentOpacity = value } }); }
@@ -192,10 +194,17 @@ public sealed class DisplaySettingsSession : ObservableObject
     private void Load(DisplayConfiguration value)
     {
         foreach (var element in _elements.Concat(_tableElements)) { element.PropertyChanged -= ElementChanged; element.Dispose(); }
+        foreach (var color in _colors) color.PropertyChanged -= ElementChanged;
         _configuration = value;
         _elements = [new("시간", value.Time, _owner.Fonts), new("날짜", value.Date, _owner.Fonts), new("요일", value.Weekday, _owner.Fonts), new("상태", value.Status, _owner.Fonts)];
         _tableElements = [new("표 머리글", value.Table.Header, _owner.Fonts), new("표 셀", value.Table.Cell, _owner.Fonts)];
         foreach (var element in _elements.Concat(_tableElements)) element.PropertyChanged += ElementChanged;
+        var colors = value.Colors;
+        _colors = [new("머리글 배경", colors.HeaderBackground), new("오늘 머리글 배경", colors.TodayHeaderBackground),
+            new("일반 셀 배경", colors.CellBackground), new("현재 교시 배경", colors.CurrentBackground),
+            new("표 테두리", colors.Border), new("머리글 글자", colors.HeaderText), new("셀 글자", colors.CellText),
+            new("시계 글자", colors.ClockText)];
+        foreach (var color in _colors) color.PropertyChanged += ElementChanged;
         Preview();
         OnPropertyChanged(string.Empty);
         OnPropertyChanged(nameof(Preset));
@@ -219,7 +228,9 @@ public sealed class DisplaySettingsSession : ObservableObject
         {
             var value = _configuration with { Time = _elements[0].Create(), Date = _elements[1].Create(),
                 Weekday = _elements[2].Create(), Status = _elements[3].Create(),
-                Table = _configuration.Table with { Header = _tableElements[0].Create(), Cell = _tableElements[1].Create() } };
+                Table = _configuration.Table with { Header = _tableElements[0].Create(), Cell = _tableElements[1].Create() },
+                Colors = new(_colors[0].Create(), _colors[1].Create(), _colors[2].Create(), _colors[3].Create(),
+                    _colors[4].Create(), _colors[5].Create(), _colors[6].Create(), _colors[7].Create()) };
             value.Validate();
             candidate = value;
             ErrorText = "";
