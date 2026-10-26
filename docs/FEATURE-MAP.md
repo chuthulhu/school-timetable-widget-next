@@ -1,7 +1,9 @@
 # Feature Map
 
-Current implementation adds KRISS synchronization to the verified Semester Sets baseline;
-reviewed 2026-09-29. Automated/network verified; limited native UX accepted.
+Current main adds the data interchange foundation (ADR 0025) and widget appearance/window
+interaction (ADR 0026) to the KRISS and Semester Sets baseline; reviewed 2026-10-26 after the
+[main integration](CONTINUITY.md#main-integration--2026-10-26). Automated verified; native
+UX is accepted only within each linked evidence scope.
 [Product Contract](PRODUCT-CONTRACT.md) and [Accepted ADRs](adr/README.md) define the
 requirements; this page tracks delivery, not approval. Historical progression is in
 [Project History](PROJECT-HISTORY.md) and dated feature verification records.
@@ -29,10 +31,11 @@ requirements; this page tracks delivery, not approval. Historical progression is
 | Tray / single instance | X hides, explicit Exit, hidden refresh, secondary activation; [Lifecycle](TRAY-LIFECYCLE.md) |
 | Windows autostart | Explicit tray toggle, exact per-user OS registration/read-back; [Autostart](AUTOSTART.md) |
 | Semester Sets | Ordered stable identities, explicit switch/create/copy/rename/inactive delete, scoped edits, v5 storage/all-semester restore; [Semesters](SEMESTER-SETS.md) |
+| Widget appearance and window interaction | Independent 0–1 opacity for header/cell/current-period/border brushes (text stays opaque), separate header/cell typography, frameless transparent MainWindow kept below other apps by event-driven z-order, threshold body drag preserving double-click/F2 edit, move lock with resize kept, right-click **창 설정...** for preferred DIP size and lock; optional strict `table.version=1` and `moveLocked` extensions with pre-extension byte backups; [ADR 0026](adr/0026-widget-appearance-and-window-interaction.md), [partial native evidence](WINDOWS-NATIVE-VERIFICATION-2026-10-19.md) |
 | Data interchange processing/transaction foundation | Raw legacy timetable/time conversion, strict .stwshare v1, selective Base replacement and bounded/atomic file I/O; **UI not connected**; [Data interchange](DATA-INTERCHANGE.md) |
 
-Previous Windows automated baseline: 1,161 tests; current data-foundation evidence is in
-[Continuity](CONTINUITY.md). Native approvals cover only scenarios documented in the
+Latest recorded full Windows suite: 1,294 passed at `5f90852` (laptop run on 2026-10-19).
+CI evidence for main is recorded in [Continuity](CONTINUITY.md). Native approvals cover only scenarios documented in the
 linked evidence. “Implemented” does not imply release readiness or all native paths verified.
 Profile schema v1–v4 in older milestone records describes prior writers, not the current writer.
 
@@ -48,8 +51,8 @@ Profile schema v1–v4 in older milestone records describes prior writers, not t
 | Legacy migration / legacy backup import | Raw timetable/time processing and commit foundation implemented; source discovery, user preview/selection and full five-file/backup conversion remain PLANNED; native v1–v4 migration already implemented |
 | Selective timetable/period file sharing | .stwshare v1 codec/file/transaction foundation implemented; user preview/selection and menu integration remain PLANNED; distinct from presets/full backups |
 | Installer / updater | DEFERRED; technology, distribution/signing/rollback, uninstall data policy and supported OS matrix |
-| Move lock / final z-order | DEFERRED; placement/tray do not implement move locking |
-| Colors/themes/opacity and final visual design | PLANNED; existing typography/display settings are implemented, full theme/highlight editor is not |
+| Widget appearance/window interaction native acceptance | Move lock and stay-below z-order are implemented (ADR 0026). Korean IME composition and 150/200% DPI remain unverified, and black text over dark desktop icons read poorly through transparent cells; [evidence](WINDOWS-NATIVE-VERIFICATION-2026-10-19.md) |
+| Colors/themes and final visual design | PLANNED; table brush opacity and header/cell typography are implemented (ADR 0026), color/theme/highlight color editing is not |
 | Title / independent AM-PM typography, additional date formats/alignment/spacing | FUTURE; current AM-PM uses Time typography; implemented format/visibility subset is listed above |
 | Arbitrary local font import / cache management UI | OPTIONAL FUTURE; curated bundled/online catalog is implemented |
 | Small rectangular paste / date-target bulk import / .xlsx template export | FUTURE; current School/Canonical Base import and TSV template copy are implemented |
