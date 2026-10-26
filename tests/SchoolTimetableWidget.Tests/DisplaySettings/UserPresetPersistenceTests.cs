@@ -34,6 +34,7 @@ public class UserPresetPersistenceTests
             foreach (var key in new[] { "time", "date", "weekday", "status" })
                 sourceDisplay[key]!["font"]!["familyId"] = sourceDisplay[key]!["font"]!["family"]!.DeepClone();
             actual["settings"]!.AsObject().Remove("table");
+            actual["settings"]!.AsObject().Remove("colors");
             Assert.True(JsonNode.DeepEquals(sourceDisplay, actual["settings"]));
         }
         expected.Remove("display");

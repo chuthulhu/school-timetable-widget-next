@@ -91,17 +91,19 @@ clipboard change or production profile access is used by automated verification.
 Final command results and native launch/user acceptance are appended below when observed.
 Commit and fast-forward origin/main push require user native UX approval first.
 
-## Deferred
+## Feature status
 
 | Feature | Status |
 | --- | --- |
 | Display Presets | IMPLEMENTED — NATIVE REVIEW CONFIRMED |
 | Per-element typography | IMPLEMENTED — NATIVE REVIEW CONFIRMED |
 | System font selection | IMPLEMENTED — NATIVE REVIEW CONFIRMED |
-| Bundled font catalog | PLANNED |
-| Online font catalog/download/cache | PLANNED |
-| Named custom presets | PLANNED |
-| Color/theme editor | PLANNED |
+| Bundled font catalog | IMPLEMENTED — [Font catalog](FONT-CATALOG.md) |
+| Online font catalog/download/cache | IMPLEMENTED — [Font catalog](FONT-CATALOG.md) |
+| Named custom presets | IMPLEMENTED — see user-defined display presets below |
+| Table typography and brush opacity | IMPLEMENTED — [ADR 0026](adr/0026-widget-appearance-and-window-interaction.md) |
+| Color editor (eight RGB colors) | IMPLEMENTED — [ADR 0027](adr/0027-display-colors.md); native verification pending |
+| Themes / named palettes | PLANNED |
 
 Local font file import, independent Title/AM-PM controls, final Fluent redesign and whole
 responsive layout framework are also not implemented. No new dependency or font download.

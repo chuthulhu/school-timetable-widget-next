@@ -14,11 +14,17 @@ namespace SchoolTimetableWidget.Desktop.Features.Timetable;
 public partial class WeeklyTimetableView : UserControl
 {
     private TableAppearance _appearance = TableAppearance.Default;
+    private DisplayColors _palette = DisplayColors.Default;
     private FontLibrary _fonts = FontLibrary.LocalOnly;
     public TableAppearance Appearance
     {
         get => _appearance;
         set { value.Validate(); _appearance = value; ConfigureAppearance(); }
+    }
+    public DisplayColors Palette
+    {
+        get => _palette;
+        set { ArgumentNullException.ThrowIfNull(value); _palette = value; ConfigureAppearance(); }
     }
     public FontLibrary Fonts
     {
@@ -35,11 +41,14 @@ public partial class WeeklyTimetableView : UserControl
     private void FontsChanged(object? sender, EventArgs e) => ConfigureAppearance();
     private void ConfigureAppearance()
     {
-        Resources["TableHeaderBrush"] = Brush(SystemColors.ControlColor, Appearance.HeaderOpacity);
-        Resources["TableTodayHeaderBrush"] = Brush(Color.FromRgb(229, 239, 246), Appearance.HeaderOpacity);
-        Resources["TableCellBrush"] = Brush(Colors.White, Appearance.CellOpacity);
-        Resources["TableCurrentBrush"] = Brush(Color.FromRgb(255, 243, 205), Appearance.CurrentOpacity);
-        Resources["TableBorderBrush"] = Brush(SystemColors.ControlLightColor, Appearance.BorderOpacity);
+        Resources["TableHeaderBrush"] = Brush(Palette.HeaderBackground, Appearance.HeaderOpacity);
+        Resources["TableTodayHeaderBrush"] = Brush(Palette.TodayHeaderBackground, Appearance.HeaderOpacity);
+        Resources["TableCellBrush"] = Brush(Palette.CellBackground, Appearance.CellOpacity);
+        Resources["TableCurrentBrush"] = Brush(Palette.CurrentBackground, Appearance.CurrentOpacity);
+        Resources["TableBorderBrush"] = Brush(Palette.Border, Appearance.BorderOpacity);
+        // Text is always opaque; only background and border brushes take opacity.
+        Resources["TableHeaderTextBrush"] = Brush(Palette.HeaderText, 1);
+        Resources["TableCellTextBrush"] = Brush(Palette.CellText, 1);
         SetType("TableHeader", Appearance.Header);
         SetType("TableCell", Appearance.Cell);
         if (Window.GetWindow(this) is { IsLoaded: true } window) WindowContentMinimum.Refresh(window);
@@ -51,9 +60,9 @@ public partial class WeeklyTimetableView : UserControl
         Resources[prefix + "Weight"] = SystemFontCatalog.Weight(typography.Weight);
         Resources[prefix + "Style"] = SystemFontCatalog.Style(typography.Style);
     }
-    private static SolidColorBrush Brush(Color color, double opacity)
+    private static SolidColorBrush Brush(RgbColor color, double opacity)
     {
-        var brush = new SolidColorBrush(color) { Opacity = opacity };
+        var brush = new SolidColorBrush(Color.FromRgb(color.R, color.G, color.B)) { Opacity = opacity };
         brush.Freeze();
         return brush;
     }

@@ -25,7 +25,12 @@ public partial class MainWindow : Window
             StatusHeader.Fonts = display.Fonts;
             Timetable.Fonts = display.Fonts;
             Timetable.Appearance = display.Current.Table;
-            EventHandler appearanceChanged = (_, _) => Timetable.Appearance = display.Current.Table;
+            Timetable.Palette = display.Current.Colors;
+            EventHandler appearanceChanged = (_, _) =>
+            {
+                Timetable.Appearance = display.Current.Table;
+                Timetable.Palette = display.Current.Colors;
+            };
             display.Changed += appearanceChanged;
             Closed += (_, _) => display.Changed -= appearanceChanged;
         }

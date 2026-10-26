@@ -80,13 +80,17 @@ public sealed partial class JsonProfileStore : IProfileStore, IProfileRecoverySt
         if (_expectedBytes is null) return;
         using var json = JsonDocument.Parse(_expectedBytes);
         var profile = json.RootElement.GetProperty("profile");
-        var displayExtended = profile.TryGetProperty("display", out var display) &&
-            display.TryGetProperty("settings", out var settings) && settings.TryGetProperty("table", out _);
-        var presetsExtended = profile.TryGetProperty("displayPresets", out var presets) &&
-            presets.EnumerateArray().All(p => p.GetProperty("settings").TryGetProperty("table", out _));
-        if (json.RootElement.GetProperty("schemaVersion").GetInt32() == 5 && displayExtended && presetsExtended) return;
+        var v5 = json.RootElement.GetProperty("schemaVersion").GetInt32() == 5;
+        bool Extended(string name) => profile.TryGetProperty("display", out var display) &&
+            display.TryGetProperty("settings", out var settings) && settings.TryGetProperty(name, out _) &&
+            profile.TryGetProperty("displayPresets", out var presets) &&
+            presets.EnumerateArray().All(p => p.GetProperty("settings").TryGetProperty(name, out _));
+        var tableExtended = v5 && Extended("table");
+        if (tableExtended && Extended("colors")) return;
         VerifyUnchanged();
-        var path = Path.Combine(DirectoryPath, $"profile-before-table-{Guid.NewGuid():N}.json");
+        // Name the first extension the original lacks; a pre-table profile lacks both.
+        var extension = tableExtended ? "colors" : "table";
+        var path = Path.Combine(DirectoryPath, $"profile-before-{extension}-{Guid.NewGuid():N}.json");
         using var backup = new FileStream(path, FileMode.CreateNew, FileAccess.Write, FileShare.None);
         backup.Write(_expectedBytes);
         backup.Flush(flushToDisk: true);

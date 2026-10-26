@@ -32,3 +32,4 @@ Current delivery: [Feature Map](../FEATURE-MAP.md).
 | [ADR 0024 — KRISS NTP synchronization for Application Clock](0024-kriss-application-clock-sync.md) | Accepted |
 | [ADR 0025 — Data interchange without native desktop changes](0025-data-interchange-foundation.md) | Accepted — processing/transaction foundation; UI deferred |
 | [ADR 0026 — Widget appearance and window interaction](0026-widget-appearance-and-window-interaction.md) | Accepted — scoped Windows verification recorded; remaining native limits documented |
+| [ADR 0027 — Display colors](0027-display-colors.md) | Accepted — automated verification; native verification pending |

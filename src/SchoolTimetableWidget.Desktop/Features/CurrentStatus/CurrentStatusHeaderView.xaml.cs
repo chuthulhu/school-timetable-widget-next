@@ -39,6 +39,10 @@ public partial class CurrentStatusHeaderView : UserControl
     private void Configure()
     {
         var display = (DataContext as CurrentStatusHeaderViewModel)?.Display ?? DisplayPresets.Create(DisplayPreset.Standard);
+        var clock = display.Colors.ClockText;
+        var foreground = new SolidColorBrush(Color.FromRgb(clock.R, clock.G, clock.B));
+        foreground.Freeze();
+        Foreground = foreground;
         ApplyType(CurrentTimeTextBlock, display.Time);
         ApplyType(AmPmTextBlock, display.Time);
         ApplyType(CurrentDateTextBlock, display.Date);

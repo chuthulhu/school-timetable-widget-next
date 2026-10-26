@@ -71,7 +71,7 @@ public static class ProfileJson
         {
             foreach (var property in node.EnumerateObject())
             {
-                if (property.Name == "table" && property.Value.ValueKind != JsonValueKind.Object)
+                if (property.Name is "table" or "colors" && property.Value.ValueKind != JsonValueKind.Object)
                     throw new JsonException("Invalid table settings.");
                 ValidateTableShapes(property.Value);
             }
@@ -226,17 +226,35 @@ public static class ProfileJson
             return value;
         }
     }
+    private sealed record ColorsDto(int Version, string HeaderBackground, string TodayHeaderBackground, string CellBackground,
+        string CurrentBackground, string Border, string HeaderText, string CellText, string ClockText)
+    {
+        public static ColorsDto From(DisplayColors value) => new(1, value.HeaderBackground.ToString(),
+            value.TodayHeaderBackground.ToString(), value.CellBackground.ToString(), value.CurrentBackground.ToString(),
+            value.Border.ToString(), value.HeaderText.ToString(), value.CellText.ToString(), value.ClockText.ToString());
+        public DisplayColors ToValue()
+        {
+            if (Version != 1) throw new JsonException("Unsupported display colors version.");
+            return new(Rgb(HeaderBackground), Rgb(TodayHeaderBackground), Rgb(CellBackground), Rgb(CurrentBackground),
+                Rgb(Border), Rgb(HeaderText), Rgb(CellText), Rgb(ClockText));
+        }
+        private static RgbColor Rgb(string text) =>
+            RgbColor.TryParse(text, out var value) ? value : throw new JsonException("Invalid display color.");
+    }
     private sealed record DisplayPayload(string Layout, Typography Time, Typography Date, Typography Weekday,
-        Typography Status, bool Use24Hour, bool ShowSeconds, bool ShowDate, bool ShowWeekday, bool ShowStatus, TableDto? Table = null)
+        Typography Status, bool Use24Hour, bool ShowSeconds, bool ShowDate, bool ShowWeekday, bool ShowStatus,
+        TableDto? Table = null, ColorsDto? Colors = null)
     {
         public static DisplayPayload From(DisplayConfiguration value) => new(value.Layout.ToString(),
             Typography.From(value.Time), Typography.From(value.Date), Typography.From(value.Weekday), Typography.From(value.Status),
-            value.Use24Hour, value.ShowSeconds, value.ShowDate, value.ShowWeekday, value.ShowStatus, TableDto.From(value.Table));
+            value.Use24Hour, value.ShowSeconds, value.ShowDate, value.ShowWeekday, value.ShowStatus, TableDto.From(value.Table),
+            ColorsDto.From(value.Colors));
         public DisplayConfiguration ToValue(DisplayPresetReference reference)
         {
             var value = new DisplayConfiguration(reference, ParseName<DisplayLayout>(Layout),
                 Time.ToValue(), Date.ToValue(), Weekday.ToValue(), Status.ToValue(),
-                Use24Hour, ShowSeconds, ShowDate, ShowWeekday, ShowStatus) { Table = Table?.ToValue() ?? TableAppearance.Default };
+                Use24Hour, ShowSeconds, ShowDate, ShowWeekday, ShowStatus)
+            { Table = Table?.ToValue() ?? TableAppearance.Default, Colors = Colors?.ToValue() ?? DisplayColors.Default };
             value.Validate();
             return value;
         }
