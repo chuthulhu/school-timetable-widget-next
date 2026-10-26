@@ -4,3 +4,33 @@ obj/
 TestResults/
 *.user
 *.suo
+
+# Credentials and local secrets (example templates remain shareable).
+.env
+.env.*
+!.env.example
+!.env.template
+*.pfx
+*.p12
+*.pem
+*.key
+credentials.json
+secrets.json
+
+# Real user data and recovery evidence; do not ignore synthetic profile-v*.json.
+profile.json
+profile.json.*
+window-state.json
+tray-state.json
+*.stwbackup
+recovery-required.json
+profile.pre-restore.json
+profile.recovery-original.json
+profile.lock
+.profile-*.tmp
+.stw-*.tmp
+
+# Local SDK/package cache and diagnostic profiles.
+.dotnet/
+.nuget/
+/diagnostics/
