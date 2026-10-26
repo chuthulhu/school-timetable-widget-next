@@ -9,6 +9,10 @@ on:
 permissions:
   contents: read
 
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
 jobs:
   core:
     name: Core data tests (Linux)
@@ -26,7 +30,7 @@ jobs:
   windows:
     name: Full suite (Windows)
     runs-on: windows-latest
-    timeout-minutes: 20
+    timeout-minutes: 12
     defaults:
       run:
         shell: pwsh
@@ -39,7 +43,7 @@ jobs:
           global-json-file: global.json
       - run: dotnet restore SchoolTimetableWidget.sln
       - run: dotnet build SchoolTimetableWidget.sln --no-restore -p:CoreOnlyTests=false
-      - run: dotnet test SchoolTimetableWidget.sln --no-build -p:CoreOnlyTests=false --logger "console;verbosity=normal"
+      - run: dotnet test SchoolTimetableWidget.sln --no-build -p:CoreOnlyTests=false --logger "console;verbosity=normal" --blame-hang-timeout 5m --blame-hang-dump-type mini
       - run: pwsh -NoProfile -File ./tests/bootstrap-dev.Tests.ps1
       - name: Upload failure evidence
         if: failure()
