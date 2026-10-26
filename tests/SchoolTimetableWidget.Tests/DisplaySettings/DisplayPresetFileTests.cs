@@ -23,6 +23,23 @@ public class DisplayPresetFileTests
     }
 
     [Fact]
+    public void TablePresetRoundTripAndLegacyDefaultsAreLossless()
+    {
+        var sample = Sample();
+        var preset = new UserDisplayPreset(sample.Id, sample.Name, sample.Display with
+        { Table = TableAppearance.Default with { HeaderOpacity = 0, CellOpacity = .125,
+            CurrentOpacity = .5, BorderOpacity = 1,
+            Cell = TableAppearance.Default.Cell with { Font = new(FontSourceKind.System, "없는 본문 글꼴") } }});
+        Assert.Equal(preset.Display, DisplayPresetFile.Import(DisplayPresetFile.Export(preset)).Display);
+        var old = JsonNode.Parse(DisplayPresetFile.Export(sample))!;
+        old["presetFileVersion"] = 1;
+        old["preset"]!["settings"]!.AsObject().Remove("table");
+        Assert.Equal(TableAppearance.Default, DisplayPresetFile.Import(Encoding.UTF8.GetBytes(old.ToJsonString())).Display.Table);
+        old["preset"]!["settings"]!["table"] = new JsonObject();
+        Assert.Throws<InvalidDataException>(() => DisplayPresetFile.Import(Encoding.UTF8.GetBytes(old.ToJsonString())));
+    }
+
+    [Fact]
     public void ExportAndImportPreserveExactIdentityNameConfigurationAndUtf8()
     {
         var preset = Sample(); var bytes = DisplayPresetFile.Export(preset);

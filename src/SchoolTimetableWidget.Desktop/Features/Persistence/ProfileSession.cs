@@ -3,6 +3,7 @@ using System.IO;
 using SchoolTimetableWidget.Core.Features.Periods;
 using SchoolTimetableWidget.Core.Features.SchoolDays;
 using SchoolTimetableWidget.Core.Features.Timetable;
+using SchoolTimetableWidget.Core.Features.DataInterchange;
 
 namespace SchoolTimetableWidget.Desktop.Features.Persistence;
 
@@ -49,6 +50,21 @@ public sealed class ProfileSession
     public string? SaveDisplay(DisplayConfiguration value, UserDisplayPresetLibrary presets) =>
         Commit(new(Current.SemesterSets, Current.ActiveSemesterId, Current.ShowLunch, value, presets));
     internal string? SaveSemesters(ProfileSnapshot candidate) => Commit(candidate);
+
+    /// <summary>One durable replacement of reviewed Base inputs; stale previews cannot retarget.</summary>
+    public string? ImportData(TimetableDataPackage package, ProfileSnapshot reviewedSnapshot, bool useTimetable, bool useSchedule)
+    {
+        ArgumentNullException.ThrowIfNull(package);
+        ArgumentNullException.ThrowIfNull(reviewedSnapshot);
+        if (!ReferenceEquals(Current, reviewedSnapshot))
+            return "미리보기 이후 데이터가 변경되었습니다. 현재 학기를 확인하고 다시 가져와 주세요.";
+        try
+        {
+            var semester = package.ApplyTo(Current.ActiveSemester, useTimetable, useSchedule);
+            return Commit(Current.ReplaceSemester(semester));
+        }
+        catch (ArgumentException error) { return error.Message; }
+    }
 
     public bool CanRestore => !_saving && _store is IProfileRecoveryStore { CanRestore: true };
     public bool CanRecover => !_saving && _store is IProfileRecoveryStore { CanRecover: true };

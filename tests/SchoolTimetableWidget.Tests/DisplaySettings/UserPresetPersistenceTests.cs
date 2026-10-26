@@ -33,6 +33,7 @@ public class UserPresetPersistenceTests
             Assert.Equal(builtIn, actual["preset"]!["builtIn"]!.GetValue<string>());
             foreach (var key in new[] { "time", "date", "weekday", "status" })
                 sourceDisplay[key]!["font"]!["familyId"] = sourceDisplay[key]!["font"]!["family"]!.DeepClone();
+            actual["settings"]!.AsObject().Remove("table");
             Assert.True(JsonNode.DeepEquals(sourceDisplay, actual["settings"]));
         }
         expected.Remove("display");
@@ -42,6 +43,24 @@ public class UserPresetPersistenceTests
         var actualProfile = saved["profile"]!.AsObject(); actualProfile.Remove("display"); actualProfile.Remove("displayPresets");
         Assert.True(JsonNode.DeepEquals(expected, Semesters.SemesterTests.LegacyFields(actualProfile)));
     }
+    [Fact]
+    public void SavedUserTableStyleSurvivesRestartAndReset() => Timetable.HighlightTestDispatcher.Run(() =>
+    {
+        using var temp = new TempProfile(); Guid id; TableAppearance expected;
+        using (var store = new JsonProfileStore(temp.Directory))
+        {
+            var profile = new ProfileSession(store); var runtime = new ProfileRuntime(profile, () => { }, _ => { });
+            var session = runtime.Display.Open(); session.HeaderOpacity = 120d / 255; session.BorderOpacity = .73;
+            session.TableElements[0].Family = "없는 머리글 글꼴";
+            Assert.True(session.TrySaveAs("표 스타일")); id = session.Preset.UserId!.Value;
+            expected = runtime.Display.Current.Table; Assert.True(session.TryAccept());
+        }
+        using var restartStore = new JsonProfileStore(temp.Directory); var restart = new ProfileSession(restartStore);
+        var owner = new ProfileRuntime(restart, () => { }, _ => { }).Display; var edit = owner.Open();
+        Assert.Equal(expected, owner.Committed.Table); edit.CellOpacity = .9; edit.Reset();
+        Assert.Equal(expected, owner.Current.Table); Assert.Equal(expected, owner.CommittedPresets.Get(id).Display.Table); edit.Cancel();
+    });
+
     [Fact]
     public void ApplyRestartSelectAndResetRestoreExactPayloadAndKeepMissingFontIdentity()
     {

@@ -15,6 +15,20 @@ public class DisplayPresetImportTransactionTests
         { Time = DisplayPresets.Create(DisplayPreset.Digital).Time with { Size = size } });
 
     [Fact]
+    public void ImportedTableStyleRemainsDraftUntilApplyAndCancelDiscardsIt() => Timetable.HighlightTestDispatcher.Run(() =>
+    {
+        var owner = DisplayModelTests.Owner(); var session = owner.Open();
+        var original = owner.Committed; var id = Guid.NewGuid();
+        var imported = new UserDisplayPreset(id, "표 프리셋", original with
+        { Table = TableAppearance.Default with { HeaderOpacity = .37, BorderOpacity = .83 } });
+        var file = DisplayPresetFile.Import(DisplayPresetFile.Export(imported));
+        Assert.True(session.TryImport(session.InspectImport(file), PresetImportAction.Add, file.Name));
+        session.Preset = DisplayPresetReference.User(id);
+        Assert.Equal(imported.Display.Table, owner.Current.Table); Assert.Equal(original, owner.Committed);
+        session.Cancel(); Assert.Equal(original, owner.Current); Assert.Empty(owner.CommittedPresets.Items);
+    });
+
+    [Fact]
     public void NewImportUpdatesOnlyDraftLibraryAndDoesNotActivateDisplay()
     {
         var owner = DisplayModelTests.Owner(); var session = owner.Open(); var before = owner.Current;

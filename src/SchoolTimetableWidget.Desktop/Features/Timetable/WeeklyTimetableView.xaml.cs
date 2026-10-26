@@ -1,3 +1,5 @@
+using System.Windows.Media;
+using SchoolTimetableWidget.Desktop.Features.DisplaySettings;
 using SchoolTimetableWidget.Desktop.Features.PeriodScheduleEditing;
 using SchoolTimetableWidget.Desktop.Features.DateOverrides;
 using System.Windows.Input;
@@ -11,7 +13,50 @@ namespace SchoolTimetableWidget.Desktop.Features.Timetable;
 
 public partial class WeeklyTimetableView : UserControl
 {
-    public WeeklyTimetableView() => InitializeComponent();
+    private TableAppearance _appearance = TableAppearance.Default;
+    private FontLibrary _fonts = FontLibrary.LocalOnly;
+    public TableAppearance Appearance
+    {
+        get => _appearance;
+        set { value.Validate(); _appearance = value; ConfigureAppearance(); }
+    }
+    public FontLibrary Fonts
+    {
+        get => _fonts;
+        set
+        {
+            WeakEventManager<FontLibrary, EventArgs>.RemoveHandler(_fonts, nameof(FontLibrary.Changed), FontsChanged);
+            _fonts = value;
+            WeakEventManager<FontLibrary, EventArgs>.AddHandler(_fonts, nameof(FontLibrary.Changed), FontsChanged);
+            ConfigureAppearance();
+        }
+    }
+    public WeeklyTimetableView() { InitializeComponent(); ConfigureAppearance(); }
+    private void FontsChanged(object? sender, EventArgs e) => ConfigureAppearance();
+    private void ConfigureAppearance()
+    {
+        Resources["TableHeaderBrush"] = Brush(SystemColors.ControlColor, Appearance.HeaderOpacity);
+        Resources["TableTodayHeaderBrush"] = Brush(Color.FromRgb(229, 239, 246), Appearance.HeaderOpacity);
+        Resources["TableCellBrush"] = Brush(Colors.White, Appearance.CellOpacity);
+        Resources["TableCurrentBrush"] = Brush(Color.FromRgb(255, 243, 205), Appearance.CurrentOpacity);
+        Resources["TableBorderBrush"] = Brush(SystemColors.ControlLightColor, Appearance.BorderOpacity);
+        SetType("TableHeader", Appearance.Header);
+        SetType("TableCell", Appearance.Cell);
+        if (Window.GetWindow(this) is { IsLoaded: true } window) WindowContentMinimum.Refresh(window);
+    }
+    private void SetType(string prefix, ElementTypography typography)
+    {
+        Resources[prefix + "Font"] = Fonts.Resolve(typography.Font);
+        Resources[prefix + "Size"] = typography.Size;
+        Resources[prefix + "Weight"] = SystemFontCatalog.Weight(typography.Weight);
+        Resources[prefix + "Style"] = SystemFontCatalog.Style(typography.Style);
+    }
+    private static SolidColorBrush Brush(Color color, double opacity)
+    {
+        var brush = new SolidColorBrush(color) { Opacity = opacity };
+        brush.Freeze();
+        return brush;
+    }
 
     public TimetableImportActions ImportActions { get; set; } = new(new WindowsSpreadsheetClipboard());
 

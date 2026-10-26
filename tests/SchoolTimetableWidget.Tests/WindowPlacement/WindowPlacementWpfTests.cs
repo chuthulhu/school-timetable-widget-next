@@ -18,6 +18,80 @@ namespace SchoolTimetableWidget.Tests.WindowPlacement;
 public class WindowPlacementWpfTests
 {
     [Fact]
+    public void NumericDialogFailureKeepsInputAndLastCommittedSize() => HighlightTestDispatcher.Run(() =>
+    {
+        using var temp = new TempProfile(); var store = new JsonWindowStateStore(temp.Directory);
+        Assert.True(store.Save(PreferredWindowBounds.Default));
+        var window = new MainWindow(new(), new(WeeklyTimetable.Empty()));
+        var controller = new WindowPlacementController(window, store, new FakePlacementDesktop());
+        var dialog = new WindowSettingsWindow(controller);
+        try
+        {
+            ((TextBox)dialog.FindName("WidthInput")).Text = "910";
+            store.BeforeRename = () => throw new IOException("injected failure");
+            Assert.False(dialog.TryApply()); Assert.Equal(800, controller.Session.Preferred.Width);
+            Assert.Equal("910", ((TextBox)dialog.FindName("WidthInput")).Text);
+            Assert.NotEmpty(((TextBlock)dialog.FindName("ErrorText")).Text);
+            store.BeforeRename = null; Assert.True(dialog.TryApply()); Assert.Equal(910, controller.Session.Preferred.Width);
+            ((TextBox)dialog.FindName("WidthInput")).Text = "920"; dialog.Close();
+            Assert.Equal(910, controller.Session.Preferred.Width);
+        }
+        finally { dialog.Close(); window.Close(); }
+    });
+
+    [Fact]
+    public void WidgetHasTransparentFramelessSurfaceAndSettingsKeepNormalChrome() => HighlightTestDispatcher.Run(() =>
+    {
+        var window = new MainWindow(new(), new(WeeklyTimetable.Empty()));
+        var controller = new WindowPlacementController(window, new MemoryWindowStore(), new FakePlacementDesktop());
+        var dialog = new WindowSettingsWindow(controller);
+        try
+        {
+            Assert.Equal(WindowStyle.None, window.WindowStyle); Assert.True(window.AllowsTransparency);
+            Assert.Equal(0, ((System.Windows.Media.SolidColorBrush)window.Background).Color.A);
+            Assert.Equal(1, window.Opacity); Assert.False(window.Topmost);
+            Assert.Equal(WindowStyle.SingleBorderWindow, dialog.WindowStyle); Assert.False(dialog.AllowsTransparency);
+            Assert.True(WindowPlacementCommands.Settings.CanExecute(null, window));
+        }
+        finally { dialog.Close(); window.Close(); }
+    });
+
+    [Fact]
+    public void DragThresholdExcludesControlsAndLockButAllowsBody() => HighlightTestDispatcher.Run(() =>
+    {
+        var window = new MainWindow(new(), new(WeeklyTimetable.Empty()));
+        var controller = new WindowPlacementController(window, new MemoryWindowStore(), new FakePlacementDesktop());
+        try
+        {
+            var body = new TextBlock(); var start = new Point(100, 100);
+            Assert.False(controller.CanStartDrag(body, start, new Point(101, 101)));
+            Assert.True(controller.CanStartDrag(body, start, new Point(200, 200)));
+            foreach (var excluded in new DependencyObject[] { new Button(), new TextBox(), new ComboBox(),
+                new System.Windows.Controls.Primitives.ScrollBar(), new System.Windows.Controls.Primitives.Thumb() })
+                Assert.False(controller.CanStartDrag(excluded, start, new Point(200, 200)));
+            Assert.True(controller.TrySetPreferences(800, 600, true));
+            Assert.False(controller.CanStartDrag(body, start, new Point(200, 200)));
+        }
+        finally { window.Close(); }
+    });
+
+    [Theory]
+    [InlineData(1d)] [InlineData(1.5)] [InlineData(2d)]
+    public void NumericSizeUsesDipWorkAreaFitAndRetainsIntent(double scale) => HighlightTestDispatcher.Run(() =>
+    {
+        var window = new MainWindow(new(), new(WeeklyTimetable.Empty()));
+        var desktop = new FakePlacementDesktop { Monitors = [new("A", 0, 0, 1200, 1000, scale, true)] };
+        var controller = new WindowPlacementController(window, new MemoryWindowStore(), desktop);
+        try
+        {
+            Assert.True(controller.TrySetPreferences(900, 800, false)); controller.Apply(500, 400);
+            Assert.Equal(900, controller.Session.Preferred.Width); Assert.Equal(800, controller.Session.Preferred.Height);
+            Assert.True(window.Width * scale <= 1200); Assert.True(window.Height * scale <= 1000);
+        }
+        finally { window.Close(); }
+    });
+
+    [Fact]
     public void MeasuredMultilineGrowsRepositionsThenShrinksWithoutWriting() => HighlightTestDispatcher.Run(() =>
     {
         var model = new SchoolTimetableWidget.Desktop.Features.Timetable.WeeklyTimetableViewModel(WeeklyTimetable.Empty());

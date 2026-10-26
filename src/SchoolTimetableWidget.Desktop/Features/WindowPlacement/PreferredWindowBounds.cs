@@ -3,6 +3,7 @@ namespace SchoolTimetableWidget.Desktop.Features.WindowPlacement;
 /// <summary>Machine-local intent. Position is in DIPs relative to a monitor's work-area origin.</summary>
 internal sealed record PreferredWindowBounds(double Width, double Height, double Left, double Top, string? MonitorHint)
 {
+    public bool MoveLocked { get; init; }
     public static PreferredWindowBounds Default { get; } = new(800, 600, 40, 40, null);
 
     public bool IsValid => ValidSize(Width) && ValidSize(Height) && ValidPosition(Left) && ValidPosition(Top) &&

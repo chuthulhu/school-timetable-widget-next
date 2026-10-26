@@ -17,6 +17,8 @@ public sealed record DisplayConfiguration(DisplayPresetReference Preset, Display
     ElementTypography Time, ElementTypography Date, ElementTypography Weekday, ElementTypography Status,
     bool Use24Hour, bool ShowSeconds, bool ShowDate, bool ShowWeekday, bool ShowStatus)
 {
+    public TableAppearance Table { get; init; } = TableAppearance.Default;
+
     public void Validate()
     {
         if (Preset is null || !Enum.IsDefined(Layout)) throw new ArgumentException("표시 스타일을 확인해 주세요.");
@@ -24,9 +26,11 @@ public sealed record DisplayConfiguration(DisplayPresetReference Preset, Display
         ValidateElement(Date, 8, 48);
         ValidateElement(Weekday, 8, 48);
         ValidateElement(Status, 8, 48);
+        if (Table is null) throw new ArgumentException("표 표시 설정을 확인해 주세요.");
+        Table.Validate();
     }
 
-    private static void ValidateElement(ElementTypography? element, double min, double max)
+    internal static void ValidateElement(ElementTypography? element, double min, double max)
     {
         if (element?.Font is not { } font || !Enum.IsDefined(font.Source) ||
             string.IsNullOrWhiteSpace(font.Family) || font.Family.Length > 200 ||
@@ -62,4 +66,21 @@ public static class DisplayPresets
     }
     private static ElementTypography Type(double size, DisplayFontWeight weight = DisplayFontWeight.Normal) =>
         new(new(FontSourceKind.System, "Segoe UI"), size, weight, DisplayFontStyle.Normal);
+}
+
+/// <summary>Brush opacity is a finite 0–1 value; typography always remains opaque.</summary>
+public sealed record TableAppearance(ElementTypography Header, ElementTypography Cell,
+    double HeaderOpacity, double CellOpacity, double CurrentOpacity, double BorderOpacity)
+{
+    public static TableAppearance Default { get; } = new(
+        new(new(FontSourceKind.System, "Segoe UI"), 15, DisplayFontWeight.Medium, DisplayFontStyle.Normal),
+        new(new(FontSourceKind.System, "Segoe UI"), 16, DisplayFontWeight.Normal, DisplayFontStyle.Normal), 1, 0, 1, 1);
+    public void Validate()
+    {
+        DisplayConfiguration.ValidateElement(Header, 8, 48);
+        DisplayConfiguration.ValidateElement(Cell, 8, 48);
+        foreach (var opacity in new[] { HeaderOpacity, CellOpacity, CurrentOpacity, BorderOpacity })
+            if (!double.IsFinite(opacity) || opacity is < 0 or > 1)
+                throw new ArgumentException("표 투명도는 0~100% 사이로 선택해 주세요.");
+    }
 }
