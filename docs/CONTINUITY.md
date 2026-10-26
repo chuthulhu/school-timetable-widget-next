@@ -1,6 +1,6 @@
 # Project continuity
 
-Tool-independent handoff entry point. Snapshot date: 2026-10-07.
+Tool-independent handoff entry point. Snapshot date: 2026-10-26.
 Read this after [README](../README.md), then follow [Development](DEVELOPMENT.md).
 This repository contains the implementation and authoritative project documentation.
 
@@ -22,6 +22,35 @@ not an implementation template. AI conversations, session memory and private not
 not authoritative and are not needed to build or resume development.
 
 ## Verified implementation baseline
+
+### Main integration — 2026-10-26
+
+The user requested that every open branch be reviewed and merged into main or removed.
+Both open draft PRs were integrated with merge commits, so the commit SHAs that evidence
+records cite remain valid on main:
+
+| Change | main commit | Notes |
+| --- | --- | --- |
+| [PR #2](https://github.com/chuthulhu/school-timetable-widget-next/pull/2): data interchange foundation ([ADR 0025](adr/0025-data-interchange-foundation.md)) plus widget appearance and window interaction ([ADR 0026](adr/0026-widget-appearance-and-window-interaction.md)) | `9cd52ee323a78af46b6510071c177f0fd53ff24e` | Head `d34aec3`; latest application source `5f90852`, whose evidence is below |
+| [PR #3](https://github.com/chuthulhu/school-timetable-widget-next/pull/3): cloud development setup from PR #1 plus CI hang protection | `9a48beab9a923f75ff8e2ac6c9c1c1c153d89480` | PR #1 closed as superseded; its commit `c6e9047` is preserved |
+
+PR #3 changed no application source, tests or schema. It added the
+[Cloud development](CLOUD-DEVELOPMENT.md) setup, secret/user-data ignore rules and
+`scripts/setup-codex.sh`. It dropped PR #1's standalone `windows-ci.yml` because it duplicated
+the Windows job of `.github/workflows/data-verification.yml`, which is the only CI workflow.
+That Windows job now fails a test that hangs for five minutes (`--blame-hang-timeout 5m`)
+instead of waiting for the job limit. The job limit dropped from 20 to 12 minutes, and a newer
+push to the same ref cancels an older run. An earlier run (38130020903) had hung without
+output until its 20-minute limit. The fake-task race believed responsible was fixed in `5f90852`.
+
+GitHub Actions [run 40270698876](https://github.com/chuthulhu/school-timetable-widget-next/actions/runs/40270698876)
+on the PR #3 head `9c6b7f3` passed both the Linux Core-only job and the full Windows suite
+job. Per-test counts were not read from that run's log. No local build or test ran during
+the integration: the cloud session could not install the SDK because `dot.net` returned 403.
+Native evidence is unchanged by the integration. The 2026-10-19 laptop record below remains
+partial: Korean IME and 150/200% DPI are still unverified. The
+`codex/data-interchange` and `codex/cloud-development-setup` branches were deleted after
+merge. Their content is fully on main.
 
 ### Laptop Windows verification — 2026-10-19
 
