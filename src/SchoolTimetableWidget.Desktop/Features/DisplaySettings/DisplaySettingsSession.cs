@@ -24,6 +24,19 @@ public sealed class DisplaySettingsSession : ObservableObject
     public IReadOnlyList<ElementTypographyDraft> Elements => _elements;
     public IReadOnlyList<ElementTypographyDraft> TableElements => _tableElements;
     public IReadOnlyList<ColorDraft> Colors => _colors;
+    public IReadOnlyList<DisplayTheme> Themes => DisplayThemes.All;
+    /// <summary>Fills the color and opacity Draft from a theme and previews it; nothing is saved until Apply.</summary>
+    public void LoadTheme(DisplayTheme theme)
+    {
+        ArgumentNullException.ThrowIfNull(theme);
+        if (IsClosed) return;
+        var colors = theme.Colors;
+        RgbColor[] values = [colors.HeaderBackground, colors.TodayHeaderBackground, colors.CellBackground,
+            colors.CurrentBackground, colors.Border, colors.HeaderText, colors.CellText, colors.ClockText];
+        for (var i = 0; i < values.Length; i++) _colors[i].Text = values[i].ToString();
+        Change(_configuration with { Table = _configuration.Table with { HeaderOpacity = theme.HeaderOpacity,
+            CellOpacity = theme.CellOpacity, CurrentOpacity = theme.CurrentOpacity, BorderOpacity = theme.BorderOpacity } });
+    }
     public double HeaderOpacity { get => _configuration.Table.HeaderOpacity; set => Change(_configuration with { Table = _configuration.Table with { HeaderOpacity = value } }); }
     public double CellOpacity { get => _configuration.Table.CellOpacity; set => Change(_configuration with { Table = _configuration.Table with { CellOpacity = value } }); }
     public double CurrentOpacity { get => _configuration.Table.CurrentOpacity; set => Change(_configuration with { Table = _configuration.Table with { CurrentOpacity = value } }); }

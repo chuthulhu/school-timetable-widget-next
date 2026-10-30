@@ -54,6 +54,10 @@ public partial class DisplaySettingsWindow : Window
         // Collection resets can clear WPF selection; only an actual selected stable ID is an edit.
         if (PresetSelector.SelectedItem is DisplayChoice<DisplayPresetReference> choice) Session.Preset = choice.Value;
     }
+    private void LoadTheme_Click(object sender, RoutedEventArgs e)
+    {
+        if (sender is FrameworkElement { DataContext: DisplayTheme theme }) Session.LoadTheme(theme);
+    }
     private async void DownloadFont_Click(object sender, RoutedEventArgs e)
     {
         if (sender is FrameworkElement { DataContext: ElementTypographyDraft element }) await element.DownloadAsync();
