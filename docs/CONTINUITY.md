@@ -1,6 +1,6 @@
 # Project continuity
 
-Tool-independent handoff entry point. Snapshot date: 2026-10-26.
+Tool-independent handoff entry point. Snapshot date: 2026-10-30.
 Read this after [README](../README.md), then follow [Development](DEVELOPMENT.md).
 This repository contains the implementation and authoritative project documentation.
 
@@ -22,6 +22,21 @@ not an implementation template. AI conversations, session memory and private not
 not authoritative and are not needed to build or resume development.
 
 ## Verified implementation baseline
+
+### Display color themes — 2026-10-30
+
+[ADR 0028](adr/0028-display-color-themes.md) adds six built-in themes:
+
+- 기본.
+- 이전 앱 내 설정: the user's own legacy `style_settings.json` at the Golden Reference,
+  confirmed by the user.
+- 슬레이트 and 파랑, light and dark: from the guideline palettes in
+  `chuthulhu/physichu-platform` `guides/_core/tokens.json` (`_core@1.4.1-draft`, commit
+  `cfb1712`).
+
+A theme loads colors and opacities into the Draft only. Nothing is stored as a theme
+identity, and storage formats are unchanged. Verification is CI-only, recorded on the
+implementing pull request. No native rendering or readability check has been performed.
 
 ### Display colors — 2026-10-26
 
@@ -168,7 +183,7 @@ The platform project registry pins the subsequently verified/pushed handoff revi
 | Current Status Header, five states, countdown, date-aware highlight | Core/Desktop Features/CurrentStatus and Core Time; one shared Application Clock snapshot per refresh; initial PC fallback then KRISS-derived KST, [sync](KRISS-TIME-SYNC.md) |
 | Independent date timetable and date period overrides, optional lunch | Core Features/SchoolDays, Desktop Features/DateOverrides; [date overrides](DATE-OVERRIDES.md) |
 | Previous/next week and independent per-date columns | Desktop Features/Timetable; [week navigation](WEEK-NAVIGATION.md). Actual status remains tied to today |
-| Display customization and named user presets | Desktop Features/DisplaySettings; [display settings](DISPLAY-SETTINGS.md). Preview/Apply/OK/Cancel and stable preset IDs; table typography/opacity ([ADR 0026](adr/0026-widget-appearance-and-window-interaction.md)) and eight RGB colors ([ADR 0027](adr/0027-display-colors.md)) |
+| Display customization and named user presets | Desktop Features/DisplaySettings; [display settings](DISPLAY-SETTINGS.md). Preview/Apply/OK/Cancel and stable preset IDs; table typography/opacity ([ADR 0026](adr/0026-widget-appearance-and-window-interaction.md)) eight RGB colors ([ADR 0027](adr/0027-display-colors.md)) and built-in themes ([ADR 0028](adr/0028-display-color-themes.md)) |
 | Bundled/system/online fonts | Features/Fonts, Infrastructure/Fonts and Windows/FontLibrary; [catalog/licenses](FONT-CATALOG.md). Explicit download, local rendering, safe fallback |
 | One-preset import/export | DisplayPresetFile and display Draft library; [preset format](PRESET-IMPORT-EXPORT.md) |
 | Full-profile backup/restore, degraded mode, Recovery Required | Features/Persistence and Infrastructure/Persistence; [backup/recovery](BACKUP-RESTORE.md) |

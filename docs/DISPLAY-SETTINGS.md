@@ -103,7 +103,8 @@ Commit and fast-forward origin/main push require user native UX approval first.
 | Named custom presets | IMPLEMENTED — see user-defined display presets below |
 | Table typography and brush opacity | IMPLEMENTED — [ADR 0026](adr/0026-widget-appearance-and-window-interaction.md) |
 | Color editor (eight RGB colors) | IMPLEMENTED — [ADR 0027](adr/0027-display-colors.md); native verification pending |
-| Themes / named palettes | PLANNED |
+| Built-in color themes (load into Draft) | IMPLEMENTED — [ADR 0028](adr/0028-display-color-themes.md); native verification pending |
+| Linked or user-defined themes | PLANNED |
 
 Local font file import, independent Title/AM-PM controls, final Fluent redesign and whole
 responsive layout framework are also not implemented. No new dependency or font download.

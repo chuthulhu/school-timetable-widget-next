@@ -1136,3 +1136,23 @@ The user approved freely editable colors including text colors; themes are defer
 
 Contrast over real desktops, the dialog at 100/150/200% DPI and keyboard/IME input in the
 color boxes remain native acceptance checks.
+
+## Display color themes — approved 2026-10-30
+
+The user approved built-in themes based on their own legacy color settings and on the
+guideline palettes. [ADR 0028](adr/0028-display-color-themes.md) records the sources and the
+mapping.
+
+- The settings dialog offers six themes: 기본, 이전 앱 내 설정, 슬레이트 밝음, 슬레이트 어두움,
+  파랑 밝음 and 파랑 어두움.
+- Loading a theme fills the eight colors and the four brush opacities in the Draft and
+  previews them. Apply/OK saves the values. Cancel restores the last applied state. Values
+  stay individually editable.
+- No theme identity is stored. Profile, preset files and backups keep only the values.
+  Built-in display presets are unchanged.
+- 이전 앱 내 설정 reproduces the user's legacy `style_settings.json` exactly, including its
+  0–255 opacities. It has no separate today header or clock color, so those reuse the header
+  background and the text color.
+- Guideline themes are opaque, and their table text keeps at least 4.5:1 contrast.
+- The clock area has no background, so readability over the real desktop remains a native
+  acceptance check.

@@ -123,6 +123,16 @@
                 </GroupBox>
                 <GroupBox Header="색상 · #RRGGBB" Margin="0,8">
                     <StackPanel Margin="10">
+                        <TextBlock Text="테마 불러오기 · 색상과 불투명도를 채운 뒤 미리 봅니다. 적용해야 저장됩니다." Foreground="#555555" TextWrapping="Wrap"/>
+                        <ItemsControl x:Name="ThemeButtons" ItemsSource="{Binding Themes}" Focusable="False" Margin="0,4,0,8">
+                            <ItemsControl.ItemsPanel><ItemsPanelTemplate><WrapPanel/></ItemsPanelTemplate></ItemsControl.ItemsPanel>
+                            <ItemsControl.ItemTemplate>
+                                <DataTemplate>
+                                    <Button Content="{Binding Label}" Click="LoadTheme_Click" Margin="0,0,8,6" Padding="10,6"
+                                            AutomationProperties.Name="{Binding Label, StringFormat={}{0} 테마 불러오기}"/>
+                                </DataTemplate>
+                            </ItemsControl.ItemTemplate>
+                        </ItemsControl>
                         <ItemsControl x:Name="ColorEditors" ItemsSource="{Binding Colors}" Focusable="False">
                             <ItemsControl.ItemTemplate>
                                 <DataTemplate>
