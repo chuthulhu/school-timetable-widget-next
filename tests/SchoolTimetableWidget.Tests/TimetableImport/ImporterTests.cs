@@ -1,3 +1,4 @@
+using System.Globalization;
 using SchoolTimetableWidget.Core.Features.Timetable;
 using SchoolTimetableWidget.Core.Features.TimetableImport;
 
@@ -93,6 +94,57 @@ public class ImporterTests
         var title = Enumerable.Repeat("", source[0].Length).ToArray(); title[0] = "익명 시간표";
         var candidates = SchoolTimetableImporter.Import(new(new[] { title }.Concat(source)));
         Assert.Contains("행 4–5", candidates[0].Label);
+    }
+
+    // Shape of a real user's copy: no weekday row, Wednesday ends at period 6, multi-line quoted subjects.
+    private static string ShortWednesdayText(bool weekdayRow = false)
+    {
+        int[] lengths = [7, 7, 6, 7, 7];
+        var header = lengths.SelectMany(n => Enumerable.Range(1, n).Select(p => p.ToString(CultureInfo.InvariantCulture))).ToArray();
+        var subjects = Enumerable.Range(0, header.Length).Select(i => $"\"통합\n과학{i} \"").ToArray();
+        var classes = Enumerable.Range(0, header.Length).Select(i => $"{i}-9 ").ToArray();
+        var rows = new List<string[]> { header, subjects, classes };
+        if (weekdayRow)
+            rows.Insert(0, lengths.SelectMany((n, day) => Enumerable.Range(0, n)
+                .Select(p => p == 0 ? new[] { "월", "화", "수", "목", "금" }[day] : "")).ToArray());
+        return string.Join("\r\n", rows.Select(row => string.Join("\t", row))) + "\r\n";
+    }
+
+    [Fact]
+    public void ShortDayHeaderImportsMissingPeriodsAsEmptySlots()
+    {
+        var candidate = Assert.Single(SchoolTimetableImporter.Import(ClipboardTable.Parse(ShortWednesdayText())));
+        Assert.Contains("수 6교시까지", candidate.Evidence);
+        Assert.Contains("요일 머리글 없음", candidate.Evidence);
+        Assert.Contains("열 1–34", candidate.Evidence);
+        TimetableCellValue Value(SchoolDay day, int period) => candidate.Timetable[day, period].Value;
+        Assert.Equal(new TimetableCellValue("통합\n과학0 ", "0-9 "), Value(SchoolDay.Monday, 1));
+        Assert.Equal(new TimetableCellValue("통합\n과학19 ", "19-9 "), Value(SchoolDay.Wednesday, 6));
+        Assert.Equal(new TimetableCellValue("", ""), Value(SchoolDay.Wednesday, 7));
+        Assert.Equal(new TimetableCellValue("통합\n과학20 ", "20-9 "), Value(SchoolDay.Thursday, 1));
+        Assert.Equal(new TimetableCellValue("통합\n과학33 ", "33-9 "), Value(SchoolDay.Friday, 7));
+        Assert.Equal(35, candidate.Timetable.Cells.Count);
+    }
+
+    [Fact]
+    public void WeekdayLabelsFollowShortDayGroups()
+    {
+        var candidate = Assert.Single(SchoolTimetableImporter.Import(ClipboardTable.Parse(ShortWednesdayText(weekdayRow: true))));
+        Assert.Contains("월~금 머리글 확인", candidate.Evidence);
+        var shifted = ClipboardTable.Parse(ShortWednesdayText(weekdayRow: true)).Rows.Select(r => r.ToArray()).ToArray();
+        (shifted[0][20], shifted[0][19]) = ("", "목");
+        Assert.Throws<FormatException>(() => SchoolTimetableImporter.Import(new(shifted)));
+    }
+
+    [Theory]
+    [InlineData("1\t2\t3\t4\t5\t6\t7\t1\t2\t3\t4\t5\t6\t7\t1\t2\t3\t4\t5\t6\t7\t1\t2\t3\t4\t5\t6\t7\t1\t2\t3\t4\t5\t6\t7\t1\t2\t3")]
+    [InlineData("1\t2\t3\t4\t5\t6\t7\t1\t2\t3\t4\t5\t6\t7\t1\t2\t3\t4\t5\t6\t7\t1\t2\t3\t4\t5\t6\t7\t1\t2\t3\t4\t5\t6\t7\t8")]
+    [InlineData("1\t2\t3\t4\t5\t6\t7\t1\t2\t3\t4\t5\t6\t7\t1\t2\t3\t4\t5\t6\t7\t1\t2\t3\t4\t5\t6\t7")]
+    public void SixthDayEighthPeriodOrFourDaysAreNotAMondayToFridayHeader(string header)
+    {
+        var width = header.Split('\t').Length;
+        var body = string.Join("\t", Enumerable.Repeat("과목", width)) + "\r\n" + string.Join("\t", Enumerable.Repeat("1-1", width));
+        Assert.Throws<FormatException>(() => SchoolTimetableImporter.Import(ClipboardTable.Parse(header + "\r\n" + body)));
     }
 
     [Theory]

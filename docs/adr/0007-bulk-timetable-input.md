@@ -39,6 +39,27 @@ Clipboard TSV recognizes quoting, doubled quotes, embedded tabs/newlines,
 trailing empty columns and one optional final record separator. Rectangular
 validation happens after parsing. Empty final records are not silently discarded.
 
+## Amendment — shorter school days (2026-11-02)
+
+A real school export had Wednesday ending at period 6: its header read 1–7, 1–7, 1–6,
+1–7, 1–7 (34 columns), and School import rejected it. The user reported this and asked
+for that format to import. School now accepts five contiguous day groups. Each group
+counts 1, 2, … up to at most 7, and the next group restarts at 1. A day with fewer
+periods imports its missing periods as empty slots, and the evidence names the day,
+for example "수 6교시까지".
+
+Shapes that are not a Monday–Friday header of at most seven periods still reject:
+
+- A sixth group.
+- An eighth period.
+- Fewer than five groups.
+- A start inside a longer numbered run.
+- A broken sequence.
+
+The weekday-row check follows the detected group widths. Candidates are still never
+auto-selected, so the user sees the empty slots in the preview before Apply. Canonical
+import is unchanged.
+
 ## Commit boundary and UX
 
 A session captures the current immutable week and holds no write until Apply.

@@ -23,6 +23,15 @@ not authoritative and are not needed to build or resume development.
 
 ## Verified implementation baseline
 
+### School import with shorter days — 2026-11-02
+
+The user reported that a real school timetable export failed to import. Its header ran
+1–7, 1–7, 1–6, 1–7, 1–7: Wednesday ended at period 6. School import now accepts day groups
+of fewer than seven periods. It imports their missing periods as empty slots and names
+those days in the evidence ([ADR 0007 amendment](adr/0007-bulk-timetable-input.md)).
+Verification is CI-only, recorded on the pull request. No native clipboard check from
+Excel has been performed.
+
 ### Velopack installer — 2026-11-02
 
 [ADR 0029](adr/0029-velopack-installer.md) adds a per-user, self-contained Velopack installer.
