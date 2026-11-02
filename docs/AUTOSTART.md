@@ -35,8 +35,9 @@ Profile, .stwbackup, .stwpreset, window-state.json and tray-state.json exclude a
 Restore does not touch registration. Degraded/Recovery Required still permit the independent
 toggle without saving profile, removing markers or altering recovery snapshots.
 Legacy true alone never authorizes OS mutation. Windows Startup Apps, organization policy and
-security software may block execution; StartupApproved is untouched. Future uninstall should
-remove the owned value; installer/updater, delay, start-hidden, services and scheduler are excluded.
+security software may block execution; StartupApproved is untouched. Uninstall removes the owned
+value only ([ADR 0029](adr/0029-velopack-installer.md)); updater, delay, start-hidden, services and
+scheduler are excluded.
 
 ## Verification and native checkpoint
 

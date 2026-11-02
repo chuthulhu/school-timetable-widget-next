@@ -277,10 +277,26 @@ Core snapshot 필드와 composition/source/revision 의미는 [Architecture](ARC
 
 ## Developer bootstrap vs. end-user installation
 
-일반 최종 사용자는 .NET SDK를 설치할 필요가 없다. 향후 사용자 배포는 self-contained installer가
-후보이며 최종 runtime 배포 방식과 installer/updater 기술은 아직 DEFERRED다.
-개발 bootstrap은 개발 PC에서 코드를 빌드하기 위한 도구이고 사용자 installer와 별개다.
-이번 Phase 0에서 사용자 installer를 구현하거나 선택하지 않았다.
+일반 최종 사용자는 .NET SDK를 설치할 필요가 없다. 개발 bootstrap은 개발 PC에서 코드를 빌드하기 위한
+도구이고 사용자 installer와 별개다. Phase 0에서는 사용자 installer를 구현하지 않았다. 이후 사용자 설치는
+[ADR 0029](adr/0029-velopack-installer.md)의 Velopack self-contained installer로 정했다.
+
+## Build the installer
+
+`.github/workflows/installer.yml`이 pull request와 main push마다 설치 파일을 만든다. 버전은
+`0.1.0-ci.<run>`이고, workflow 실행 결과물(artifact) `installer-<version>`으로 내려받는다.
+`v1.2.3`처럼 SemVer 태그를 push하면 그 버전으로 만들고 GitHub Release를 생성한다. 로컬 Windows에서
+같은 결과를 만들려면 다음을 실행한다.
+
+```powershell
+dotnet publish src/SchoolTimetableWidget.Desktop/SchoolTimetableWidget.Desktop.csproj -c Release -r win-x64 --self-contained true -p:Version=0.1.0-local -o publish
+dotnet tool install --global vpk --version 1.2.161
+vpk pack --packId SchoolTimetableWidgetNext --packVersion 0.1.0-local --packDir publish --mainExe SchoolTimetableWidget.Desktop.exe --packTitle "학교 시간표 위젯" --packAuthors chuthulhu --outputDir Releases
+```
+
+Pack ID는 `%LOCALAPPDATA%` 아래 설치 폴더 이름이 되고, 제거할 때 그 폴더가 통째로 삭제된다. 따라서
+profile 폴더 이름 `SchoolTimetableWidget`과 절대 같게 바꾸지 않는다. 설치 테스트는 사용자 profile을 보호할
+수 있는 PC에서만 수행한다. 서명이 없으므로 SmartScreen 경고가 뜨는 것이 정상이다.
 
 ## Bootstrap control-flow checks
 

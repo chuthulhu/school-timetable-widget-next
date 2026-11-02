@@ -1,0 +1,82 @@
+name: Windows installer
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+    tags: ['v*']
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+env:
+  # The pack ID is also the install folder under %LOCALAPPDATA%, which Velopack deletes on
+  # uninstall. It must never equal the profile folder "SchoolTimetableWidget" (ADR 0029).
+  PACK_ID: SchoolTimetableWidgetNext
+  VPK_VERSION: 1.2.161
+
+jobs:
+  package:
+    name: Velopack installer
+    runs-on: windows-latest
+    timeout-minutes: 15
+    defaults:
+      run:
+        shell: pwsh
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          persist-credentials: false
+      - uses: actions/setup-dotnet@v6
+        with:
+          global-json-file: global.json
+      - name: Version
+        id: version
+        run: |
+          if ($env:GITHUB_REF_TYPE -eq 'tag') { $v = $env:GITHUB_REF_NAME.TrimStart('v') }
+          else { $v = "0.1.0-ci.$env:GITHUB_RUN_NUMBER" }
+          if ($v -notmatch '^\d+\.\d+\.\d+(-[0-9A-Za-z.-]+)?$') { throw "Not a SemVer version: $v" }
+          "value=$v" >> $env:GITHUB_OUTPUT
+      - name: Publish self-contained app
+        run: >
+          dotnet publish src/SchoolTimetableWidget.Desktop/SchoolTimetableWidget.Desktop.csproj
+          -c Release -r win-x64 --self-contained true
+          -p:Version=${{ steps.version.outputs.value }} -o publish
+      - name: Install vpk
+        run: dotnet tool install --global vpk --version $env:VPK_VERSION
+      - name: Pack installer
+        run: >
+          vpk pack --packId $env:PACK_ID --packVersion ${{ steps.version.outputs.value }}
+          --packDir publish --mainExe SchoolTimetableWidget.Desktop.exe
+          --packTitle "학교 시간표 위젯" --packAuthors chuthulhu --outputDir Releases
+      - uses: actions/upload-artifact@v4
+        with:
+          name: installer-${{ steps.version.outputs.value }}
+          path: Releases/
+          if-no-files-found: error
+
+  release:
+    name: GitHub Release
+    if: github.ref_type == 'tag'
+    needs: package
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/download-artifact@v4
+        with:
+          pattern: installer-*
+          path: Releases
+          merge-multiple: true
+      - name: Create release
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: >
+          gh release create "$GITHUB_REF_NAME" Releases/*
+          --repo "$GITHUB_REPOSITORY" --title "$GITHUB_REF_NAME" --generate-notes

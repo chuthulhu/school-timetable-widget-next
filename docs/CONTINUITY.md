@@ -1,6 +1,6 @@
 # Project continuity
 
-Tool-independent handoff entry point. Snapshot date: 2026-10-30.
+Tool-independent handoff entry point. Snapshot date: 2026-11-02.
 Read this after [README](../README.md), then follow [Development](DEVELOPMENT.md).
 This repository contains the implementation and authoritative project documentation.
 
@@ -22,6 +22,23 @@ not an implementation template. AI conversations, session memory and private not
 not authoritative and are not needed to build or resume development.
 
 ## Verified implementation baseline
+
+### Velopack installer — 2026-11-02
+
+[ADR 0029](adr/0029-velopack-installer.md) adds a per-user, self-contained Velopack installer.
+
+- **Installation.** The pack ID is `SchoolTimetableWidgetNext` and the app installs to
+  `%LOCALAPPDATA%\SchoolTimetableWidgetNext\current`. User data in
+  `%LOCALAPPDATA%\SchoolTimetableWidget` is always kept.
+- **Startup.** `Program.Main` runs Velopack hooks before WPF and single-instance startup.
+- **Uninstall.** It removes the autostart Run value only when that value launches the
+  installed executable.
+- **Builds.** `.github/workflows/installer.yml` builds the installer as an artifact on every
+  PR and main push. A `v*` tag creates a GitHub Release.
+
+There is no updater or code signing yet. Verification is CI-only, recorded on the implementing
+pull request. No real-PC install or uninstall has been performed. That check is required
+before the first tagged release.
 
 ### Display color themes — 2026-10-30
 

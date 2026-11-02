@@ -554,8 +554,11 @@ remain deferred. This follow-up adds no native desktop interaction or profile v6
 **APPROVED — A1:** 일반 사용자 단위 설치, Windows 시작 시 실행 옵션, 정상 uninstall.
 Portable은 초기 필수 요구가 아니다. 관리자 권한 의존 최소화는 설계 방향이며 실제 installer 권한 요건은 **DEFERRED**다.
 A5의 시간 동기화는 이와 별개로 관리자 권한이나 Windows system clock 변경에 의존하지 않는다.
-**DEFERRED:** MSIX/MSI/WiX/Squirrel/기타 installer technology, updater library 및 update 정책,
-지원 Windows 버전, runtime 배포 방식, uninstall 시 사용자 데이터 보존/삭제 선택의 상세.
+**APPROVED — 2026-11-02 / [ADR 0029](adr/0029-velopack-installer.md):** Velopack 사용자 단위 설치,
+self-contained runtime, 관리자 권한 없음. 설치 위치는 `%LOCALAPPDATA%\SchoolTimetableWidgetNext`이다.
+제거는 프로그램 파일과 이 설치가 등록한 자동 시작 값만 지우며, `%LOCALAPPDATA%\SchoolTimetableWidget`의
+사용자 데이터는 항상 보존한다. 설치 파일은 CI artifact로 만들고, 버전 태그는 GitHub Release로 배포한다.
+**DEFERRED:** updater의 update 정책(확인·적용·rollback), 코드 서명, MSI/기업 배포, 지원 Windows 버전.
 
 **APPROVED — P7 / ADR 0021:** 신규 설치 autostart 기본 OFF. Tray에서 사용자가 명시적으로 켠다.
 Migration true는 보고용이며 OS 변경을 일으키지 않는다. Restore는 autostart registry를 읽거나 변경하지 않는다.
