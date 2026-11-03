@@ -63,3 +63,4 @@ dotnet test tests/SchoolTimetableWidget.Tests/SchoolTimetableWidget.Tests.csproj
 5. [Agent working rules](AGENTS.md): 자동화 도구의 작업 규칙.
 
 특정 AI 제품, 대화 기록 또는 개인 메모는 작업 재개의 필수 자료가 아닙니다.
+Dev Runner smoke test 2026-10-30
