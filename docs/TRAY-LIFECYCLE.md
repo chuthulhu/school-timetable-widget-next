@@ -12,7 +12,7 @@ Implemented; **993/993 automated tests passed; user native UX approved**.
   dialog forward and requests “열린 편집 창을 먼저 닫아 주세요.” without discarding Draft.
 - Show reuses runtime and viewed week, refreshes/re-measures, restores Normal if necessary,
   fits current work areas preserving preferred placement, and activates best effort.
-- ShowInTaskbar is false. The fallback Windows Application icon has tooltip School Timetable Widget.
+- ShowInTaskbar is false. The tray shows the embedded ADR 0031 icon (earlier: the fallback Windows Application icon) with tooltip School Timetable Widget.
 - Windows logoff/shutdown bypasses the close-to-tray/editor guard without confirmation.
 - Hidden does not suspend the application clock or the existing one-second refresh.
 
@@ -20,7 +20,7 @@ Implemented; **993/993 automated tests passed; user native UX approved**.
 
 WidgetTrayLifecycle owns visibility/close/exit policy through small window/tray interfaces.
 WpfWidgetWindow owns WPF/native modal detection and show integration. WindowsTrayIcon owns
-NotifyIcon, context menu and cloned icon. App owns startup ordering, refresh/profile resources,
+NotifyIcon, context menu and its embedded icon. App owns startup ordering, refresh/profile resources,
 SessionEnding and final shutdown. Placement retains its existing user-gesture persistence policy.
 
 WindowsSingleInstance owns a user/session-scoped named mutex and AutoReset activation event.

@@ -291,7 +291,7 @@ Core snapshot 필드와 composition/source/revision 의미는 [Architecture](ARC
 ```powershell
 dotnet publish src/SchoolTimetableWidget.Desktop/SchoolTimetableWidget.Desktop.csproj -c Release -r win-x64 --self-contained true -p:Version=0.1.0-local -o publish
 dotnet tool install --global vpk --version 1.2.161
-vpk pack --packId SchoolTimetableWidgetNext --packVersion 0.1.0-local --packDir publish --mainExe SchoolTimetableWidget.Desktop.exe --packTitle "학교 시간표 위젯" --packAuthors chuthulhu --outputDir Releases
+vpk pack --packId SchoolTimetableWidgetNext --packVersion 0.1.0-local --packDir publish --mainExe SchoolTimetableWidget.Desktop.exe --packTitle "학교 시간표 위젯" --packAuthors chuthulhu --outputDir Releases --icon src/SchoolTimetableWidget.Desktop/Assets/Icons/app.ico
 ```
 
 Pack ID는 `%LOCALAPPDATA%` 아래 설치 폴더 이름이 되고, 제거할 때 그 폴더가 통째로 삭제된다. 따라서

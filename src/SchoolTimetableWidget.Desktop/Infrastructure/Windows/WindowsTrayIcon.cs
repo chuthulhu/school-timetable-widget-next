@@ -28,7 +28,7 @@ internal sealed class WindowsTrayIcon : ITrayIcon
         _registration = registration;
         _showError = showError ?? (text => System.Windows.MessageBox.Show(text, "School Timetable Widget",
             System.Windows.MessageBoxButton.OK, System.Windows.MessageBoxImage.Warning));
-        _image = (System.Drawing.Icon)System.Drawing.SystemIcons.Application.Clone();
+        _image = LoadTrayImage();
         _toggle = new("위젯 숨기기");
         _exit = new("종료");
         _autoStart = new("Windows 시작 시 실행") { CheckOnClick = false };
@@ -42,6 +42,16 @@ internal sealed class WindowsTrayIcon : ITrayIcon
         _exit.Click += Exit;
         _icon.MouseDoubleClick += DoubleClick;
         _icon.Visible = publish;
+    }
+
+    internal const string TrayIconResource = "SchoolTimetableWidget.Desktop.TrayIcon.ico";
+
+    /// <summary>ADR 0031 tray icon, using the frame drawn for the current small-icon size rather than a resample.</summary>
+    internal static System.Drawing.Icon LoadTrayImage()
+    {
+        using var stream = typeof(WindowsTrayIcon).Assembly.GetManifestResourceStream(TrayIconResource)
+            ?? throw new InvalidOperationException("The tray icon resource is missing.");
+        return new System.Drawing.Icon(stream, Forms.SystemInformation.SmallIconSize);
     }
 
     public void SetWindowVisible(bool visible) => _toggle.Text = visible ? "위젯 숨기기" : "위젯 보이기";

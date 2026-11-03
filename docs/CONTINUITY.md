@@ -23,6 +23,13 @@ not authoritative and are not needed to build or resume development.
 
 ## Verified implementation baseline
 
+### Application and tray icon — 2026-11-03
+
+[ADR 0031](adr/0031-app-and-tray-icon.md) replaces the generic tray icon and gives the
+executable, the shortcuts and the setup program an icon: concept A, chosen by the user, with
+teal rounded tiles and an amber current tile. Verification is CI-only, recorded on the pull
+request.
+
 ### Tile layout and semester menu — 2026-11-03
 
 At the user's request, [ADR 0030](adr/0030-tile-layout-and-semester-menu.md) makes these
