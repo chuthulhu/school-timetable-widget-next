@@ -39,10 +39,12 @@ public class WeekNavigationViewTests
         var cells = Descendants<TimetableCellControl>((ItemsControl)view.FindName("BodyCells")).ToArray();
         var bounds = Bounds(cells, view); var desired = view.DesiredSize;
         foreach (var cell in cells) Assert.Equal(cells[0].ActualWidth, cell.ActualWidth, 5);
+        // Header and body tiles share the same margin, so tile edges align column by column.
+        var tiles = cells.Select(cell => Descendants<Border>(cell).First()).ToArray();
         for (var i = 0; i < 5; i++)
         {
-            Assert.Equal(headers[i].TranslatePoint(new(), view).X, cells[i].TranslatePoint(new(), view).X, 5);
-            Assert.Equal(headers[i].ActualWidth, cells[i].ActualWidth, 5);
+            Assert.Equal(headers[i].TranslatePoint(new(), view).X, tiles[i].TranslatePoint(new(), view).X, 5);
+            Assert.Equal(headers[i].ActualWidth, tiles[i].ActualWidth, 5);
         }
         vm.UpdateCurrent(DayFixtures.Monday.AddDays(3), (SchoolDay.Thursday, 1)); Drain(view);
         Assert.True(view.IsMeasureValid); Layout(view, width);

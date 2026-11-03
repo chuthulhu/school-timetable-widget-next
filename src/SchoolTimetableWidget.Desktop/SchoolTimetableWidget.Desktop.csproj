@@ -3,6 +3,7 @@
   <ItemGroup>
     <ProjectReference Include="..\SchoolTimetableWidget.Core\SchoolTimetableWidget.Core.csproj" />
     <PackageReference Include="CommunityToolkit.Mvvm" Version="8.4.2" />
+    <PackageReference Include="Velopack" Version="1.2.161" />
   </ItemGroup>
 
   <PropertyGroup>
@@ -16,6 +17,8 @@
          Do not replace the WPF manifest with WinForms ApplicationConfiguration startup. -->
     <NoWarn>$(NoWarn);WFO0003</NoWarn>
     <ApplicationManifest>app.manifest</ApplicationManifest>
+    <!-- Program.Main runs Velopack installer hooks before WPF startup (ADR 0029). -->
+    <StartupObject>SchoolTimetableWidget.Desktop.Program</StartupObject>
   </PropertyGroup>
 
   <ItemGroup>

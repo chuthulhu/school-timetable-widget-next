@@ -5,41 +5,49 @@ using SchoolTimetableWidget.Core.Features.Semesters;
 
 namespace SchoolTimetableWidget.Desktop.Features.Semesters;
 
-/// <summary>Compact selector. A candidate selection is reset to committed identity after the transaction.</summary>
-public sealed class SemesterSelector : DockPanel
+/// <summary>
+/// Right-click 학기 submenu. Items are rebuilt from committed state when it opens and after each
+/// switch, so a failed transaction never leaves a candidate checked.
+/// </summary>
+public sealed class SemesterMenu : MenuItem
 {
-    public ComboBox Selector { get; } = new() { MinWidth = 120, MaxWidth = 260, DisplayMemberPath = nameof(SemesterSet.DisplayName),
-        SelectedValuePath = nameof(SemesterSet.SemesterId), IsSynchronizedWithCurrentItem = false };
-    public Button ManageButton { get; } = new() { Content = "학기 관리...", Margin = new Thickness(8, 0, 0, 0), Padding = new Thickness(8, 2, 8, 2) };
-    private bool _updating;
-    public SemesterSelector(SemesterManagement management, Window owner, Action<string>? reportError = null)
+    private readonly SemesterManagement _management;
+    private readonly Window _owner;
+    private readonly Action<string>? _reportError;
+    public MenuItem ManageItem { get; } = new() { Header = "학기 관리..." };
+    public SemesterMenu(SemesterManagement management, Window owner, Action<string>? reportError = null)
     {
-        Margin = new Thickness(10, 2, 10, 6); HorizontalAlignment = HorizontalAlignment.Left;
-        System.Windows.Automation.AutomationProperties.SetName(Selector, "현재 학기");
-        Children.Add(Selector); Children.Add(ManageButton);
-        Selector.SetBinding(ItemsControl.ItemsSourceProperty, new Binding(nameof(SemesterManagement.Items)) { Source = management });
-        Selector.SetBinding(System.Windows.Controls.Primitives.Selector.SelectedValueProperty,
-            new Binding(nameof(SemesterManagement.ActiveSemesterId)) { Source = management, Mode = BindingMode.OneWay });
-        Selector.SelectionChanged += (_, _) =>
-        {
-            if (_updating || Selector.SelectedValue is not Guid id || id == management.ActiveSemesterId) return;
-            _updating = true;
-            try
-            {
-                var error = owner.OwnedWindows.Cast<Window>().Any(w => w.IsVisible)
-                    ? "열린 편집 창을 먼저 닫아 주세요." : management.Activate(id);
-                ResetSelection();
-                if (error is not null)
-                {
-                    if (reportError is not null) reportError(error);
-                    else MessageBox.Show(owner, error, "학기 선택", MessageBoxButton.OK, MessageBoxImage.Information);
-                }
-            }
-            finally { _updating = false; }
-        };
-        ManageButton.Click += (_, _) => new SemesterManagementWindow(management) { Owner = owner }.ShowDialog();
+        _management = management; _owner = owner; _reportError = reportError;
+        Header = "학기";
+        ManageItem.Click += (_, _) => new SemesterManagementWindow(management) { Owner = owner }.ShowDialog();
+        SubmenuOpened += (_, e) => { if (ReferenceEquals(e.OriginalSource, this)) Refresh(); };
+        Refresh();
     }
-    public void ResetSelection() => Selector.GetBindingExpression(System.Windows.Controls.Primitives.Selector.SelectedValueProperty)?.UpdateTarget();
+    public IEnumerable<MenuItem> SemesterItems => Items.OfType<MenuItem>().Where(item => item.Tag is Guid);
+    public void Refresh()
+    {
+        Items.Clear();
+        foreach (var semester in _management.Items)
+        {
+            var id = semester.SemesterId;
+            // MenuItem treats '_' as an access-key marker; double it so names show unchanged.
+            var item = new MenuItem { Header = semester.DisplayName.Replace("_", "__"), Tag = id, IsChecked = id == _management.ActiveSemesterId };
+            item.Click += (_, _) => Activate(id);
+            Items.Add(item);
+        }
+        Items.Add(new Separator());
+        Items.Add(ManageItem);
+    }
+    public void Activate(Guid id)
+    {
+        if (id == _management.ActiveSemesterId) return;
+        var error = _owner.OwnedWindows.Cast<Window>().Any(w => w.IsVisible)
+            ? "열린 편집 창을 먼저 닫아 주세요." : _management.Activate(id);
+        Refresh();
+        if (error is null) return;
+        if (_reportError is not null) _reportError(error);
+        else MessageBox.Show(_owner, error, "학기 선택", MessageBoxButton.OK, MessageBoxImage.Information);
+    }
 }
 
 public sealed class SemesterManagementWindow : Window

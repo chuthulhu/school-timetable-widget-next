@@ -99,14 +99,14 @@ public class SemesterIntegrationTests
         }
     });
     [Fact]
-    public void SelectorAndManagementObjectsFollowCommittedIdAndProtectActiveDelete() => HighlightTestDispatcher.Run(()=>
+    public void MenuAndManagementObjectsFollowCommittedIdAndProtectActiveDelete() => HighlightTestDispatcher.Run(()=>
     {
         using var temp=new TempProfile();using var store=new JsonProfileStore(temp.Directory);var session=new ProfileSession(store,SemesterTests.Two());
-        var runtime=new ProfileRuntime(session,()=>{},_=>{});var owner=new Window();var selector=new SemesterSelector(runtime.Semesters,owner,error=>Assert.Fail(error));
-        selector.Measure(new Size(500,100));selector.Arrange(new Rect(0,0,500,100));
-        Assert.Equal(session.Current.ActiveSemesterId,selector.Selector.SelectedValue);Assert.Equal(2,selector.Selector.Items.Count);
-        selector.Selector.SetCurrentValue(System.Windows.Controls.Primitives.Selector.SelectedValueProperty,session.Current.SemesterSets[1].SemesterId);
-        Assert.Equal(session.Current.ActiveSemesterId,selector.Selector.SelectedValue);Assert.Equal("2026 2학기",session.Current.ActiveSemester.DisplayName);
+        var runtime=new ProfileRuntime(session,()=>{},_=>{});var owner=new Window();var menu=new SemesterMenu(runtime.Semesters,owner,error=>Assert.Fail(error));
+        Assert.Equal(session.Current.ActiveSemesterId,Assert.Single(menu.SemesterItems,i=>i.IsChecked).Tag);Assert.Equal(2,menu.SemesterItems.Count());
+        Assert.Same(menu.ManageItem,menu.Items[^1]);
+        Assert.Single(menu.SemesterItems,i=>Equals(i.Tag,session.Current.SemesterSets[1].SemesterId)).RaiseEvent(new RoutedEventArgs(MenuItem.ClickEvent));
+        Assert.Equal(session.Current.ActiveSemesterId,Assert.Single(menu.SemesterItems,i=>i.IsChecked).Tag);Assert.Equal("2026 2학기",session.Current.ActiveSemester.DisplayName);
         var manager=new SemesterManagementWindow(runtime.Semesters);Assert.False(manager.DeleteButton.IsEnabled);
         manager.SemesterList.SelectedItem=session.Current.SemesterSets[0];Assert.True(manager.DeleteButton.IsEnabled);
         var create=new SemesterNameWindow(null,(_,_)=>"검증 실패");Assert.False(create.CopyOption.IsChecked);create.NameInput.Text="학기";

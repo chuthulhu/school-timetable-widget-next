@@ -32,8 +32,12 @@ Plain Unicode TSV is supported; HTML-only clipboard data and file parsing are no
 
 ## School Timetable Import
 
-Search every row/column for 35 contiguous literal header numbers, 1–7 repeated
-five times. No absolute source-column index. A unique signature is required;
+Search every row/column for five contiguous day groups of literal header numbers, each
+counting 1, 2, … up to at most 7 and restarting at 1. The usual header is 1–7 repeated
+five times (35 columns). A shorter day, such as Wednesday ending at period 6, imports its
+missing periods as empty slots, and the evidence names it (ADR 0007 amendment,
+2026-11-02). A sixth group, an eighth period, fewer than five groups or a broken sequence
+rejects. No absolute source-column index. A unique signature is required;
 multiple signatures reject rather than selecting the first. The immediately
 preceding weekday header is validated if recognizable: Monday–Friday, each
 seven columns, either merged-cell blanks or repeated weekday labels.

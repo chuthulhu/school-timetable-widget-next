@@ -2,7 +2,8 @@
 
 교사가 주간 시간표와 현재 수업을 확인하고 편집하는 Windows 데스크톱 위젯입니다.
 WPF + .NET 10 LTS + CommunityToolkit.Mvvm으로 개발 중이며, hosted runtime service가 아닙니다.
-**IN_DEVELOPMENT**: 주요 기능과 제한된 native UX 검증은 완료했지만 출시용 installer/updater는 아직 없습니다.
+**IN_DEVELOPMENT**: 주요 기능과 제한된 native UX 검증은 완료했습니다. 사용자 단위 설치 파일은 CI가 만들지만
+([ADR 0029](docs/adr/0029-velopack-installer.md)) 실제 PC 설치 검증과 자동 업데이트는 아직 남아 있습니다.
 
 ## 현재 기능
 

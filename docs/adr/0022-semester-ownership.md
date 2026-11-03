@@ -19,7 +19,7 @@ unless explicitly requested, never copy date overrides. Rename preserves ID and 
 Delete requires confirmation; last and active semesters cannot be deleted. No fallback
 activation, date ranges, automatic selection, name parsing, reorder or deletion history.
 
-MainWindow exposes a compact selector and an owned management dialog. Modal editors block
+MainWindow exposes a compact selector and an owned management dialog (since [ADR 0030](0030-tile-layout-and-semester-menu.md), a right-click 학기 submenu replaces the visible selector). Modal editors block
 normal selector input. Editors capture semester identity as well as provenance and reject
 stale targets; shared immutable values alone cannot establish semester identity.
 Viewed week persists in runtime across a switch. Actual status always uses Application
