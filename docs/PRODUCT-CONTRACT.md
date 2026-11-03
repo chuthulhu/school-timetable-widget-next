@@ -1033,7 +1033,7 @@ GUID identifies a user-named semester containing its base 35 cells, seven period
 date timetable/period overrides. Names are plain labels, trimmed on input, nonblank, at most
 80 UTF-16 code units and unique by ordinal case-insensitive comparison. No dates or auto-selection.
 
-A compact main selector explicitly switches after successful whole-profile persistence. Viewed
+A right-click 학기 submenu ([ADR 0030](adr/0030-tile-layout-and-semester-menu.md); formerly a compact main selector) explicitly switches after successful whole-profile persistence. Viewed
 week and global style remain unchanged; actual Application Clock today resolves the active
 semester for status/countdown/highlight. Editors pin semester ID plus source/date/slot and reject
 stale targets. Bulk import is captured-semester Base-only and identifies the target in preview.

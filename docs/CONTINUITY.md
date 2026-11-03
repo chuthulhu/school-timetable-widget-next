@@ -1,6 +1,6 @@
 # Project continuity
 
-Tool-independent handoff entry point. Snapshot date: 2026-11-02.
+Tool-independent handoff entry point. Snapshot date: 2026-11-03.
 Read this after [README](../README.md), then follow [Development](DEVELOPMENT.md).
 This repository contains the implementation and authoritative project documentation.
 
@@ -22,6 +22,17 @@ not an implementation template. AI conversations, session memory and private not
 not authoritative and are not needed to build or resume development.
 
 ## Verified implementation baseline
+
+### Tile layout and semester menu — 2026-11-03
+
+At the user's request, [ADR 0030](adr/0030-tile-layout-and-semester-menu.md) makes these
+changes:
+
+- Table slots are separate rounded tiles: a 4-DIP gap and a 6-DIP radius.
+- The line under the clock area is removed.
+- Semester switching and 학기 관리... move into a 학기 submenu on both right-click menus.
+
+Verification is CI-only, recorded on the pull request.
 
 ### School import with shorter days — 2026-11-02
 

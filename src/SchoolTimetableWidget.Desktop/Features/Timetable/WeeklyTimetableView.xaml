@@ -91,9 +91,12 @@
             </Setter>
         </Style>
         <!-- Candidate spacing only; content participates in WPF measurement. -->
+        <!-- Separate rounded tiles: a 2px margin leaves a 4px gap between neighbouring cells. -->
         <Style x:Key="SlotBorder" TargetType="Border">
             <Setter Property="BorderBrush" Value="{DynamicResource TableBorderBrush}" />
-            <Setter Property="BorderThickness" Value="0,0,1,1" />
+            <Setter Property="BorderThickness" Value="1" />
+            <Setter Property="CornerRadius" Value="6" />
+            <Setter Property="Margin" Value="2" />
             <Setter Property="Padding" Value="8,6" />
         </Style>
         <Style x:Key="BodySlotBorder" TargetType="Border" BasedOn="{StaticResource SlotBorder}">
@@ -115,7 +118,7 @@
                         <Grid>
                             <ContentPresenter Content="{TemplateBinding Content}"
                                               HorizontalAlignment="Stretch" VerticalAlignment="Stretch" />
-                            <Rectangle x:Name="FocusOutline" Margin="3" Opacity="0" IsHitTestVisible="False"
+                            <Rectangle x:Name="FocusOutline" Margin="5" Opacity="0" IsHitTestVisible="False" RadiusX="4" RadiusY="4"
                                        Stroke="{DynamicResource TableCellTextBrush}"
                                        StrokeThickness="1" StrokeDashArray="2,2" />
                         </Grid>

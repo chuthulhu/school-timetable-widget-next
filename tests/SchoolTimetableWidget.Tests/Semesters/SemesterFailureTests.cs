@@ -43,7 +43,7 @@ public class SemesterFailureTests
     }
     [Theory]
     [InlineData(0)] [InlineData(1)] [InlineData(2)] [InlineData(3)]
-    public void SelectorFailureResetsBindingWithoutChangingHeaderHighlightOrDisk(int stage) => HighlightTestDispatcher.Run(()=>
+    public void MenuFailureKeepsCommittedCheckWithoutChangingHeaderHighlightOrDisk(int stage) => HighlightTestDispatcher.Run(()=>
     {
         using var temp=new TempProfile();bool fail=false;using var store=new JsonProfileStore(temp.Directory,s=>{if(fail&&(int)s==stage)throw new IOException("fault");});
         var session=new ProfileSession(store,SemesterTests.Two());Assert.Null(session.SaveLunch(true));
@@ -54,11 +54,11 @@ public class SemesterFailureTests
         {
             loop.RefreshNow();var before=session.Current;var bytes=File.ReadAllBytes(temp.File);var status=header.StatusText;
             var cells=runtime.Timetable.Cells.Select(c=>(c.Value,c.IsCurrent)).ToArray();var owner=new Window();var errors=new List<string>();
-            var selector=new SemesterSelector(runtime.Semesters,owner,errors.Add);fail=true;
-            selector.Selector.SetCurrentValue(Selector.SelectedValueProperty,before.SemesterSets[1].SemesterId);
-            Assert.Single(errors);Assert.Equal(before.ActiveSemesterId,selector.Selector.SelectedValue);
+            var menu=new SemesterMenu(runtime.Semesters,owner,errors.Add);fail=true;
+            menu.Activate(before.SemesterSets[1].SemesterId);
+            Assert.Single(errors);Assert.Equal(before.ActiveSemesterId,Assert.Single(menu.SemesterItems,i=>i.IsChecked).Tag);
             Assert.Same(before,session.Current);Assert.Equal(status,header.StatusText);Assert.Equal(cells,runtime.Timetable.Cells.Select(c=>(c.Value,c.IsCurrent)));
-            Assert.Equal(bytes,File.ReadAllBytes(temp.File));Assert.NotNull(selector.Selector.GetBindingExpression(Selector.SelectedValueProperty));owner.Close();
+            Assert.Equal(bytes,File.ReadAllBytes(temp.File));Assert.Equal(2,menu.SemesterItems.Count());owner.Close();
         }
     });
     [Fact]
