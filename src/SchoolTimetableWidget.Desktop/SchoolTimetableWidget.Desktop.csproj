@@ -19,11 +19,14 @@
     <ApplicationManifest>app.manifest</ApplicationManifest>
     <!-- Program.Main runs Velopack installer hooks before WPF startup (ADR 0029). -->
     <StartupObject>SchoolTimetableWidget.Desktop.Program</StartupObject>
+    <!-- ADR 0031: executable, shortcut and taskbar icon. -->
+    <ApplicationIcon>Assets\Icons\app.ico</ApplicationIcon>
   </PropertyGroup>
 
   <ItemGroup>
     <Resource Include="Assets\Fonts\**\*.ttf" />
     <EmbeddedResource Include="Assets\Fonts\catalog.json" />
+    <EmbeddedResource Include="Assets\Icons\tray.ico" LogicalName="SchoolTimetableWidget.Desktop.TrayIcon.ico" />
     <Content Include="Assets\Fonts\*-LICENSE.txt" CopyToOutputDirectory="PreserveNewest" CopyToPublishDirectory="PreserveNewest" />
     <Content Include="Assets\Fonts\catalog.json" CopyToOutputDirectory="PreserveNewest" CopyToPublishDirectory="PreserveNewest" />
   </ItemGroup>

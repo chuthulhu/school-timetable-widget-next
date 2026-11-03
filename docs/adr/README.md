@@ -36,3 +36,4 @@ Current delivery: [Feature Map](../FEATURE-MAP.md).
 | [ADR 0028 — Built-in display color themes](0028-display-color-themes.md) | Accepted — automated verification; native verification pending |
 | [ADR 0029 — Velopack per-user installer](0029-velopack-installer.md) | Accepted — CI-built installer; install/uninstall native verification pending |
 | [ADR 0030 — Rounded table tiles and right-click semester menu](0030-tile-layout-and-semester-menu.md) | Accepted — automated verification; native verification pending |
+| [ADR 0031 — Application and tray icon](0031-app-and-tray-icon.md) | Accepted — automated verification; native verification pending |

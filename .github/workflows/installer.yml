@@ -54,6 +54,7 @@ jobs:
           vpk pack --packId $env:PACK_ID --packVersion ${{ steps.version.outputs.value }}
           --packDir publish --mainExe SchoolTimetableWidget.Desktop.exe
           --packTitle "학교 시간표 위젯" --packAuthors chuthulhu --outputDir Releases
+          --icon src/SchoolTimetableWidget.Desktop/Assets/Icons/app.ico
       - uses: actions/upload-artifact@v4
         with:
           name: installer-${{ steps.version.outputs.value }}
