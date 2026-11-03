@@ -105,7 +105,7 @@ public class SemesterIntegrationTests
         var runtime=new ProfileRuntime(session,()=>{},_=>{});var owner=new Window();var menu=new SemesterMenu(runtime.Semesters,owner,error=>Assert.Fail(error));
         Assert.Equal(session.Current.ActiveSemesterId,Assert.Single(menu.SemesterItems,i=>i.IsChecked).Tag);Assert.Equal(2,menu.SemesterItems.Count());
         Assert.Same(menu.ManageItem,menu.Items[^1]);
-        Assert.Single(menu.SemesterItems,i=>(Guid)i.Tag!==session.Current.SemesterSets[1].SemesterId).RaiseEvent(new RoutedEventArgs(MenuItem.ClickEvent));
+        Assert.Single(menu.SemesterItems,i=>Equals(i.Tag,session.Current.SemesterSets[1].SemesterId)).RaiseEvent(new RoutedEventArgs(MenuItem.ClickEvent));
         Assert.Equal(session.Current.ActiveSemesterId,Assert.Single(menu.SemesterItems,i=>i.IsChecked).Tag);Assert.Equal("2026 2학기",session.Current.ActiveSemester.DisplayName);
         var manager=new SemesterManagementWindow(runtime.Semesters);Assert.False(manager.DeleteButton.IsEnabled);
         manager.SemesterList.SelectedItem=session.Current.SemesterSets[0];Assert.True(manager.DeleteButton.IsEnabled);
