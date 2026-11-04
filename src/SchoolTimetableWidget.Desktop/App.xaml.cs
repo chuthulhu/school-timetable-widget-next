@@ -25,6 +25,8 @@ public partial class App : Application
     private JsonProfileStore? _profileStore;
     private WindowsSingleInstance? _instance;
     private WidgetTrayLifecycle? _trayLifecycle;
+    private Features.Updates.UpdateCoordinator? _updates;
+    private bool _restartForUpdate;
 
     protected override void OnStartup(StartupEventArgs e)
     {
@@ -121,6 +123,7 @@ public partial class App : Application
                     new NtpClient(clock, TimeProvider.System, new UdpNtpNetwork(TimeProvider.System)),
                     TimeProvider.System, new WindowsResumeSignal());
                 _ = _clockSynchronization.Start();
+                StartUpdates(tray);
             }
         }
         catch
@@ -128,6 +131,28 @@ public partial class App : Application
             DisposeResources();
             throw;
         }
+    }
+
+    private void StartUpdates(WindowsTrayIcon tray)
+    {
+        _updates = new Features.Updates.UpdateCoordinator(new VelopackUpdateSource(), TimeProvider.System,
+            SynchronizationContext.Current);
+        _updates.Ready += version => { tray.SetUpdateReady(version); tray.ShowMessage(
+            Features.Updates.UpdateCoordinator.Describe(new(Features.Updates.UpdateCheckOutcome.Ready, version))); };
+        tray.CheckUpdatesRequested += async () =>
+        {
+            var result = await _updates.CheckAsync();
+            // A newly ready version already announced itself through Ready.
+            if (result.Outcome != Features.Updates.UpdateCheckOutcome.Ready) tray.ShowMessage(Features.Updates.UpdateCoordinator.Describe(result));
+        };
+        tray.ApplyUpdateRequested += () =>
+        {
+            // Same guard as 종료: an open editor keeps the app running, so the updater must not start.
+            if (MainWindow.OwnedWindows.Cast<Window>().Any(w => w.IsVisible)) { tray.RequestEditorNotice(); return; }
+            _restartForUpdate = true;
+            tray.RequestExit();
+        };
+        _updates.Start();
     }
 
     protected override void OnSessionEnding(SessionEndingCancelEventArgs e)
@@ -141,6 +166,7 @@ public partial class App : Application
     private void DisposeResources()
     {
         _clockSynchronization?.Dispose();
+        _updates?.Dispose();
         // Stop activation first; release ownership only after profile resources are closed.
         try { _instance?.StopListening(); }
         finally
@@ -160,7 +186,12 @@ public partial class App : Application
 
     protected override void OnExit(ExitEventArgs e)
     {
-        try { DisposeResources(); }
+        try
+        {
+            // The updater waits for this process to exit, then installs and relaunches (ADR 0032).
+            if (_restartForUpdate) _updates?.ApplyAfterExit(restart: true);
+            DisposeResources();
+        }
         finally { base.OnExit(e); }
     }
 }

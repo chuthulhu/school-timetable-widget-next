@@ -51,7 +51,7 @@ DEFERRED. On 2026-11-02 the user chose four things:
 
 ## Not decided here
 
-- **Updater.** No update check, download or apply is implemented. Velopack's auto-apply on
+- **Updater.** Superseded by [ADR 0032](0032-automatic-updates.md). At the time of this ADR, no update check, download or apply was implemented. Velopack's auto-apply on
   startup has nothing to apply without an update manager. Update source, channel, prompts and
   rollback remain DEFERRED.
 - **Other gaps.** Supported Windows versions, an MSI/enterprise deployment and signing remain

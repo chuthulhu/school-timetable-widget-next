@@ -23,6 +23,21 @@ not authoritative and are not needed to build or resume development.
 
 ## Verified implementation baseline
 
+### Automatic updates — 2026-11-04
+
+[ADR 0032](adr/0032-automatic-updates.md) lets an installed copy update from stable GitHub
+Releases:
+
+- It checks one minute after start, then every six hours, or on demand from the tray's
+  업데이트 확인.
+- A newer release downloads in the background.
+- The release installs at the next start, or at once when the user chooses 업데이트 후 다시
+  시작 in the tray, which uses the normal exit path.
+- User data is untouched.
+
+v0.1.0 is the first release and includes the updater. Verification is CI-only. A real
+release-to-release update has not been performed yet.
+
 ### Application and tray icon — 2026-11-03
 
 [ADR 0031](adr/0031-app-and-tray-icon.md) replaces the generic tray icon and gives the
