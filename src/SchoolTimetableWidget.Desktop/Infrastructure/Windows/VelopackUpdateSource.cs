@@ -1,11 +1,10 @@
-using SchoolTimetableWidget.Desktop.Features.Updates;
 using Velopack;
-using Velopack.Sources;
+using GithubSource = Velopack.Sources.GithubSource;
 
 namespace SchoolTimetableWidget.Desktop.Infrastructure.Windows;
 
 /// <summary>Stable GitHub Releases of this repository, as published by installer.yml (ADR 0032).</summary>
-internal sealed class VelopackUpdateSource : IUpdateSource
+internal sealed class VelopackUpdateSource : Features.Updates.IUpdateSource
 {
     private const string Repository = "https://github.com/chuthulhu/school-timetable-widget-next";
     private readonly UpdateManager _manager = new(new GithubSource(Repository, null, false, null), null, null);
