@@ -4,7 +4,10 @@ on:
   pull_request:
   push:
     branches: [main]
-    tags: ['v*']
+  # Publishing a GitHub Release (which creates its v<SemVer> tag) builds that version
+  # and attaches the installer to the release.
+  release:
+    types: [published]
   workflow_dispatch:
 
 permissions:
@@ -63,7 +66,7 @@ jobs:
 
   release:
     name: GitHub Release
-    if: github.ref_type == 'tag'
+    if: github.event_name == 'release'
     needs: package
     runs-on: ubuntu-latest
     timeout-minutes: 10
@@ -75,9 +78,7 @@ jobs:
           pattern: installer-*
           path: Releases
           merge-multiple: true
-      - name: Create release
+      - name: Attach installer to the release
         env:
           GH_TOKEN: ${{ github.token }}
-        run: >
-          gh release create "$GITHUB_REF_NAME" Releases/*
-          --repo "$GITHUB_REPOSITORY" --title "$GITHUB_REF_NAME" --generate-notes
+        run: gh release upload "$GITHUB_REF_NAME" Releases/* --repo "$GITHUB_REPOSITORY" --clobber

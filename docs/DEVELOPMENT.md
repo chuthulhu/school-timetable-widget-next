@@ -285,7 +285,7 @@ Core snapshot 필드와 composition/source/revision 의미는 [Architecture](ARC
 
 `.github/workflows/installer.yml`이 pull request와 main push마다 설치 파일을 만든다. 버전은
 `0.1.0-ci.<run>`이고, workflow 실행 결과물(artifact) `installer-<version>`으로 내려받는다.
-`v1.2.3`처럼 SemVer 태그를 push하면 그 버전으로 만들고 GitHub Release를 생성한다. 로컬 Windows에서
+GitHub의 Releases 화면에서 `v1.2.3`처럼 SemVer 태그로 새 릴리스를 게시(Publish)하면, 그 버전으로 설치 파일을 만들어 해당 릴리스에 첨부한다. 로컬 Windows에서
 같은 결과를 만들려면 다음을 실행한다.
 
 ```powershell

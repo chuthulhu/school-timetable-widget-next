@@ -557,7 +557,7 @@ A5의 시간 동기화는 이와 별개로 관리자 권한이나 Windows system
 **APPROVED — 2026-11-02 / [ADR 0029](adr/0029-velopack-installer.md):** Velopack 사용자 단위 설치,
 self-contained runtime, 관리자 권한 없음. 설치 위치는 `%LOCALAPPDATA%\SchoolTimetableWidgetNext`이다.
 제거는 프로그램 파일과 이 설치가 등록한 자동 시작 값만 지우며, `%LOCALAPPDATA%\SchoolTimetableWidget`의
-사용자 데이터는 항상 보존한다. 설치 파일은 CI artifact로 만들고, 버전 태그는 GitHub Release로 배포한다.
+사용자 데이터는 항상 보존한다. 설치 파일은 CI artifact로 만들고, 버전 태그로 게시한 GitHub Release에 첨부해 배포한다.
 **DEFERRED:** updater의 update 정책(확인·적용·rollback), 코드 서명, MSI/기업 배포, 지원 Windows 버전.
 
 **APPROVED — P7 / ADR 0021:** 신규 설치 autostart 기본 OFF. Tray에서 사용자가 명시적으로 켠다.
