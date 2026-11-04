@@ -4,8 +4,18 @@ on:
   pull_request:
   push:
     branches: [main]
-    tags: ['v*']
+  # Two ways to release a version (ADR 0029):
+  # - Run this workflow manually with release_version (e.g. 0.1.0). It builds the current
+  #   ref and creates the v<version> tag and GitHub Release itself.
+  # - Publish a GitHub Release in the UI; its tag builds and the installer is attached.
+  release:
+    types: [published]
   workflow_dispatch:
+    inputs:
+      release_version:
+        description: 'Create release v<version> from this ref (SemVer, e.g. 0.1.0). Leave empty for a CI build.'
+        required: false
+        type: string
 
 permissions:
   contents: read
@@ -24,6 +34,8 @@ jobs:
   package:
     name: Velopack installer
     runs-on: windows-latest
+    outputs:
+      version: ${{ steps.version.outputs.value }}
     timeout-minutes: 15
     defaults:
       run:
@@ -37,8 +49,11 @@ jobs:
           global-json-file: global.json
       - name: Version
         id: version
+        env:
+          RELEASE_VERSION: ${{ inputs.release_version }}
         run: |
-          if ($env:GITHUB_REF_TYPE -eq 'tag') { $v = $env:GITHUB_REF_NAME.TrimStart('v') }
+          if ($env:RELEASE_VERSION) { $v = $env:RELEASE_VERSION.Trim().TrimStart('v') }
+          elseif ($env:GITHUB_REF_TYPE -eq 'tag') { $v = $env:GITHUB_REF_NAME.TrimStart('v') }
           else { $v = "0.1.0-ci.$env:GITHUB_RUN_NUMBER" }
           if ($v -notmatch '^\d+\.\d+\.\d+(-[0-9A-Za-z.-]+)?$') { throw "Not a SemVer version: $v" }
           "value=$v" >> $env:GITHUB_OUTPUT
@@ -63,7 +78,7 @@ jobs:
 
   release:
     name: GitHub Release
-    if: github.ref_type == 'tag'
+    if: github.event_name == 'release' || (github.event_name == 'workflow_dispatch' && inputs.release_version != '')
     needs: package
     runs-on: ubuntu-latest
     timeout-minutes: 10
@@ -75,9 +90,16 @@ jobs:
           pattern: installer-*
           path: Releases
           merge-multiple: true
-      - name: Create release
+      - name: Attach installer to the published release
+        if: github.event_name == 'release'
         env:
           GH_TOKEN: ${{ github.token }}
+        run: gh release upload "$GITHUB_REF_NAME" Releases/* --repo "$GITHUB_REPOSITORY" --clobber
+      - name: Create tag and release
+        if: github.event_name == 'workflow_dispatch'
+        env:
+          GH_TOKEN: ${{ github.token }}
+          TAG: v${{ needs.package.outputs.version }}
         run: >
-          gh release create "$GITHUB_REF_NAME" Releases/*
-          --repo "$GITHUB_REPOSITORY" --title "$GITHUB_REF_NAME" --generate-notes
+          gh release create "$TAG" Releases/* --repo "$GITHUB_REPOSITORY"
+          --target "$GITHUB_SHA" --title "$TAG" --generate-notes

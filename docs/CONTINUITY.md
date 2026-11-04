@@ -61,7 +61,7 @@ Excel has been performed.
 - **Uninstall.** It removes the autostart Run value only when that value launches the
   installed executable.
 - **Builds.** `.github/workflows/installer.yml` builds the installer as an artifact on every
-  PR and main push. A `v*` tag creates a GitHub Release.
+  PR and main push. Running it manually with `release_version` creates the tag and GitHub Release; publishing a release in the UI also attaches the installer.
 
 There is no updater or code signing yet. Verification is CI-only, recorded on the implementing
 pull request. No real-PC install or uninstall has been performed. That check is required

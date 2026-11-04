@@ -40,9 +40,12 @@ DEFERRED. On 2026-11-02 the user chose four things:
   blocks uninstall. This fulfils ADR 0021's "future uninstall should remove the owned value".
   Autostart stays default OFF after install.
 - **Builds.** `.github/workflows/installer.yml` builds the installer on every pull request and
-  main push as a workflow artifact, versioned `0.1.0-ci.<run>`. A `v<SemVer>` tag builds that
-  version and creates a GitHub Release with the Velopack output: the setup executable, portable
-  zip, full package and release feed.
+  main push as a workflow artifact, versioned `0.1.0-ci.<run>`. Publishing a GitHub Release with a `v<SemVer>` tag builds that version and attaches the
+  Velopack output to the release: the setup executable, portable zip, full package and release
+  feed. Running the workflow manually with `release_version` (for example `0.1.0`) instead builds
+  the selected ref and creates the `v<version>` tag and release itself, so an agent can release
+  without anyone using the release page. (Amended 2026-11-04: the trigger moved from a tag push
+  to these two paths, because agent sessions cannot push tags.)
 - **No signing.** Without a code-signing certificate, Windows SmartScreen warns on first run
   and the user must choose "More info → Run anyway". Signing remains a separate decision.
 
