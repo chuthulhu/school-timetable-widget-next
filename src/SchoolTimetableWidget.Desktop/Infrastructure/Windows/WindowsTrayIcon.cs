@@ -12,12 +12,16 @@ internal sealed class WindowsTrayIcon : ITrayIcon
     private readonly Forms.ToolStripMenuItem _toggle;
     private readonly Forms.ToolStripMenuItem _exit;
     private readonly Forms.ToolStripMenuItem _autoStart;
+    private readonly Forms.ToolStripMenuItem _checkUpdates = new("업데이트 확인");
+    private readonly Forms.ToolStripMenuItem _applyUpdate = new("업데이트 후 다시 시작") { Visible = false };
     private readonly AutoStartRegistration? _registration;
     private readonly Action<string> _showError;
     private readonly System.Drawing.Icon _image;
     private bool _disposed;
     public event Action? ToggleRequested;
     public event Action? ExitRequested;
+    public event Action? CheckUpdatesRequested;
+    public event Action? ApplyUpdateRequested;
 
     internal Forms.NotifyIcon Icon => _icon;
     internal Forms.ContextMenuStrip Menu => _menu;
@@ -33,7 +37,10 @@ internal sealed class WindowsTrayIcon : ITrayIcon
         _exit = new("종료");
         _autoStart = new("Windows 시작 시 실행") { CheckOnClick = false };
         _menu = new();
-        _menu.Items.AddRange([_toggle, _autoStart, new Forms.ToolStripSeparator(), _exit]);
+        _menu.Items.AddRange([_toggle, _autoStart, new Forms.ToolStripSeparator(), _checkUpdates, _applyUpdate,
+            new Forms.ToolStripSeparator(), _exit]);
+        _checkUpdates.Click += CheckUpdates;
+        _applyUpdate.Click += ApplyUpdate;
         _menu.Opening += MenuOpening;
         _autoStart.Click += AutoStartClick;
         UpdateAutoStart();
@@ -80,6 +87,17 @@ internal sealed class WindowsTrayIcon : ITrayIcon
             _ => ""
         };
     }
+    private void CheckUpdates(object? sender, EventArgs e) => CheckUpdatesRequested?.Invoke();
+    private void ApplyUpdate(object? sender, EventArgs e) => ApplyUpdateRequested?.Invoke();
+    /// <summary>Shows the restart item once an update has been downloaded (ADR 0032).</summary>
+    public void SetUpdateReady(string version)
+    {
+        _applyUpdate.Text = $"{version}(으)로 업데이트 후 다시 시작";
+        _applyUpdate.Visible = true;
+    }
+    /// <summary>Runs the same exit path as the 종료 item.</summary>
+    public void RequestExit() => ExitRequested?.Invoke();
+    public void ShowMessage(string text) => Notice(text);
     private void Toggle(object? sender, EventArgs e) => ToggleRequested?.Invoke();
     private void Exit(object? sender, EventArgs e) => ExitRequested?.Invoke();
     private void DoubleClick(object? sender, Forms.MouseEventArgs e)
@@ -101,6 +119,7 @@ internal sealed class WindowsTrayIcon : ITrayIcon
         _icon.MouseDoubleClick -= DoubleClick;
         _toggle.Click -= Toggle; _exit.Click -= Exit;
         _autoStart.Click -= AutoStartClick; _menu.Opening -= MenuOpening;
+        _checkUpdates.Click -= CheckUpdates; _applyUpdate.Click -= ApplyUpdate;
         _icon.Dispose(); _menu.Dispose(); _image.Dispose();
     }
 }

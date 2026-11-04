@@ -30,15 +30,23 @@ public class TrayIntegrationTests
         tray.ToggleRequested += () => toggles++; tray.ExitRequested += () => exits++;
         Assert.NotNull(icon.Icon); Assert.NotEqual(IntPtr.Zero, icon.Icon.Handle);
         Assert.Equal("School Timetable Widget", icon.Text); Assert.False(icon.Visible);
-        Assert.Equal(4, menu.Items.Count); Assert.IsType<Forms.ToolStripSeparator>(menu.Items[2]);
-        Assert.Equal("종료", menu.Items[3].Text);
+        Assert.Equal(7, menu.Items.Count); Assert.IsType<Forms.ToolStripSeparator>(menu.Items[2]);
+        Assert.IsType<Forms.ToolStripSeparator>(menu.Items[5]); Assert.Equal("종료", menu.Items[6].Text);
+        // ADR 0032: check is always offered; restart appears only once an update is downloaded.
+        var checks = 0; var applies = 0;
+        tray.CheckUpdatesRequested += () => checks++; tray.ApplyUpdateRequested += () => applies++;
+        Assert.Equal("업데이트 확인", menu.Items[3].Text); Assert.False(menu.Items[4].Available);
+        tray.SetUpdateReady("0.2.0");
+        Assert.True(menu.Items[4].Available); Assert.Equal("0.2.0(으)로 업데이트 후 다시 시작", menu.Items[4].Text);
+        menu.Items[3].PerformClick(); menu.Items[4].PerformClick();
+        Assert.Equal((1, 1), (checks, applies));
         tray.SetWindowVisible(true); Assert.Equal("위젯 숨기기", menu.Items[0].Text);
         menu.Items[0].PerformClick(); tray.SetWindowVisible(false);
         Assert.Equal("위젯 보이기", menu.Items[0].Text);
         var dispatch = typeof(Forms.NotifyIcon).GetMethod("OnMouseDoubleClick", BindingFlags.NonPublic | BindingFlags.Instance)!;
         dispatch.Invoke(icon, [new Forms.MouseEventArgs(Forms.MouseButtons.Left, 2, 0, 0, 0)]);
         dispatch.Invoke(icon, [new Forms.MouseEventArgs(Forms.MouseButtons.Right, 2, 0, 0, 0)]);
-        menu.Items[3].PerformClick();
+        menu.Items[6].PerformClick();
         Assert.Equal(2, toggles); Assert.Equal(1, exits);
         var iconDisposed = false; icon.Disposed += (_, _) => iconDisposed = true;
         tray.Dispose(); tray.Dispose();
