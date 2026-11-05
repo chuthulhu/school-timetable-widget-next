@@ -23,6 +23,13 @@ not authoritative and are not needed to build or resume development.
 
 ## Verified implementation baseline
 
+### Color adjustment hue bar fix — 2026-11-05
+
+The user reported on a real PC that the ADR 0035 hue bar could not be dragged. The bar had no
+background, and its children are not hit-testable, so WPF hit testing skipped it. It now has a
+transparent background. A regression test hit-tests both the square and the bar. The HSV readout
+also moves to its own line, so it no longer wraps mid-word. Verification is CI-only.
+
 ### Tray menu look — 2026-11-05
 
 [ADR 0038](adr/0038-tray-menu-look.md), a follow-up the user chose, gives the Windows Forms tray menu
@@ -109,6 +116,7 @@ ADR and contract update before implementation (AGENTS.md rules 4–5).
 | v0.3.0 | the merge commit of PR #14 | Display settings window with a left section list (ADR 0034); released at the user's request before the native checks listed in ADR 0034 |
 | v0.4.0 | the merge commit of PR #15 | In-app color adjustment window (ADR 0035) and modern right-click menu look (ADR 0036); released at the user's request before the native checks listed in those ADRs |
 | v0.5.0 | the merge commit of PR #17 | User-arranged clock area (ADR 0037, PR #16, adds the profile `clock` object) and tray menu look (ADR 0038); released at the user's request before the native checks listed in those ADRs |
+| v0.5.1 | the merge commit of PR #18 | Fixes the color adjustment hue bar, which ignored the pointer and was clipped by 10 DIPs (reported on a real PC) |
 
 **v0.1.0 assets.** The release carries six files: `SchoolTimetableWidgetNext-win-Setup.exe`
 (about 83 MB, the file users install), `SchoolTimetableWidgetNext-win-Portable.zip`,
