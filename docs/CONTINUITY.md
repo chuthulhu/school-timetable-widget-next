@@ -116,6 +116,7 @@ ADR and contract update before implementation (AGENTS.md rules 4–5).
 | v0.3.0 | the merge commit of PR #14 | Display settings window with a left section list (ADR 0034); released at the user's request before the native checks listed in ADR 0034 |
 | v0.4.0 | the merge commit of PR #15 | In-app color adjustment window (ADR 0035) and modern right-click menu look (ADR 0036); released at the user's request before the native checks listed in those ADRs |
 | v0.5.0 | the merge commit of PR #17 | User-arranged clock area (ADR 0037, PR #16, adds the profile `clock` object) and tray menu look (ADR 0038); released at the user's request before the native checks listed in those ADRs |
+| v0.5.1 | the merge commit of PR #18 | Fixes the color adjustment hue bar, which ignored the pointer and was clipped by 10 DIPs (reported on a real PC) |
 
 **v0.1.0 assets.** The release carries six files: `SchoolTimetableWidgetNext-win-Setup.exe`
 (about 83 MB, the file users install), `SchoolTimetableWidgetNext-win-Portable.zip`,
