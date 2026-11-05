@@ -108,8 +108,8 @@ measurement; highlight transitions themselves remain background-only.
 
 ## Actual WPF entry
 
-Timetable context menu: 학교 시간표 가져오기…, 표준 양식 가져오기…, 표준 양식 복사.
-Cell tooltip explains right-click and Ctrl+V. View-scoped Ctrl+V enters School
+Timetable context menu: 학교 시간표 가져오기…, 표준 양식 가져오기…, 표준 양식 복사 (under 시간표 since
+[ADR 0033](adr/0033-unified-widget-context-menu.md)). Cell tooltip: 더블클릭 또는 F2로 편집 (ADR 0033). View-scoped Ctrl+V enters School
 mode only. The separate owned editor Window has no import key or command binding;
 its TextBoxes retain normal paste. No permanent toolbar or grid geometry redesign.
 Open reads clipboard once; 클립보드 다시 읽기 retries without leaving the dialog.

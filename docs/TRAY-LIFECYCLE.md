@@ -5,7 +5,7 @@ Implemented; **993/993 automated tests passed; user native UX approved**.
 
 ## User behavior
 
-- X / Alt+F4 hides the existing MainWindow and leaves the process/tray alive.
+- X / Alt+F4 and the widget right-click **위젯 숨기기** ([ADR 0033](adr/0033-unified-widget-context-menu.md)) hide the existing MainWindow and leave the process/tray alive.
 - Tray menu shows 위젯 숨기기 when visible and 위젯 보이기 when hidden, then Windows 시작 시 실행, a separator and 종료 (ADR 0021).
 - Left double-click toggles; single click has no application action.
 - 종료 terminates the application after editors are closed. With an open editor it brings that

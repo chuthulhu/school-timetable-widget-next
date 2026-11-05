@@ -22,7 +22,7 @@ public class PersistenceBoundaryTests
         view.ContextMenu.PlacementTarget = view;
         view.ContextMenu.Measure(new(800, 600)); view.ContextMenu.Arrange(new Rect(0, 0, 800, 600));
         view.Dispatcher.Invoke(() => { }, DispatcherPriority.ApplicationIdle);
-        var menu = Assert.Single(view.ContextMenu.Items.OfType<MenuItem>(), item => item.Command == DateOverrideCommands.Lunch);
+        var menu = Assert.Single(SchoolTimetableWidget.Desktop.Features.WidgetMenu.WidgetContextMenu.AllItems(view.ContextMenu), item => item.Command == DateOverrideCommands.Lunch);
         Assert.False(menu.IsChecked);
         typeof(MenuItem).GetMethod("OnClick", System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.NonPublic)!.Invoke(menu, null);
         view.Dispatcher.Invoke(() => { }, DispatcherPriority.ApplicationIdle);

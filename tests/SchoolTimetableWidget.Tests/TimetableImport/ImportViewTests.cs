@@ -108,10 +108,10 @@ public class ImportViewTests
         var menu = view.ContextMenu;
         menu.PlacementTarget = view;
         Layout(menu);
-        var entries = menu.Items.OfType<MenuItem>().ToArray();
+        var entries = SchoolTimetableWidget.Desktop.Features.WidgetMenu.WidgetContextMenu.AllItems(menu).Where(m => m.Command is not null).ToArray();
         Assert.All(entries, entry => Assert.Same(view, entry.CommandTarget));
-        Assert.Equal(11, entries.Length);
-        Assert.Equal(new ICommand[] { SchoolTimetableWidget.Desktop.Features.DisplaySettings.DisplaySettingsCommands.Open, SchoolTimetableWidget.Desktop.Infrastructure.Windows.WindowPlacementCommands.Settings, SchoolTimetableWidget.Desktop.Infrastructure.Windows.WindowPlacementCommands.Reset, TimetableImportCommands.School, TimetableImportCommands.Canonical, TimetableImportCommands.CopyTemplate, PeriodScheduleCommands.Edit, DateOverrideCommands.Edit, DateOverrideCommands.Lunch, BackupCommands.Backup, BackupCommands.Restore }, entries.Select(m => m.Command));
+        Assert.Equal(13, entries.Length);
+        Assert.Equal(new ICommand[] { TimetableImportCommands.School, TimetableImportCommands.Canonical, TimetableImportCommands.CopyTemplate, PeriodScheduleCommands.Edit, DateOverrideCommands.Edit, DateOverrideCommands.Lunch, SchoolTimetableWidget.Desktop.Features.DisplaySettings.DisplaySettingsCommands.Open, SchoolTimetableWidget.Desktop.Infrastructure.Windows.WindowPlacementCommands.Settings, SchoolTimetableWidget.Desktop.Infrastructure.Windows.WindowPlacementCommands.Reset, BackupCommands.Backup, BackupCommands.Restore, SchoolTimetableWidget.Desktop.Infrastructure.Windows.WindowPlacementCommands.ToggleMoveLock, SchoolTimetableWidget.Desktop.Features.TrayLifecycle.WidgetCommands.Hide }, entries.Select(m => m.Command));
         Assert.True(TimetableImportCommands.School.CanExecute(null, view));
         TimetableImportCommands.CopyTemplate.Execute(null, view); // unshown view: fake adapter, no dialog
         Assert.Equal(1, clipboard.Writes);

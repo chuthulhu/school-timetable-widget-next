@@ -39,7 +39,7 @@ messages use the existing coalesced WPF layout path. Use physical virtual-deskto
 only at the Windows boundary and GetDpiForWindow for current logical/physical conversion.
 The application manifest declares PerMonitorV2. Negative monitor origins remain valid.
 
-The reset menu is **창 위치/크기 초기화**. It resets only preferred window bounds and uses the
+The reset menu is **창 › 창 위치·크기 초기화** (named 창 위치/크기 초기화 before [ADR 0033](adr/0033-unified-widget-context-menu.md)). The same menu offers **위치 고정** / **위치 고정 풀기**, which saves the movement lock at once. It resets only preferred window bounds and uses the
 current available monitor. It neither resets nor saves timetable, display, presets or fonts.
 No numeric settings controls were added.
 

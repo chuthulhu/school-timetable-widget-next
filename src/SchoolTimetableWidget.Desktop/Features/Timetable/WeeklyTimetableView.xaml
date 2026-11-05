@@ -8,6 +8,7 @@
              xmlns:display="clr-namespace:SchoolTimetableWidget.Desktop.Features.DisplaySettings"
              xmlns:dates="clr-namespace:SchoolTimetableWidget.Desktop.Features.DateOverrides"
              xmlns:windows="clr-namespace:SchoolTimetableWidget.Desktop.Infrastructure.Windows"
+             xmlns:tray="clr-namespace:SchoolTimetableWidget.Desktop.Features.TrayLifecycle"
              FontSize="16" MinWidth="500" Background="#01000000">
     <!-- Minimal layered-window hit surface keeps empty cells interactive when their brush is zero-alpha. -->
     <UserControl.CommandBindings>
@@ -16,41 +17,41 @@
         <CommandBinding Command="{x:Static periods:PeriodScheduleCommands.Edit}" Executed="PeriodSchedule_Executed" CanExecute="PeriodSchedule_CanExecute" />
         <CommandBinding Command="{x:Static import:TimetableImportCommands.School}" Executed="SchoolImport_Executed" CanExecute="Import_CanExecute" />
         <CommandBinding Command="{x:Static import:TimetableImportCommands.Canonical}" Executed="CanonicalImport_Executed" CanExecute="Import_CanExecute" />
-        <CommandBinding Command="{x:Static import:TimetableImportCommands.CopyTemplate}" Executed="CopyTemplate_Executed" />
+        <CommandBinding Command="{x:Static import:TimetableImportCommands.CopyTemplate}" Executed="CopyTemplate_Executed" CanExecute="CopyTemplate_CanExecute" />
     </UserControl.CommandBindings>
     <UserControl.InputBindings>
         <KeyBinding Key="V" Modifiers="Control" Command="{x:Static import:TimetableImportCommands.School}" />
     </UserControl.InputBindings>
+    <!-- ADR 0033: the widget's single right-click menu. MainWindow shares this instance with the
+         clock area and inserts the 학기 submenu at the top. Command targets are set in code-behind. -->
     <UserControl.ContextMenu>
         <ContextMenu>
-            <MenuItem Header="표시 설정..." InputGestureText="Ctrl+," Command="{x:Static display:DisplaySettingsCommands.Open}"
-                      CommandTarget="{Binding PlacementTarget, RelativeSource={RelativeSource AncestorType=ContextMenu}}"/>
-            <MenuItem Header="창 설정..." Command="{x:Static windows:WindowPlacementCommands.Settings}"
-                      CommandTarget="{Binding PlacementTarget, RelativeSource={RelativeSource AncestorType=ContextMenu}}"/>
-            <MenuItem Header="창 위치/크기 초기화" Command="{x:Static windows:WindowPlacementCommands.Reset}"
-                      CommandTarget="{Binding PlacementTarget, RelativeSource={RelativeSource AncestorType=ContextMenu}}"/>
-            <Separator/>
-            <MenuItem Header="학교 시간표 가져오기..." InputGestureText="Ctrl+V"
-                      Command="{x:Static import:TimetableImportCommands.School}"
-                      CommandTarget="{Binding PlacementTarget, RelativeSource={RelativeSource AncestorType=ContextMenu}}" />
-            <MenuItem Header="표준 양식 가져오기..." Command="{x:Static import:TimetableImportCommands.Canonical}"
-                      CommandTarget="{Binding PlacementTarget, RelativeSource={RelativeSource AncestorType=ContextMenu}}" />
+            <MenuItem Header="시간표">
+                <MenuItem Header="학교 시간표 가져오기..." InputGestureText="Ctrl+V" Command="{x:Static import:TimetableImportCommands.School}" />
+                <MenuItem Header="표준 양식 가져오기..." Command="{x:Static import:TimetableImportCommands.Canonical}" />
+                <Separator />
+                <MenuItem Header="표준 양식 복사" Command="{x:Static import:TimetableImportCommands.CopyTemplate}" />
+            </MenuItem>
+            <MenuItem Header="일과">
+                <MenuItem Header="일과 시간 편집..." Command="{x:Static periods:PeriodScheduleCommands.Edit}" />
+                <MenuItem Header="날짜별 예외 설정..." Command="{x:Static dates:DateOverrideCommands.Edit}" />
+                <Separator />
+                <MenuItem x:Name="LunchMenuItem" Header="점심시간 표시 (4·5교시 사이)" IsCheckable="True"
+                          Command="{x:Static dates:DateOverrideCommands.Lunch}" />
+            </MenuItem>
             <Separator />
-            <MenuItem Header="표준 양식 복사" Command="{x:Static import:TimetableImportCommands.CopyTemplate}"
-                      CommandTarget="{Binding PlacementTarget, RelativeSource={RelativeSource AncestorType=ContextMenu}}" />
+            <MenuItem Header="표시 설정..." InputGestureText="Ctrl+," Command="{x:Static display:DisplaySettingsCommands.Open}" />
+            <MenuItem Header="창">
+                <MenuItem Header="창 설정..." Command="{x:Static windows:WindowPlacementCommands.Settings}" />
+                <MenuItem Header="창 위치·크기 초기화" Command="{x:Static windows:WindowPlacementCommands.Reset}" />
+            </MenuItem>
+            <MenuItem Header="데이터">
+                <MenuItem Header="백업..." Command="{x:Static backup:BackupCommands.Backup}" />
+                <MenuItem Header="복원..." Command="{x:Static backup:BackupCommands.Restore}" />
+            </MenuItem>
             <Separator />
-            <MenuItem Header="일과 시간 편집..." Command="{x:Static periods:PeriodScheduleCommands.Edit}"
-                      CommandTarget="{Binding PlacementTarget, RelativeSource={RelativeSource AncestorType=ContextMenu}}" />
-            <Separator />
-            <MenuItem Header="날짜별 예외 설정..." Command="{x:Static dates:DateOverrideCommands.Edit}"
-                      CommandTarget="{Binding PlacementTarget, RelativeSource={RelativeSource AncestorType=ContextMenu}}" />
-            <MenuItem Header="4교시와 5교시 사이를 '점심시간'으로 표시" IsCheckable="True"
-                      IsChecked="{Binding PlacementTarget.LunchOption.Enabled, RelativeSource={RelativeSource AncestorType=ContextMenu}, Mode=OneWay}"
-                      Command="{x:Static dates:DateOverrideCommands.Lunch}"
-                      CommandTarget="{Binding PlacementTarget, RelativeSource={RelativeSource AncestorType=ContextMenu}}" />
-            <Separator/>
-            <MenuItem Header="데이터 백업..." Command="{x:Static backup:BackupCommands.Backup}" CommandTarget="{Binding PlacementTarget, RelativeSource={RelativeSource AncestorType=ContextMenu}}"/>
-            <MenuItem Header="데이터 복원..." Command="{x:Static backup:BackupCommands.Restore}" CommandTarget="{Binding PlacementTarget, RelativeSource={RelativeSource AncestorType=ContextMenu}}"/>
+            <MenuItem Header="위치 고정" Command="{x:Static windows:WindowPlacementCommands.ToggleMoveLock}" />
+            <MenuItem Header="위젯 숨기기" Command="{x:Static tray:WidgetCommands.Hide}" />
         </ContextMenu>
     </UserControl.ContextMenu>
     <UserControl.Resources>
@@ -203,7 +204,7 @@
             <ItemsControl.ItemTemplate>
                 <DataTemplate>
                     <local:TimetableCellControl EditRequested="Cell_EditRequested"
-                                                ToolTip="더블클릭/F2로 표시된 대상 편집 · 우클릭으로 가져오기/일과/날짜별 예외 · Ctrl+V 학교 양식 · 적용 성공 시 저장"
+                                                ToolTip="더블클릭 또는 F2로 편집"
                                                 AutomationProperties.Name="{Binding SlotLabel}">
                         <Border Style="{StaticResource BodySlotBorder}" MinHeight="44">
                             <TextBlock Style="{StaticResource TableCellText}" Text="{Binding DisplayText, Mode=OneWay}"

@@ -13,6 +13,10 @@ public static class WindowPlacementCommands
 {
     public static RoutedUICommand Settings { get; } = new("창 설정...", nameof(Settings), typeof(WindowPlacementCommands));
     public static RoutedUICommand Reset { get; } = new("창 위치/크기 초기화", nameof(Reset), typeof(WindowPlacementCommands));
+    /// <summary>Right-click 위치 고정 / 위치 고정 풀기 (ADR 0033): the ADR 0019 movement lock, saved at once.</summary>
+    public static RoutedUICommand ToggleMoveLock { get; } = new("위치 고정", nameof(ToggleMoveLock), typeof(WindowPlacementCommands));
+    public static string MoveLockHeader(bool locked) => locked ? "위치 고정 풀기" : "위치 고정";
+    internal const string MoveLockSaveError = "위치 고정 설정을 저장하지 못했습니다. 잠시 후 다시 시도해 주세요.";
 }
 
 internal sealed class WindowPlacementController
@@ -25,12 +29,15 @@ internal sealed class WindowPlacementController
     private Point? _dragOrigin;
     private DependencyObject? _dragSource;
     private WindowSettingsWindow? _settingsWindow;
+    private readonly Action<string> _reportError;
     internal WindowPlacementSession Session { get; }
     internal bool IsInteracting => Session.IsInteracting;
 
-    public WindowPlacementController(Window window, IWindowStateStore? store, IWindowPlacementDesktop? desktop = null)
+    public WindowPlacementController(Window window, IWindowStateStore? store, IWindowPlacementDesktop? desktop = null,
+        Action<string>? reportError = null)
     {
         _window = window;
+        _reportError = reportError ?? (message => MessageBox.Show(window, message, "위치 고정", MessageBoxButton.OK, MessageBoxImage.Warning));
         _desktop = desktop ?? new NativeWindowPlacement(window);
         Session = new(store);
         WindowContentMinimum.SetPlacement(window, this);
@@ -46,11 +53,34 @@ internal sealed class WindowPlacementController
         window.LostMouseCapture += PointerCaptureLost;
         window.CommandBindings.Add(new CommandBinding(WindowPlacementCommands.Settings, (_, e) => { OpenSettings(); e.Handled = true; }));
         window.CommandBindings.Add(new CommandBinding(WindowPlacementCommands.Reset, (_, _) => Reset()));
+        window.CommandBindings.Add(new CommandBinding(WindowPlacementCommands.ToggleMoveLock,
+            (_, e) => { ToggleMoveLock(); e.Handled = true; },
+            (_, e) => { e.CanExecute = !Session.IsInteracting; e.Handled = true; }));
+        UpdateMoveLockMenu();
+    }
+
+    /// <summary>Flips the saved movement lock. A failed save keeps the previous lock and says so.</summary>
+    internal bool ToggleMoveLock()
+    {
+        var preferred = Session.Preferred;
+        if (TrySetPreferences(preferred.Width, preferred.Height, !preferred.MoveLocked)) return true;
+        _reportError(WindowPlacementCommands.MoveLockSaveError);
+        return false;
+    }
+
+    /// <summary>The menu item names the action the committed lock state allows.</summary>
+    private void UpdateMoveLockMenu()
+    {
+        if (_window.ContextMenu is not { } menu) return;
+        foreach (var item in Features.WidgetMenu.WidgetContextMenu.AllItems(menu)
+                     .Where(item => item.Command == WindowPlacementCommands.ToggleMoveLock))
+            item.Header = WindowPlacementCommands.MoveLockHeader(Session.Preferred.MoveLocked);
     }
 
     internal bool TrySetPreferences(double width, double height, bool moveLocked)
     {
         if (!Session.TrySetPreferences(width, height, moveLocked)) return false;
+        UpdateMoveLockMenu();
         Apply(_window.MinWidth, _window.MinHeight);
         WindowContentMinimum.Refresh(_window);
         return true;

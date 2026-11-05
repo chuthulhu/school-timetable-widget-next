@@ -108,8 +108,8 @@ public class DateOverrideViewTests
             var view = new WeeklyTimetableView { DataContext = vm, LunchOption = option,
                 DateEditor = new(store, () => vm.CommittedTimetable, DayFixtures.Schedule, _ => loop.RefreshNow()), GetCurrentDate = () => loop.CurrentDate };
             view.ContextMenu.PlacementTarget = view; Layout(view.ContextMenu);
-            var edit = Assert.Single(view.ContextMenu.Items.OfType<MenuItem>(), m => m.Command == DateOverrideCommands.Edit);
-            var lunch = Assert.Single(view.ContextMenu.Items.OfType<MenuItem>(), m => m.Command == DateOverrideCommands.Lunch);
+            var edit = Assert.Single(SchoolTimetableWidget.Desktop.Features.WidgetMenu.WidgetContextMenu.AllItems(view.ContextMenu), m => m.Command == DateOverrideCommands.Edit);
+            var lunch = Assert.Single(SchoolTimetableWidget.Desktop.Features.WidgetMenu.WidgetContextMenu.AllItems(view.ContextMenu), m => m.Command == DateOverrideCommands.Lunch);
             Assert.Same(view, edit.CommandTarget);
             Assert.True(DateOverrideCommands.Edit.CanExecute(null, view)); Assert.True(lunch.IsCheckable); Assert.False(lunch.IsChecked);
             DateOverrideCommands.Lunch.Execute(null, view); Drain(view);

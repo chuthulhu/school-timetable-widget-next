@@ -309,8 +309,9 @@ public class WindowPlacementWpfTests
             menu.PlacementTarget = target;
             menu.Measure(new Size(400, 600)); menu.Arrange(new Rect(0, 0, 400, 600)); menu.UpdateLayout();
             Drain(window);
-            var item = Assert.Single(menu.Items.OfType<MenuItem>(), x => x.Command == WindowPlacementCommands.Reset);
-            Assert.Same(target, item.CommandTarget);
+            var item = Assert.Single(SchoolTimetableWidget.Desktop.Features.WidgetMenu.WidgetContextMenu.AllItems(menu), x => x.Command == WindowPlacementCommands.Reset);
+            Assert.Same(window.ContextMenu, menu); // ADR 0033: one shared menu.
+            Assert.Same(window.FindName("Timetable"), item.CommandTarget);
             Assert.True(WindowPlacementCommands.Reset.CanExecute(null, target));
             typeof(MenuItem).GetMethod("OnClick", System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.NonPublic)!.Invoke(item, null);
             Drain(window);

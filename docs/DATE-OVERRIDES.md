@@ -22,7 +22,7 @@ or replaced timetable targets reject before mutation. Editing another component
 cannot overwrite a current schedule. Bulk import is explicitly Base-only and keeps
 all date snapshots; removing an override reveals the latest Base values.
 
-Context menu → 날짜별 예외 설정 → choose date → 이 날짜 편집. Date remains locked
+Context menu → 일과 → 날짜별 예외 설정 ([ADR 0033](adr/0033-unified-widget-context-menu.md)) → choose date → 이 날짜 편집. Date remains locked
 while editing. 다른 날짜 선택 (초안 폐기) explicitly discards that Draft. Each toggle
 controls one component. Disabled components fall back to Base after Apply; 전체 예외
 해제 clears both toggles and still requires Apply. Cancel/X/Escape preserve the prior
