@@ -108,6 +108,7 @@ ADR and contract update before implementation (AGENTS.md rules 4–5).
 | v0.2.0 | the merge commit of PR #13 | Unified right-click menu with 위치 고정 and 위젯 숨기기 (ADR 0033); released at the user's request before the native checks listed in ADR 0033 |
 | v0.3.0 | the merge commit of PR #14 | Display settings window with a left section list (ADR 0034); released at the user's request before the native checks listed in ADR 0034 |
 | v0.4.0 | the merge commit of PR #15 | In-app color adjustment window (ADR 0035) and modern right-click menu look (ADR 0036); released at the user's request before the native checks listed in those ADRs |
+| v0.5.0 | the merge commit of PR #17 | User-arranged clock area (ADR 0037, PR #16, adds the profile `clock` object) and tray menu look (ADR 0038); released at the user's request before the native checks listed in those ADRs |
 
 **v0.1.0 assets.** The release carries six files: `SchoolTimetableWidgetNext-win-Setup.exe`
 (about 83 MB, the file users install), `SchoolTimetableWidgetNext-win-Portable.zip`,
