@@ -34,6 +34,22 @@ public sealed class MissingFontMessageConverter : IValueConverter
     public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture) => Binding.DoNothing;
 }
 
+/// <summary>Paints an opaque display color, e.g. the theme preview strips.</summary>
+public sealed class RgbBrushConverter : IValueConverter
+{
+    public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
+    {
+        if (value is not RgbColor color) return System.Windows.Media.Brushes.Transparent;
+        var brush = new System.Windows.Media.SolidColorBrush(System.Windows.Media.Color.FromRgb(color.R, color.G, color.B));
+        brush.Freeze();
+        return brush;
+    }
+    public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture) => Binding.DoNothing;
+}
+
+/// <summary>The left-list sections of the settings window (ADR 0034), in list order.</summary>
+public enum DisplaySettingsSection { Style, Clock, TableFonts, Colors }
+
 public partial class DisplaySettingsWindow : Window
 {
     public DisplaySettingsSession Session { get; }
@@ -48,6 +64,26 @@ public partial class DisplaySettingsWindow : Window
         _fileDialogs = fileDialogs ?? new WindowsPresetFileDialogs();
         InitializeComponent();
         DataContext = session;
+        ShowSection(DisplaySettingsSection.Style);
+    }
+
+    public DisplaySettingsSection Section => (DisplaySettingsSection)Math.Max(0, SectionList.SelectedIndex);
+
+    /// <summary>Shows one section. Hidden sections keep their Draft; switching never previews or saves.</summary>
+    public void ShowSection(DisplaySettingsSection section)
+    {
+        if (SectionList.SelectedIndex != (int)section) { SectionList.SelectedIndex = (int)section; return; }
+        StylePage.Visibility = section == DisplaySettingsSection.Style ? Visibility.Visible : Visibility.Collapsed;
+        ClockPage.Visibility = section == DisplaySettingsSection.Clock ? Visibility.Visible : Visibility.Collapsed;
+        TableFontPage.Visibility = section == DisplaySettingsSection.TableFonts ? Visibility.Visible : Visibility.Collapsed;
+        ColorPage.Visibility = section == DisplaySettingsSection.Colors ? Visibility.Visible : Visibility.Collapsed;
+        SectionScroll.ScrollToTop();
+    }
+    private void SectionList_SelectionChanged(object sender, System.Windows.Controls.SelectionChangedEventArgs e)
+    {
+        // Selecting nothing (e.g. a cleared selection) keeps the current section.
+        if (SectionList.SelectedIndex < 0) { SectionList.SelectedIndex = 0; return; }
+        if (StylePage is not null) ShowSection((DisplaySettingsSection)SectionList.SelectedIndex);
     }
     private void PresetSelectionChanged(object sender, System.Windows.Controls.SelectionChangedEventArgs e)
     {

@@ -23,6 +23,15 @@ not authoritative and are not needed to build or resume development.
 
 ## Verified implementation baseline
 
+### Display settings left section list — 2026-11-05
+
+[ADR 0034](adr/0034-display-settings-section-layout.md) implements stage 2 of the approved UI
+direction below. The display settings window now has a left list of four sections: 스타일, 시계,
+시간표 글꼴 and 색상·투명도. Color rows pair each swatch and hex box with its opacity slider. A
+% readout and inline errors are added. Theme buttons show color strips, and preset management
+moves into an expander. No setting or storage format changed. Verification is CI-only; no native
+check has been performed.
+
 ### Unified widget right-click menu — 2026-11-05
 
 [ADR 0033](adr/0033-unified-widget-context-menu.md) replaces the two right-click menus with one shared
@@ -37,7 +46,8 @@ performed.
 The user reviewed interactive mock-ups and approved the following. Each item still needs its own
 ADR and contract update before implementation (AGENTS.md rules 4–5).
 
-- **Display settings window: left-list layout.**
+- **Display settings window: left-list layout.** Implemented by ADR 0034 (see above); kept here
+  as the approved description.
   - Sections in a left list: 스타일, 시계, 시간표 글꼴, 색상·투명도.
   - 스타일 separates presets, which save everything, from themes, which load colors and
     opacity only. Theme buttons show color strips. Preset management moves behind 관리 ▾.

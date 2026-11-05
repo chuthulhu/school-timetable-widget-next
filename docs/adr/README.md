@@ -39,3 +39,4 @@ Current delivery: [Feature Map](../FEATURE-MAP.md).
 | [ADR 0031 — Application and tray icon](0031-app-and-tray-icon.md) | Accepted — automated verification; native verification pending |
 | [ADR 0032 — Automatic updates from GitHub Releases](0032-automatic-updates.md) | Accepted — automated verification; real update pending |
 | [ADR 0033 — Unified widget right-click menu](0033-unified-widget-context-menu.md) | Accepted — automated verification; native verification pending |
+| [ADR 0034 — Display settings window with a left section list](0034-display-settings-section-layout.md) | Accepted — automated verification; native verification pending |

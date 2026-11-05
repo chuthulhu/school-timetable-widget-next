@@ -65,6 +65,7 @@ public class FontViewTests
         var dialog = new DisplaySettingsWindow(session);
         try
         {
+            dialog.ShowSection(DisplaySettingsSection.Clock); // ADR 0034: font editors live in the 시계 section.
             Layout((FrameworkElement)dialog.Content);
             var editors = (ItemsControl)dialog.FindName("ElementEditors");
             var sources = Descendants<ComboBox>(editors).Where(c => c.Name == "FontSourceSelector").ToArray();

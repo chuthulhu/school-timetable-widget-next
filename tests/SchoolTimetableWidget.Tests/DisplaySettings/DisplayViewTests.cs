@@ -65,6 +65,7 @@ public class DisplayViewTests
         var dialog = new DisplaySettingsWindow(session);
         try
         {
+            dialog.ShowSection(DisplaySettingsSection.Clock); // ADR 0034: font editors live in the 시계 section.
             Layout((FrameworkElement)dialog.Content, 690, 560);
             var preset = (ComboBox)dialog.FindName("PresetSelector");
             Assert.Equal(4, preset.Items.Count);

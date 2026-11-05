@@ -50,6 +50,9 @@ sliders.
   an error naming the color and keeps the last valid preview. It blocks Apply, like other
   invalid display input. The swatch shows the last valid value.
 
+Amended by [ADR 0034](0034-display-settings-section-layout.md): each color now shares a row with its
+opacity slider, and an invalid box is also reported directly under it.
+
 ## Consequences
 
 Profile v5, preset file v1 and backup v1 remain the outer versions. No schema version bump is
