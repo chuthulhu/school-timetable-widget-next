@@ -13,6 +13,7 @@ Implemented; **993/993 automated tests passed; user native UX approved**.
 - Show reuses runtime and viewed week, refreshes/re-measures, restores Normal if necessary,
   fits current work areas preserving preferred placement, and activates best effort.
 - The tray menu also offers 업데이트 확인 and, after a download, 업데이트 후 다시 시작 ([ADR 0032](adr/0032-automatic-updates.md)).
+- The tray menu is drawn with the widget menu's light, rounded look ([ADR 0038](adr/0038-tray-menu-look.md)); its items and behaviour are unchanged.
 - ShowInTaskbar is false. The tray shows the embedded ADR 0031 icon (earlier: the fallback Windows Application icon) with tooltip School Timetable Widget.
 - Windows logoff/shutdown bypasses the close-to-tray/editor guard without confirmation.
 - Hidden does not suspend the application clock or the existing one-second refresh.

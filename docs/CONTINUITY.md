@@ -23,6 +23,12 @@ not authoritative and are not needed to build or resume development.
 
 ## Verified implementation baseline
 
+### Tray menu look — 2026-11-05
+
+[ADR 0038](adr/0038-tray-menu-look.md), a follow-up the user chose, gives the Windows Forms tray menu
+the widget menu's light, rounded look through a custom renderer. Its items and behaviour are
+unchanged. Verification is CI-only; no native check has been performed.
+
 ### User-arranged clock area — 2026-11-05
 
 [ADR 0037](adr/0037-clock-area-layout.md) implements stage 4 and completes the approved UI

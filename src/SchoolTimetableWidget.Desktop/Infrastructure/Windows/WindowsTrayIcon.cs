@@ -39,6 +39,7 @@ internal sealed class WindowsTrayIcon : ITrayIcon
         _menu = new();
         _menu.Items.AddRange([_toggle, _autoStart, new Forms.ToolStripSeparator(), _checkUpdates, _applyUpdate,
             new Forms.ToolStripSeparator(), _exit]);
+        WidgetTrayMenuRenderer.Apply(_menu); // ADR 0038: same light look as the widget menu
         _checkUpdates.Click += CheckUpdates;
         _applyUpdate.Click += ApplyUpdate;
         _menu.Opening += MenuOpening;
