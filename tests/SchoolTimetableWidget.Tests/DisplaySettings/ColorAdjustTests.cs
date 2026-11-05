@@ -161,6 +161,29 @@ public class ColorAdjustTests
     });
 
     [Fact]
+    public void PointerInputReachesTheSquareAndTheHueBarAcrossTheirWholeArea() => HighlightTestDispatcher.Run(() =>
+    {
+        // Regression: the hue bar had no background, so hit testing skipped it and dragging did nothing.
+        var (_, session) = Open();
+        var panel = new ColorAdjustPanel { DataContext = new ColorAdjustModel(session, CellText, new RecentColors()) };
+        Layout(panel);
+        foreach (var (target, points) in new (FrameworkElement, Point[])[]
+                 {
+                     (panel.HueBar, new[] { new Point(1, 8), new Point(154, 2), new Point(307, 14) }),
+                     (panel.SaturationValuePad, new[] { new Point(1, 1), new Point(154, 80), new Point(307, 159) })
+                 })
+            foreach (var point in points)
+            {
+                // Geometry and IsHitTestVisible, as for pointer input; unlike InputHitTest it needs no shown window.
+                var hit = VisualTreeHelper.HitTest(panel, target.TranslatePoint(point, panel))?.VisualHit;
+                Assert.NotNull(hit);
+                Assert.True(ReferenceEquals(hit, target) || target.IsAncestorOf(hit!), $"{target.Name} missed at {point}");
+            }
+        var readout = (TextBlock)panel.FindName("HsvReadout");
+        Assert.Equal(TextWrapping.NoWrap, readout.TextWrapping); // no mid-word wrap beside the hex box
+    });
+
+    [Fact]
     public void SettingsWindowSwatchesOpenOneAdjusterAtATime() => HighlightTestDispatcher.Run(() =>
     {
         var (_, session) = Open();

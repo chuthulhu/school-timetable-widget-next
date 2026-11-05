@@ -23,6 +23,13 @@ not authoritative and are not needed to build or resume development.
 
 ## Verified implementation baseline
 
+### Color adjustment hue bar fix — 2026-11-05
+
+The user reported on a real PC that the ADR 0035 hue bar could not be dragged. The bar had no
+background, and its children are not hit-testable, so WPF hit testing skipped it. It now has a
+transparent background. A regression test hit-tests both the square and the bar. The HSV readout
+also moves to its own line, so it no longer wraps mid-word. Verification is CI-only.
+
 ### Tray menu look — 2026-11-05
 
 [ADR 0038](adr/0038-tray-menu-look.md), a follow-up the user chose, gives the Windows Forms tray menu

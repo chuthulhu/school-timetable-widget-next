@@ -73,7 +73,9 @@
                 </Canvas>
             </Grid>
 
+            <!-- The transparent background is required: without it the bar has no hit-test surface (its children are not hit-testable). -->
             <Grid x:Name="HueBar" Width="308" Height="16" Margin="0,10,0,0" Focusable="True" Cursor="SizeWE" HorizontalAlignment="Left"
+                  Background="Transparent"
                   MouseLeftButtonDown="Hue_MouseLeftButtonDown" MouseMove="Hue_MouseMove" MouseLeftButtonUp="Drag_MouseLeftButtonUp"
                   KeyDown="Hue_KeyDown"
                   AutomationProperties.Name="색상" AutomationProperties.HelpText="방향키로 조절">
@@ -105,10 +107,10 @@
                         <Rectangle x:Name="CurrentSample" Width="28" Height="26" Fill="{Binding Current, Converter={StaticResource RgbBrush}}"/>
                     </StackPanel>
                 </Border>
-                <TextBox x:Name="HexInput" Width="92" Padding="6,4" MaxLength="7" FontFamily="Consolas" VerticalContentAlignment="Center"
+                <TextBox x:Name="HexInput" Width="92" HorizontalAlignment="Left" Padding="6,4" MaxLength="7" FontFamily="Consolas" VerticalContentAlignment="Center"
                          Text="{Binding HexText, UpdateSourceTrigger=PropertyChanged}" AutomationProperties.Name="16진수 색상 코드"/>
-                <TextBlock Text="{Binding HsvText}" Foreground="#5C5C5C" FontSize="11" Margin="8,0" VerticalAlignment="Center" TextWrapping="Wrap"/>
             </DockPanel>
+            <TextBlock x:Name="HsvReadout" Text="{Binding HsvText}" Foreground="#5C5C5C" FontSize="12" Margin="0,6,0,0" TextWrapping="NoWrap"/>
             <TextBlock x:Name="HexErrorText" Text="{Binding HexError}" Foreground="#A32323" FontSize="12" Margin="0,4,0,0">
                 <TextBlock.Style>
                     <Style TargetType="TextBlock">
