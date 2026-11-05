@@ -35,6 +35,8 @@ public class UserPresetPersistenceTests
                 sourceDisplay[key]!["font"]!["familyId"] = sourceDisplay[key]!["font"]!["family"]!.DeepClone();
             actual["settings"]!.AsObject().Remove("table");
             actual["settings"]!.AsObject().Remove("colors");
+            actual["settings"]!.AsObject().Remove("clock"); // ADR 0037 extension; the layout's arrangement
+            Assert.Equal(ClockLayout.For(profile.Current.Display.Layout), profile.Current.Display.Clock);
             Assert.True(JsonNode.DeepEquals(sourceDisplay, actual["settings"]));
         }
         expected.Remove("display");
