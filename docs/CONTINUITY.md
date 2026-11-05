@@ -81,6 +81,7 @@ ADR and contract update before implementation (AGENTS.md rules 4–5).
 | [v0.1.0](https://github.com/chuthulhu/school-timetable-widget-next/releases/tag/v0.1.0) | `bd6c7c464e3729543a967f73d73383e562c77b36` | First release; includes the installer (ADR 0029), automatic updates (ADR 0032) and all features merged up to PR #11 |
 | v0.1.1 | the commit carrying this entry | Released right after v0.1.0 to exercise the first release-to-release automatic update |
 | v0.2.0 | the merge commit of PR #13 | Unified right-click menu with 위치 고정 and 위젯 숨기기 (ADR 0033); released at the user's request before the native checks listed in ADR 0033 |
+| v0.3.0 | the merge commit of PR #14 | Display settings window with a left section list (ADR 0034); released at the user's request before the native checks listed in ADR 0034 |
 
 **v0.1.0 assets.** The release carries six files: `SchoolTimetableWidgetNext-win-Setup.exe`
 (about 83 MB, the file users install), `SchoolTimetableWidgetNext-win-Portable.zip`,
