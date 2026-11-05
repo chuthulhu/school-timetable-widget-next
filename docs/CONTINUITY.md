@@ -23,6 +23,15 @@ not authoritative and are not needed to build or resume development.
 
 ## Verified implementation baseline
 
+### Color adjustment window and menu look — 2026-11-05
+
+[ADR 0035](adr/0035-in-app-color-adjustment.md) implements stage 3. Clicking a color swatch in
+display settings opens an in-app popup. It has a saturation/brightness square, a hue bar, the
+hex box, recommended colors, run-local recent colors and contrast checks that only warn.
+선택/outside click keeps the color and 취소/Esc restores it; neither saves. [ADR 0036](adr/0036-modern-context-menu-theme.md)
+restyles WPF right-click menus with the mock-up's light rounded look. No storage format changed.
+Verification is CI-only; no native check has been performed.
+
 ### Display settings left section list — 2026-11-05
 
 [ADR 0034](adr/0034-display-settings-section-layout.md) implements stage 2 of the approved UI
@@ -53,7 +62,7 @@ ADR and contract update before implementation (AGENTS.md rules 4–5).
     opacity only. Theme buttons show color strips. Preset management moves behind 관리 ▾.
   - 색상·투명도 puts each target on one row: swatch, `#RRGGBB` and its opacity slider with a %
     readout. Invalid input is reported next to its field.
-- **In-app color adjustment window.**
+- **In-app color adjustment window.** Implemented by ADR 0035 (see above).
   - Clicking a swatch opens an owned in-app popup, not the Windows color dialog.
   - It holds a hue bar, a saturation/brightness square (pointer and arrow keys), the `#RRGGBB`
     box, a before/after sample, 24 recommended colors and recently used colors.

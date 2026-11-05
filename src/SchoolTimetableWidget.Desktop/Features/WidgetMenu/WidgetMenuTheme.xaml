@@ -1,0 +1,105 @@
+<ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+                    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+    <!-- ADR 0036: light, rounded right-click menus matching the approved mock-up, instead of the classic
+         system look. Implicit styles, merged in App.xaml, so code-created items (학기) match too. -->
+    <SolidColorBrush x:Key="WidgetMenu.Background" Color="#F9F9F9"/>
+    <SolidColorBrush x:Key="WidgetMenu.Border" Color="#D6D6D6"/>
+    <SolidColorBrush x:Key="WidgetMenu.Text" Color="#1A1A1A"/>
+    <SolidColorBrush x:Key="WidgetMenu.SubtleText" Color="#5C5C5C"/>
+    <SolidColorBrush x:Key="WidgetMenu.DisabledText" Color="#9A9A9A"/>
+    <SolidColorBrush x:Key="WidgetMenu.Highlight" Color="#E6E6E6"/>
+    <SolidColorBrush x:Key="WidgetMenu.Separator" Color="#E0E0E0"/>
+    <SolidColorBrush x:Key="WidgetMenu.Accent" Color="#0F6E66"/>
+    <DropShadowEffect x:Key="WidgetMenu.Shadow" BlurRadius="16" ShadowDepth="3" Direction="270" Opacity="0.18"/>
+
+    <Style TargetType="ContextMenu">
+        <Setter Property="OverridesDefaultStyle" Value="True"/>
+        <Setter Property="SnapsToDevicePixels" Value="True"/>
+        <Setter Property="UseLayoutRounding" Value="True"/>
+        <Setter Property="HasDropShadow" Value="True"/>
+        <Setter Property="FontFamily" Value="Segoe UI Variable Text, Segoe UI, Malgun Gothic"/>
+        <Setter Property="FontSize" Value="14"/>
+        <Setter Property="Foreground" Value="{StaticResource WidgetMenu.Text}"/>
+        <Setter Property="Grid.IsSharedSizeScope" Value="True"/>
+        <Setter Property="Template">
+            <Setter.Value>
+                <ControlTemplate TargetType="ContextMenu">
+                    <Border Margin="0,0,12,12" Background="{StaticResource WidgetMenu.Background}"
+                            BorderBrush="{StaticResource WidgetMenu.Border}" BorderThickness="1" CornerRadius="8"
+                            Padding="4" MinWidth="220" Effect="{StaticResource WidgetMenu.Shadow}">
+                        <StackPanel IsItemsHost="True" KeyboardNavigation.DirectionalNavigation="Cycle"/>
+                    </Border>
+                </ControlTemplate>
+            </Setter.Value>
+        </Setter>
+    </Style>
+
+    <Style x:Key="{x:Static MenuItem.SeparatorStyleKey}" TargetType="Separator">
+        <Setter Property="OverridesDefaultStyle" Value="True"/>
+        <Setter Property="Focusable" Value="False"/>
+        <Setter Property="Template">
+            <Setter.Value>
+                <ControlTemplate TargetType="Separator">
+                    <Border Height="1" Margin="0,4" Background="{StaticResource WidgetMenu.Separator}"/>
+                </ControlTemplate>
+            </Setter.Value>
+        </Setter>
+    </Style>
+
+    <Style TargetType="MenuItem">
+        <Setter Property="OverridesDefaultStyle" Value="True"/>
+        <Setter Property="SnapsToDevicePixels" Value="True"/>
+        <Setter Property="Foreground" Value="{StaticResource WidgetMenu.Text}"/>
+        <Setter Property="Template">
+            <Setter.Value>
+                <ControlTemplate TargetType="MenuItem">
+                    <Border x:Name="Surface" Background="Transparent" CornerRadius="4" MinHeight="32" Padding="6,0,10,0">
+                        <Grid>
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="24"/>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="Auto" SharedSizeGroup="WidgetMenuGesture"/>
+                                <ColumnDefinition Width="18"/>
+                            </Grid.ColumnDefinitions>
+                            <Path x:Name="Check" Data="M2,7.5 L5.5,11 L12,3.5" Stroke="{TemplateBinding Foreground}" StrokeThickness="1.6"
+                                  Width="14" Height="14" VerticalAlignment="Center" HorizontalAlignment="Left" Visibility="Collapsed"/>
+                            <ContentPresenter Grid.Column="1" ContentSource="Header" RecognizesAccessKey="True" VerticalAlignment="Center"/>
+                            <TextBlock x:Name="Gesture" Grid.Column="2" Text="{TemplateBinding InputGestureText}" Margin="24,0,0,0"
+                                       FontSize="12" Foreground="{StaticResource WidgetMenu.SubtleText}" VerticalAlignment="Center"/>
+                            <Path x:Name="Arrow" Grid.Column="3" Data="M4,2 L8,6 L4,10" Stroke="{TemplateBinding Foreground}" StrokeThickness="1.4"
+                                  Width="12" Height="12" VerticalAlignment="Center" HorizontalAlignment="Right" Visibility="Collapsed"/>
+                            <Popup x:Name="PART_Popup" Placement="Right" HorizontalOffset="2" VerticalOffset="-6"
+                                   IsOpen="{Binding IsSubmenuOpen, RelativeSource={RelativeSource TemplatedParent}}"
+                                   AllowsTransparency="True" Focusable="False" PopupAnimation="Fade">
+                                <Border Margin="0,0,12,12" Background="{StaticResource WidgetMenu.Background}"
+                                        BorderBrush="{StaticResource WidgetMenu.Border}" BorderThickness="1" CornerRadius="8"
+                                        Padding="4" MinWidth="220" Effect="{StaticResource WidgetMenu.Shadow}"
+                                        TextElement.Foreground="{StaticResource WidgetMenu.Text}">
+                                    <StackPanel IsItemsHost="True" KeyboardNavigation.DirectionalNavigation="Cycle" Grid.IsSharedSizeScope="True"/>
+                                </Border>
+                            </Popup>
+                        </Grid>
+                    </Border>
+                    <ControlTemplate.Triggers>
+                        <Trigger Property="Role" Value="SubmenuHeader">
+                            <Setter TargetName="Arrow" Property="Visibility" Value="Visible"/>
+                            <Setter TargetName="Gesture" Property="Visibility" Value="Collapsed"/>
+                        </Trigger>
+                        <Trigger Property="IsChecked" Value="True">
+                            <Setter TargetName="Check" Property="Visibility" Value="Visible"/>
+                        </Trigger>
+                        <Trigger Property="IsHighlighted" Value="True">
+                            <Setter TargetName="Surface" Property="Background" Value="{StaticResource WidgetMenu.Highlight}"/>
+                        </Trigger>
+                        <Trigger Property="IsSubmenuOpen" Value="True">
+                            <Setter TargetName="Surface" Property="Background" Value="{StaticResource WidgetMenu.Highlight}"/>
+                        </Trigger>
+                        <Trigger Property="IsEnabled" Value="False">
+                            <Setter Property="Foreground" Value="{StaticResource WidgetMenu.DisabledText}"/>
+                        </Trigger>
+                    </ControlTemplate.Triggers>
+                </ControlTemplate>
+            </Setter.Value>
+        </Setter>
+    </Style>
+</ResourceDictionary>

@@ -57,6 +57,8 @@ The user reviewed an interactive mock-up and chose the recommended structure. Th
 - **Cell tooltip.** The cell tooltip is shortened to 더블클릭 또는 F2로 편집. The menu itself
   now shows where import and schedule actions live.
 
+The menu look is restyled by [ADR 0036](0036-modern-context-menu-theme.md); its structure is unchanged.
+
 ## Consequences
 
 - Menu labels changed: 창 위치/크기 초기화 is now 창 위치·크기 초기화. 데이터 백업... and

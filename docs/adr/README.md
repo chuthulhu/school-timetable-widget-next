@@ -40,3 +40,5 @@ Current delivery: [Feature Map](../FEATURE-MAP.md).
 | [ADR 0032 — Automatic updates from GitHub Releases](0032-automatic-updates.md) | Accepted — automated verification; real update pending |
 | [ADR 0033 — Unified widget right-click menu](0033-unified-widget-context-menu.md) | Accepted — automated verification; native verification pending |
 | [ADR 0034 — Display settings window with a left section list](0034-display-settings-section-layout.md) | Accepted — automated verification; native verification pending |
+| [ADR 0035 — In-app color adjustment window](0035-in-app-color-adjustment.md) | Accepted — automated verification; native verification pending |
+| [ADR 0036 — Modern right-click menu look](0036-modern-context-menu-theme.md) | Accepted — automated verification; native verification pending |

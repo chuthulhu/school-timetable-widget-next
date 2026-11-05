@@ -55,15 +55,18 @@ public partial class DisplaySettingsWindow : Window
     public DisplaySettingsSession Session { get; }
     private readonly Action<Window> _showPresetDialog;
     private readonly IPresetFileDialogs _fileDialogs;
+    private readonly RecentColors _recentColors;
     public DisplaySettingsWindow(DisplaySettingsSession session, Action<Window>? showPresetDialog = null,
-        IPresetFileDialogs? fileDialogs = null)
+        IPresetFileDialogs? fileDialogs = null, RecentColors? recentColors = null)
     {
         if (session.IsClosed) throw new ArgumentException("닫힌 설정입니다.", nameof(session));
         Session = session;
         _showPresetDialog = showPresetDialog ?? (dialog => { dialog.Owner = this; dialog.ShowDialog(); });
         _fileDialogs = fileDialogs ?? new WindowsPresetFileDialogs();
+        _recentColors = recentColors ?? RecentColors.Shared;
         InitializeComponent();
         DataContext = session;
+        ColorAdjust.Finished += (_, _) => ColorPopup.IsOpen = false;
         ShowSection(DisplaySettingsSection.Style);
     }
 
@@ -149,6 +152,24 @@ public partial class DisplaySettingsWindow : Window
             Session.ShowError("이 프리셋 파일을 불러올 수 없습니다. 파일이 올바른지 확인해 주세요.");
         }
     }
+    private void Swatch_Click(object sender, RoutedEventArgs e)
+    {
+        if (sender is not FrameworkElement { Tag: string tag } swatch || !int.TryParse(tag, out var index)) return;
+        BeginColorAdjust(index);
+        ColorPopup.PlacementTarget = swatch;
+        ColorPopup.IsOpen = true;
+        ColorAdjust.SaturationValuePad.Focus();
+    }
+    /// <summary>Starts adjusting one Draft color (ADR 0035). A window still open for another color keeps its color.</summary>
+    internal ColorAdjustModel BeginColorAdjust(int index)
+    {
+        ColorAdjust.Finish(confirm: true);
+        var model = new ColorAdjustModel(Session, index, _recentColors);
+        ColorAdjust.DataContext = model;
+        return model;
+    }
+    // Clicking outside closes the popup and keeps the previewed color, like 선택.
+    private void ColorPopup_Closed(object? sender, EventArgs e) => ColorAdjust.Finish(confirm: true);
     private void Reset_Click(object sender, RoutedEventArgs e) => Session.Reset();
     private void Apply_Click(object sender, RoutedEventArgs e) => Session.TryApply();
     private void Accept_Click(object sender, RoutedEventArgs e) { if (Session.TryAccept()) Close(); }

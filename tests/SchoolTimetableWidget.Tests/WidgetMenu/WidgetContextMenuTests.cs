@@ -2,6 +2,7 @@ using System.IO;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
+using System.Windows.Media;
 using System.Windows.Threading;
 using SchoolTimetableWidget.Core.Features.Timetable;
 using SchoolTimetableWidget.Desktop;
@@ -163,6 +164,31 @@ public class WidgetContextMenuTests
             var preferred = controller.Session.Preferred;
             Assert.True(controller.TrySetPreferences(preferred.Width, preferred.Height, true));
             Assert.Equal("위치 고정 풀기", item.Header);
+        }
+        finally { window.Close(); }
+    });
+
+    [Fact]
+    public void MenuThemeGivesRoundedLightMenusAndKeepsSubmenus() => HighlightTestDispatcher.Run(() =>
+    {
+        // ADR 0036: the theme App.xaml merges. Loaded directly because tests run without the App.
+        var theme = (ResourceDictionary)Application.LoadComponent(new Uri(
+            "/SchoolTimetableWidget.Desktop;component/Features/WidgetMenu/WidgetMenuTheme.xaml", UriKind.Relative));
+        Assert.True(theme.Contains(typeof(ContextMenu)));
+        Assert.True(theme.Contains(typeof(MenuItem)));
+        Assert.True(theme.Contains(MenuItem.SeparatorStyleKey));
+        var window = new MainWindow(new CurrentStatusHeaderViewModel(), new(WeeklyTimetable.Empty()));
+        try
+        {
+            var menu = window.ContextMenu;
+            menu.Resources.MergedDictionaries.Add(theme);
+            menu.Measure(new Size(400, 600)); menu.Arrange(new Rect(0, 0, 400, 600)); menu.UpdateLayout();
+            Drain(window);
+            var surface = Assert.IsType<Border>(VisualTreeHelper.GetChild(menu, 0));
+            Assert.Equal(new CornerRadius(8), surface.CornerRadius);
+            var header = menu.Items.OfType<MenuItem>().First(item => item.HasItems);
+            Assert.NotNull(header.Template.FindName("PART_Popup", header)); // submenus still open
+            Assert.NotNull(header.Template.FindName("Arrow", header));
         }
         finally { window.Close(); }
     });
