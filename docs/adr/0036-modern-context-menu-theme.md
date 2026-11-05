@@ -27,6 +27,8 @@ style. The user asked for the look of the approved mock-up instead.
   through the standard `PART_Popup` submenu part. The tray menu is a Windows Forms menu and is
   unchanged.
 
+[ADR 0038](0038-tray-menu-look.md) later gives the tray menu the same look with its own renderer.
+
 ## Consequences
 
 The menu no longer follows the Windows high-contrast system colors automatically. That remains

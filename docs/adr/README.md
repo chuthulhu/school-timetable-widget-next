@@ -43,3 +43,4 @@ Current delivery: [Feature Map](../FEATURE-MAP.md).
 | [ADR 0035 — In-app color adjustment window](0035-in-app-color-adjustment.md) | Accepted — automated verification; native verification pending |
 | [ADR 0036 — Modern right-click menu look](0036-modern-context-menu-theme.md) | Accepted — automated verification; native verification pending |
 | [ADR 0037 — User-arranged clock area](0037-clock-area-layout.md) | Accepted — automated verification; native verification pending |
+| [ADR 0038 — Tray menu matches the widget menu look](0038-tray-menu-look.md) | Accepted — automated verification; native verification pending |
