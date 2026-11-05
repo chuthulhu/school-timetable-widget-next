@@ -3,10 +3,12 @@
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:local="clr-namespace:SchoolTimetableWidget.Desktop.Features.DisplaySettings"
         xmlns:windows="clr-namespace:SchoolTimetableWidget.Desktop.Infrastructure.Windows"
-        Title="표시 설정" Width="730" Height="640" MinWidth="640" MinHeight="420"
-        WindowStartupLocation="CenterOwner" ShowInTaskbar="False" FontSize="14">
+        Title="표시 설정" Width="780" Height="660" MinWidth="660" MinHeight="460"
+        WindowStartupLocation="CenterOwner" ShowInTaskbar="False" FontSize="14" Background="#F3F3F3">
+    <!-- ADR 0034: left section list. Every section stays in the window; only the selected one is shown. -->
     <Window.Resources>
         <BooleanToVisibilityConverter x:Key="BooleanVisibility"/>
+        <local:RgbBrushConverter x:Key="RgbBrush"/>
         <DataTemplate x:Key="TypographyEditor">
             <GroupBox Header="{Binding Label}" Margin="0,0,0,10" Padding="10">
                 <StackPanel>
@@ -67,100 +69,307 @@
         <Style TargetType="CheckBox">
             <Setter Property="Margin" Value="0,5,20,5"/>
         </Style>
+        <Style x:Key="Card" TargetType="Border">
+            <Setter Property="Background" Value="White"/>
+            <Setter Property="BorderBrush" Value="#E3E3E3"/>
+            <Setter Property="BorderThickness" Value="1"/>
+            <Setter Property="CornerRadius" Value="8"/>
+            <Setter Property="Padding" Value="16,12"/>
+            <Setter Property="Margin" Value="0,0,0,14"/>
+        </Style>
+        <Style x:Key="CardTitle" TargetType="TextBlock">
+            <Setter Property="FontSize" Value="15"/>
+            <Setter Property="FontWeight" Value="SemiBold"/>
+            <Setter Property="Margin" Value="0,0,0,8"/>
+        </Style>
+        <Style x:Key="Hint" TargetType="TextBlock">
+            <Setter Property="Foreground" Value="#5C5C5C"/>
+            <Setter Property="FontSize" Value="12"/>
+            <Setter Property="TextWrapping" Value="Wrap"/>
+        </Style>
+        <Style x:Key="PageTitle" TargetType="TextBlock">
+            <Setter Property="FontSize" Value="20"/>
+            <Setter Property="FontWeight" Value="SemiBold"/>
+            <Setter Property="Margin" Value="0,0,0,12"/>
+        </Style>
+        <Style x:Key="FieldError" TargetType="TextBlock">
+            <Setter Property="Foreground" Value="#A32323"/>
+            <Setter Property="FontSize" Value="12"/>
+            <Setter Property="TextWrapping" Value="Wrap"/>
+            <Setter Property="Margin" Value="0,4,0,0"/>
+            <Style.Triggers>
+                <Trigger Property="Text" Value=""><Setter Property="Visibility" Value="Collapsed"/></Trigger>
+            </Style.Triggers>
+        </Style>
+        <Style x:Key="HexInput" TargetType="TextBox">
+            <Setter Property="Width" Value="96"/>
+            <Setter Property="Padding" Value="6,4"/>
+            <Setter Property="MaxLength" Value="7"/>
+            <Setter Property="FontFamily" Value="Consolas"/>
+            <Setter Property="VerticalContentAlignment" Value="Center"/>
+            <Style.Triggers>
+                <DataTrigger Binding="{Binding IsValid}" Value="False">
+                    <Setter Property="BorderBrush" Value="#A32323"/>
+                    <Setter Property="Background" Value="#FFF5F5"/>
+                </DataTrigger>
+            </Style.Triggers>
+        </Style>
+        <Style x:Key="Swatch" TargetType="Border">
+            <Setter Property="Width" Value="34"/>
+            <Setter Property="Height" Value="24"/>
+            <Setter Property="CornerRadius" Value="5"/>
+            <Setter Property="BorderBrush" Value="#8A8A8A"/>
+            <Setter Property="BorderThickness" Value="1"/>
+            <Setter Property="VerticalAlignment" Value="Center"/>
+        </Style>
+        <Style x:Key="SectionItem" TargetType="ListBoxItem">
+            <Setter Property="Padding" Value="12,9"/>
+            <Setter Property="Margin" Value="0,0,0,2"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="ListBoxItem">
+                        <Border x:Name="Surface" Background="Transparent" CornerRadius="6" Padding="{TemplateBinding Padding}">
+                            <DockPanel>
+                                <Border x:Name="Marker" Width="3" Height="18" CornerRadius="2" Background="Transparent" Margin="0,0,10,0"/>
+                                <ContentPresenter VerticalAlignment="Center"/>
+                            </DockPanel>
+                        </Border>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsMouseOver" Value="True"><Setter TargetName="Surface" Property="Background" Value="#E9ECEE"/></Trigger>
+                            <Trigger Property="IsSelected" Value="True">
+                                <Setter TargetName="Surface" Property="Background" Value="#E1E8EA"/>
+                                <Setter TargetName="Marker" Property="Background" Value="#0F6E66"/>
+                                <Setter Property="FontWeight" Value="SemiBold"/>
+                                <Setter Property="Foreground" Value="#0F6E66"/>
+                            </Trigger>
+                            <Trigger Property="IsKeyboardFocused" Value="True"><Setter TargetName="Surface" Property="BorderBrush" Value="#0F6E66"/><Setter TargetName="Surface" Property="BorderThickness" Value="1"/></Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
     </Window.Resources>
-    <Grid Margin="20">
+    <Grid>
         <Grid.RowDefinitions>
-            <RowDefinition Height="Auto"/>
             <RowDefinition Height="*"/>
             <RowDefinition Height="Auto"/>
             <RowDefinition Height="Auto"/>
         </Grid.RowDefinitions>
-        <StackPanel Margin="0,0,0,14">
-            <TextBlock Text="시계와 시간표를 원하는 모습으로" FontSize="21" FontWeight="SemiBold"/>
-            <TextBlock Text="변경하면 시간표 화면에 미리 보여요. 적용 또는 확인을 누르면 저장됩니다."
-                       Margin="0,7,0,0" TextWrapping="Wrap"/>
-        </StackPanel>
-        <ScrollViewer Grid.Row="1" VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled">
-            <StackPanel Margin="0,0,12,0">
-                <DockPanel Margin="0,0,0,12">
-                    <Label Content="표시 스타일" Target="{Binding ElementName=PresetSelector}" VerticalAlignment="Center" Width="100"/>
-                    <ComboBox x:Name="PresetSelector" ItemsSource="{Binding PresetChoices}"
-                              SelectedValuePath="Value" DisplayMemberPath="Label"
-                              SelectedItem="{Binding SelectedPresetChoice, Mode=OneWay}" SelectionChanged="PresetSelectionChanged"
-                              AutomationProperties.Name="표시 스타일"/>
-                </DockPanel>
-                <WrapPanel Margin="0,0,0,10">
-                    <Button x:Name="SaveAsPresetButton" Content="내 프리셋으로 저장..." Click="SaveAsPreset_Click" Margin="0,0,8,6" Padding="10,6"/>
-                    <Button x:Name="RenamePresetButton" Content="이름 변경..." Click="RenamePreset_Click" IsEnabled="{Binding CanManageSelected}" Margin="0,0,8,6" Padding="10,6"/>
-                    <Button x:Name="UpdatePresetButton" Content="현재 설정으로 업데이트" Click="UpdatePreset_Click" IsEnabled="{Binding CanManageSelected}" Margin="0,0,8,6" Padding="10,6"/>
-                    <Button x:Name="DeletePresetButton" Content="내 프리셋 삭제..." Click="DeletePreset_Click" IsEnabled="{Binding HasUserPresets}" Margin="0,0,8,6" Padding="10,6"/>
-                    <Button x:Name="ExportPresetButton" Content="프리셋 내보내기..." Click="ExportPreset_Click" IsEnabled="{Binding CanManageSelected}"
-                            ToolTip="선택한 내 프리셋에 저장된 현재 편집본을 파일로 저장합니다." Margin="0,0,8,6" Padding="10,6"/>
-                    <Button x:Name="ImportPresetButton" Content="프리셋 가져오기..." Click="ImportPreset_Click"
-                            ToolTip="파일을 확인한 뒤 내 프리셋 목록에 추가합니다." Margin="0,0,8,6" Padding="10,6"/>
-                </WrapPanel>
-                <WrapPanel Margin="0,0,0,6">
-                    <CheckBox x:Name="Use24HourCheckBox" Content="24시간제" IsChecked="{Binding Use24Hour}"/>
-                    <CheckBox x:Name="SecondsCheckBox" Content="초 표시" IsChecked="{Binding ShowSeconds}"/>
-                    <CheckBox x:Name="DateCheckBox" Content="날짜 표시" IsChecked="{Binding ShowDate}"/>
-                    <CheckBox x:Name="WeekdayCheckBox" Content="요일 표시" IsChecked="{Binding ShowWeekday}"/>
-                    <CheckBox x:Name="StatusCheckBox" Content="상태 표시" IsChecked="{Binding ShowStatus}"/>
-                </WrapPanel>
-                <TextBlock Text="24시간제를 끄면 오전·오후를 함께 표시합니다." Foreground="#555555" Margin="0,0,0,12"/>
-                <ItemsControl x:Name="ElementEditors" ItemsSource="{Binding Elements}" ItemTemplate="{StaticResource TypographyEditor}"/>
-                <ItemsControl x:Name="TableElementEditors" ItemsSource="{Binding TableElements}" ItemTemplate="{StaticResource TypographyEditor}"/>
-                <GroupBox Header="표 불투명도 · 왼쪽 0%, 오른쪽 100%" Margin="0,8">
-                    <StackPanel Margin="10">
-                        <TextBlock Text="머리글 배경"/>
-                        <Slider x:Name="HeaderOpacitySlider" Minimum="0" Maximum="1" Value="{Binding HeaderOpacity, Mode=TwoWay}" AutomationProperties.Name="머리글 배경 불투명도"/>
-                        <TextBlock Text="일반 셀 배경"/>
-                        <Slider x:Name="CellOpacitySlider" Minimum="0" Maximum="1" Value="{Binding CellOpacity, Mode=TwoWay}" AutomationProperties.Name="일반 셀 배경 불투명도"/>
-                        <TextBlock Text="현재 교시 배경"/>
-                        <Slider x:Name="CurrentOpacitySlider" Minimum="0" Maximum="1" Value="{Binding CurrentOpacity, Mode=TwoWay}" AutomationProperties.Name="현재 교시 배경 불투명도"/>
-                        <TextBlock Text="표 테두리"/>
-                        <Slider x:Name="BorderOpacitySlider" Minimum="0" Maximum="1" Value="{Binding BorderOpacity, Mode=TwoWay}" AutomationProperties.Name="표 테두리 불투명도"/>
-                    </StackPanel>
-                </GroupBox>
-                <GroupBox Header="색상 · #RRGGBB" Margin="0,8">
-                    <StackPanel Margin="10">
-                        <TextBlock Text="테마 불러오기 · 색상과 불투명도를 채운 뒤 미리 봅니다. 적용해야 저장됩니다." Foreground="#555555" TextWrapping="Wrap"/>
-                        <ItemsControl x:Name="ThemeButtons" ItemsSource="{Binding Themes}" Focusable="False" Margin="0,4,0,8">
-                            <ItemsControl.ItemsPanel><ItemsPanelTemplate><WrapPanel/></ItemsPanelTemplate></ItemsControl.ItemsPanel>
-                            <ItemsControl.ItemTemplate>
-                                <DataTemplate>
-                                    <Button Content="{Binding Label}" Click="LoadTheme_Click" Margin="0,0,8,6" Padding="10,6"
-                                            AutomationProperties.Name="{Binding Label, StringFormat={}{0} 테마 불러오기}"/>
-                                </DataTemplate>
-                            </ItemsControl.ItemTemplate>
-                        </ItemsControl>
-                        <ItemsControl x:Name="ColorEditors" ItemsSource="{Binding Colors}" Focusable="False">
-                            <ItemsControl.ItemTemplate>
-                                <DataTemplate>
-                                    <StackPanel Orientation="Horizontal" Margin="0,2">
-                                        <TextBlock Text="{Binding Label}" Width="120" VerticalAlignment="Center"/>
-                                        <TextBox Text="{Binding Text, UpdateSourceTrigger=PropertyChanged}" Width="90" MaxLength="7"
-                                                 AutomationProperties.Name="{Binding Label}"/>
-                                        <Border Width="28" Height="18" Margin="8,0,0,0" BorderBrush="#808080" BorderThickness="1"
-                                                Background="{Binding Swatch}" VerticalAlignment="Center"/>
-                                    </StackPanel>
-                                </DataTemplate>
-                            </ItemsControl.ItemTemplate>
-                        </ItemsControl>
-                        <TextBlock Text="배경의 투명도는 위 불투명도로 조절합니다. 글자는 항상 불투명합니다." Foreground="#555555" TextWrapping="Wrap" Margin="0,6,0,0"/>
-                    </StackPanel>
-                </GroupBox>
-                <TextBlock Text="글자 크기: 시간 10~96, 날짜·요일·상태·표 8~48" Foreground="#555555"/>
-            </StackPanel>
-        </ScrollViewer>
-        <TextBlock Grid.Row="2" Text="{Binding ErrorText}" TextWrapping="Wrap" Foreground="#A32323" Margin="0,10"/>
-        <DockPanel Grid.Row="3">
-            <Button x:Name="ResetButton" Content="기본값으로" Click="Reset_Click" Margin="0"
-                    ToolTip="현재 표시 스타일의 기본 설정을 미리 봅니다." DockPanel.Dock="Left"/>
-            <StackPanel Orientation="Horizontal" HorizontalAlignment="Right">
-                <Button x:Name="CancelButton" Content="취소" IsCancel="True" Click="Cancel_Click"/>
-                <Button x:Name="ApplyButton" Content="적용" Click="Apply_Click"/>
-                <Button x:Name="AcceptButton" Content="확인" IsDefault="True" Click="Accept_Click"/>
-            </StackPanel>
-        </DockPanel>
+        <Grid>
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="176"/>
+                <ColumnDefinition Width="*"/>
+            </Grid.ColumnDefinitions>
+            <DockPanel Margin="10,14,10,10">
+                <TextBlock DockPanel.Dock="Bottom" Style="{StaticResource Hint}" Margin="4,8" LineHeight="18"
+                           Text="바꾸면 위젯에 바로 미리 보여요. 적용 또는 확인을 눌러야 저장됩니다."/>
+                <ListBox x:Name="SectionList" SelectedIndex="0" BorderThickness="0" Background="Transparent"
+                         ItemContainerStyle="{StaticResource SectionItem}" SelectionChanged="SectionList_SelectionChanged"
+                         AutomationProperties.Name="설정 영역">
+                    <ListBoxItem Content="스타일"/>
+                    <ListBoxItem Content="시계"/>
+                    <ListBoxItem Content="시간표 글꼴"/>
+                    <ListBoxItem Content="색상·투명도"/>
+                </ListBox>
+            </DockPanel>
+            <Border Grid.Column="1" BorderBrush="#E0E0E0" BorderThickness="1,0,0,0">
+                <ScrollViewer x:Name="SectionScroll" VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled">
+                    <Grid Margin="22,16,22,8">
+                        <!-- 스타일 -->
+                        <StackPanel x:Name="StylePage">
+                            <TextBlock Text="스타일" Style="{StaticResource PageTitle}"/>
+                            <Border Style="{StaticResource Card}">
+                                <StackPanel>
+                                    <TextBlock Style="{StaticResource CardTitle}">프리셋 <Run Text="· 글꼴·시계·색상 전체를 저장" FontWeight="Normal" FontSize="12" Foreground="#5C5C5C"/></TextBlock>
+                                    <DockPanel Margin="0,0,0,10">
+                                        <Label Content="표시 스타일" Target="{Binding ElementName=PresetSelector}" VerticalAlignment="Center" Padding="0,0,10,0"/>
+                                        <ComboBox x:Name="PresetSelector" ItemsSource="{Binding PresetChoices}"
+                                                  SelectedValuePath="Value" DisplayMemberPath="Label"
+                                                  SelectedItem="{Binding SelectedPresetChoice, Mode=OneWay}" SelectionChanged="PresetSelectionChanged"
+                                                  AutomationProperties.Name="표시 스타일"/>
+                                    </DockPanel>
+                                    <WrapPanel>
+                                        <Button x:Name="SaveAsPresetButton" Content="내 프리셋으로 저장..." Click="SaveAsPreset_Click" Margin="0,0,8,6" Padding="10,6"/>
+                                    </WrapPanel>
+                                    <Expander x:Name="PresetManagement" Header="프리셋 관리" Margin="0,4,0,0">
+                                        <WrapPanel Margin="0,8,0,0">
+                                            <Button x:Name="RenamePresetButton" Content="이름 변경..." Click="RenamePreset_Click" IsEnabled="{Binding CanManageSelected}" Margin="0,0,8,6" Padding="10,6"/>
+                                            <Button x:Name="UpdatePresetButton" Content="현재 설정으로 업데이트" Click="UpdatePreset_Click" IsEnabled="{Binding CanManageSelected}" Margin="0,0,8,6" Padding="10,6"/>
+                                            <Button x:Name="DeletePresetButton" Content="내 프리셋 삭제..." Click="DeletePreset_Click" IsEnabled="{Binding HasUserPresets}" Margin="0,0,8,6" Padding="10,6"/>
+                                            <Button x:Name="ExportPresetButton" Content="프리셋 내보내기..." Click="ExportPreset_Click" IsEnabled="{Binding CanManageSelected}"
+                                                    ToolTip="선택한 내 프리셋에 저장된 현재 편집본을 파일로 저장합니다." Margin="0,0,8,6" Padding="10,6"/>
+                                            <Button x:Name="ImportPresetButton" Content="프리셋 가져오기..." Click="ImportPreset_Click"
+                                                    ToolTip="파일을 확인한 뒤 내 프리셋 목록에 추가합니다." Margin="0,0,8,6" Padding="10,6"/>
+                                        </WrapPanel>
+                                    </Expander>
+                                </StackPanel>
+                            </Border>
+                            <Border Style="{StaticResource Card}">
+                                <StackPanel>
+                                    <TextBlock Style="{StaticResource CardTitle}">색상 테마 <Run Text="· 색과 불투명도만 바꿔요" FontWeight="Normal" FontSize="12" Foreground="#5C5C5C"/></TextBlock>
+                                    <TextBlock Style="{StaticResource Hint}" Margin="0,0,0,8" Text="고르면 색상과 불투명도를 채워 미리 봅니다. 적용해야 저장됩니다."/>
+                                    <ItemsControl x:Name="ThemeButtons" ItemsSource="{Binding Themes}" Focusable="False">
+                                        <ItemsControl.ItemsPanel><ItemsPanelTemplate><UniformGrid Columns="3"/></ItemsPanelTemplate></ItemsControl.ItemsPanel>
+                                        <ItemsControl.ItemTemplate>
+                                            <DataTemplate>
+                                                <Button Click="LoadTheme_Click" Margin="0,0,8,8" Padding="8" MinWidth="0" HorizontalContentAlignment="Stretch"
+                                                        AutomationProperties.Name="{Binding Label, StringFormat={}{0} 테마 불러오기}">
+                                                    <StackPanel>
+                                                        <Border BorderBrush="#D0D0D0" BorderThickness="1" CornerRadius="4" Height="24" ClipToBounds="True">
+                                                            <UniformGrid Rows="1">
+                                                                <Rectangle Fill="{Binding Colors.HeaderBackground, Converter={StaticResource RgbBrush}}"/>
+                                                                <Rectangle Fill="{Binding Colors.CellBackground, Converter={StaticResource RgbBrush}}"/>
+                                                                <Rectangle Fill="{Binding Colors.CurrentBackground, Converter={StaticResource RgbBrush}}"/>
+                                                                <Rectangle Fill="{Binding Colors.CellText, Converter={StaticResource RgbBrush}}"/>
+                                                            </UniformGrid>
+                                                        </Border>
+                                                        <TextBlock Text="{Binding Label}" Margin="0,6,0,0" FontSize="13"/>
+                                                    </StackPanel>
+                                                </Button>
+                                            </DataTemplate>
+                                        </ItemsControl.ItemTemplate>
+                                    </ItemsControl>
+                                </StackPanel>
+                            </Border>
+                        </StackPanel>
+
+                        <!-- 시계 -->
+                        <StackPanel x:Name="ClockPage" Visibility="Collapsed">
+                            <TextBlock Text="시계" Style="{StaticResource PageTitle}"/>
+                            <Border Style="{StaticResource Card}">
+                                <StackPanel>
+                                    <TextBlock Text="표시 항목" Style="{StaticResource CardTitle}"/>
+                                    <WrapPanel>
+                                        <CheckBox x:Name="Use24HourCheckBox" Content="24시간제" IsChecked="{Binding Use24Hour}"/>
+                                        <CheckBox x:Name="SecondsCheckBox" Content="초 표시" IsChecked="{Binding ShowSeconds}"/>
+                                        <CheckBox x:Name="DateCheckBox" Content="날짜 표시" IsChecked="{Binding ShowDate}"/>
+                                        <CheckBox x:Name="WeekdayCheckBox" Content="요일 표시" IsChecked="{Binding ShowWeekday}"/>
+                                        <CheckBox x:Name="StatusCheckBox" Content="상태 표시" IsChecked="{Binding ShowStatus}"/>
+                                    </WrapPanel>
+                                    <TextBlock Text="24시간제를 끄면 오전·오후를 함께 표시합니다." Style="{StaticResource Hint}" Margin="0,4,0,0"/>
+                                </StackPanel>
+                            </Border>
+                            <ItemsControl x:Name="ElementEditors" ItemsSource="{Binding Elements}" ItemTemplate="{StaticResource TypographyEditor}"/>
+                            <TextBlock Text="글자 크기: 시간 10~96, 날짜·요일·상태 8~48" Style="{StaticResource Hint}"/>
+                        </StackPanel>
+
+                        <!-- 시간표 글꼴 -->
+                        <StackPanel x:Name="TableFontPage" Visibility="Collapsed">
+                            <TextBlock Text="시간표 글꼴" Style="{StaticResource PageTitle}"/>
+                            <ItemsControl x:Name="TableElementEditors" ItemsSource="{Binding TableElements}" ItemTemplate="{StaticResource TypographyEditor}"/>
+                            <TextBlock Text="글자 크기: 표 8~48" Style="{StaticResource Hint}"/>
+                        </StackPanel>
+
+                        <!-- 색상·투명도 -->
+                        <StackPanel x:Name="ColorPage" Visibility="Collapsed">
+                            <TextBlock Text="색상·투명도" Style="{StaticResource PageTitle}"/>
+                            <Border Style="{StaticResource Card}">
+                                <StackPanel>
+                                    <TextBlock Text="배경과 테두리" Style="{StaticResource CardTitle}"/>
+                                    <TextBlock Style="{StaticResource Hint}" Margin="0,0,0,6" Text="불투명도: 왼쪽 0%, 오른쪽 100%"/>
+                                    <Grid DataContext="{Binding Colors[0]}" Margin="0,4">
+                                        <Grid.ColumnDefinitions><ColumnDefinition Width="116"/><ColumnDefinition Width="Auto"/><ColumnDefinition Width="Auto"/><ColumnDefinition Width="*"/><ColumnDefinition Width="48"/></Grid.ColumnDefinitions>
+                                        <Grid.RowDefinitions><RowDefinition/><RowDefinition Height="Auto"/></Grid.RowDefinitions>
+                                        <TextBlock Text="{Binding Label}" VerticalAlignment="Center"/>
+                                        <Border Grid.Column="1" Style="{StaticResource Swatch}" Background="{Binding Swatch}"/>
+                                        <TextBox Grid.Column="2" Margin="8,0" Style="{StaticResource HexInput}" Text="{Binding Text, UpdateSourceTrigger=PropertyChanged}" AutomationProperties.Name="{Binding Label}"/>
+                                        <Slider x:Name="HeaderOpacitySlider" Grid.Column="3" Minimum="0" Maximum="1" VerticalAlignment="Center"
+                                                Value="{Binding DataContext.HeaderOpacity, RelativeSource={RelativeSource AncestorType=Window}, Mode=TwoWay}" AutomationProperties.Name="머리글 배경 불투명도"/>
+                                        <TextBlock Grid.Column="4" TextAlignment="Right" VerticalAlignment="Center" Text="{Binding Value, ElementName=HeaderOpacitySlider, StringFormat={}{0:P0}}"/>
+                                        <TextBlock Grid.Row="1" Grid.Column="2" Grid.ColumnSpan="3" Margin="8,4,0,0" Style="{StaticResource FieldError}" Text="{Binding ErrorText}"/>
+                                    </Grid>
+                                    <Grid DataContext="{Binding Colors[1]}" Margin="0,4">
+                                        <Grid.ColumnDefinitions><ColumnDefinition Width="116"/><ColumnDefinition Width="Auto"/><ColumnDefinition Width="Auto"/><ColumnDefinition Width="*"/></Grid.ColumnDefinitions>
+                                        <Grid.RowDefinitions><RowDefinition/><RowDefinition Height="Auto"/></Grid.RowDefinitions>
+                                        <TextBlock Text="{Binding Label}" VerticalAlignment="Center"/>
+                                        <Border Grid.Column="1" Style="{StaticResource Swatch}" Background="{Binding Swatch}"/>
+                                        <TextBox Grid.Column="2" Margin="8,0" Style="{StaticResource HexInput}" Text="{Binding Text, UpdateSourceTrigger=PropertyChanged}" AutomationProperties.Name="{Binding Label}"/>
+                                        <TextBlock Grid.Column="3" Style="{StaticResource Hint}" VerticalAlignment="Center" Text="머리글 배경과 같은 불투명도"/>
+                                        <TextBlock Grid.Row="1" Grid.Column="2" Grid.ColumnSpan="2" Margin="8,4,0,0" Style="{StaticResource FieldError}" Text="{Binding ErrorText}"/>
+                                    </Grid>
+                                    <Grid DataContext="{Binding Colors[2]}" Margin="0,4">
+                                        <Grid.ColumnDefinitions><ColumnDefinition Width="116"/><ColumnDefinition Width="Auto"/><ColumnDefinition Width="Auto"/><ColumnDefinition Width="*"/><ColumnDefinition Width="48"/></Grid.ColumnDefinitions>
+                                        <Grid.RowDefinitions><RowDefinition/><RowDefinition Height="Auto"/></Grid.RowDefinitions>
+                                        <TextBlock Text="{Binding Label}" VerticalAlignment="Center"/>
+                                        <Border Grid.Column="1" Style="{StaticResource Swatch}" Background="{Binding Swatch}"/>
+                                        <TextBox Grid.Column="2" Margin="8,0" Style="{StaticResource HexInput}" Text="{Binding Text, UpdateSourceTrigger=PropertyChanged}" AutomationProperties.Name="{Binding Label}"/>
+                                        <Slider x:Name="CellOpacitySlider" Grid.Column="3" Minimum="0" Maximum="1" VerticalAlignment="Center"
+                                                Value="{Binding DataContext.CellOpacity, RelativeSource={RelativeSource AncestorType=Window}, Mode=TwoWay}" AutomationProperties.Name="일반 셀 배경 불투명도"/>
+                                        <TextBlock Grid.Column="4" TextAlignment="Right" VerticalAlignment="Center" Text="{Binding Value, ElementName=CellOpacitySlider, StringFormat={}{0:P0}}"/>
+                                        <TextBlock Grid.Row="1" Grid.Column="2" Grid.ColumnSpan="3" Margin="8,4,0,0" Style="{StaticResource FieldError}" Text="{Binding ErrorText}"/>
+                                    </Grid>
+                                    <Grid DataContext="{Binding Colors[3]}" Margin="0,4">
+                                        <Grid.ColumnDefinitions><ColumnDefinition Width="116"/><ColumnDefinition Width="Auto"/><ColumnDefinition Width="Auto"/><ColumnDefinition Width="*"/><ColumnDefinition Width="48"/></Grid.ColumnDefinitions>
+                                        <Grid.RowDefinitions><RowDefinition/><RowDefinition Height="Auto"/></Grid.RowDefinitions>
+                                        <TextBlock Text="{Binding Label}" VerticalAlignment="Center"/>
+                                        <Border Grid.Column="1" Style="{StaticResource Swatch}" Background="{Binding Swatch}"/>
+                                        <TextBox Grid.Column="2" Margin="8,0" Style="{StaticResource HexInput}" Text="{Binding Text, UpdateSourceTrigger=PropertyChanged}" AutomationProperties.Name="{Binding Label}"/>
+                                        <Slider x:Name="CurrentOpacitySlider" Grid.Column="3" Minimum="0" Maximum="1" VerticalAlignment="Center"
+                                                Value="{Binding DataContext.CurrentOpacity, RelativeSource={RelativeSource AncestorType=Window}, Mode=TwoWay}" AutomationProperties.Name="현재 교시 배경 불투명도"/>
+                                        <TextBlock Grid.Column="4" TextAlignment="Right" VerticalAlignment="Center" Text="{Binding Value, ElementName=CurrentOpacitySlider, StringFormat={}{0:P0}}"/>
+                                        <TextBlock Grid.Row="1" Grid.Column="2" Grid.ColumnSpan="3" Margin="8,4,0,0" Style="{StaticResource FieldError}" Text="{Binding ErrorText}"/>
+                                    </Grid>
+                                    <Grid DataContext="{Binding Colors[4]}" Margin="0,4">
+                                        <Grid.ColumnDefinitions><ColumnDefinition Width="116"/><ColumnDefinition Width="Auto"/><ColumnDefinition Width="Auto"/><ColumnDefinition Width="*"/><ColumnDefinition Width="48"/></Grid.ColumnDefinitions>
+                                        <Grid.RowDefinitions><RowDefinition/><RowDefinition Height="Auto"/></Grid.RowDefinitions>
+                                        <TextBlock Text="{Binding Label}" VerticalAlignment="Center"/>
+                                        <Border Grid.Column="1" Style="{StaticResource Swatch}" Background="{Binding Swatch}"/>
+                                        <TextBox Grid.Column="2" Margin="8,0" Style="{StaticResource HexInput}" Text="{Binding Text, UpdateSourceTrigger=PropertyChanged}" AutomationProperties.Name="{Binding Label}"/>
+                                        <Slider x:Name="BorderOpacitySlider" Grid.Column="3" Minimum="0" Maximum="1" VerticalAlignment="Center"
+                                                Value="{Binding DataContext.BorderOpacity, RelativeSource={RelativeSource AncestorType=Window}, Mode=TwoWay}" AutomationProperties.Name="표 테두리 불투명도"/>
+                                        <TextBlock Grid.Column="4" TextAlignment="Right" VerticalAlignment="Center" Text="{Binding Value, ElementName=BorderOpacitySlider, StringFormat={}{0:P0}}"/>
+                                        <TextBlock Grid.Row="1" Grid.Column="2" Grid.ColumnSpan="3" Margin="8,4,0,0" Style="{StaticResource FieldError}" Text="{Binding ErrorText}"/>
+                                    </Grid>
+                                </StackPanel>
+                            </Border>
+                            <Border Style="{StaticResource Card}">
+                                <StackPanel>
+                                    <TextBlock Text="글자" Style="{StaticResource CardTitle}"/>
+                                    <Grid DataContext="{Binding Colors[5]}" Margin="0,4">
+                                        <Grid.ColumnDefinitions><ColumnDefinition Width="116"/><ColumnDefinition Width="Auto"/><ColumnDefinition Width="Auto"/><ColumnDefinition Width="*"/></Grid.ColumnDefinitions>
+                                        <Grid.RowDefinitions><RowDefinition/><RowDefinition Height="Auto"/></Grid.RowDefinitions>
+                                        <TextBlock Text="{Binding Label}" VerticalAlignment="Center"/>
+                                        <Border Grid.Column="1" Style="{StaticResource Swatch}" Background="{Binding Swatch}"/>
+                                        <TextBox Grid.Column="2" Margin="8,0" Style="{StaticResource HexInput}" Text="{Binding Text, UpdateSourceTrigger=PropertyChanged}" AutomationProperties.Name="{Binding Label}"/>
+                                        <TextBlock Grid.Column="3" Style="{StaticResource Hint}" VerticalAlignment="Center" Text="글자는 항상 불투명"/>
+                                        <TextBlock Grid.Row="1" Grid.Column="2" Grid.ColumnSpan="2" Margin="8,4,0,0" Style="{StaticResource FieldError}" Text="{Binding ErrorText}"/>
+                                    </Grid>
+                                    <Grid DataContext="{Binding Colors[6]}" Margin="0,4">
+                                        <Grid.ColumnDefinitions><ColumnDefinition Width="116"/><ColumnDefinition Width="Auto"/><ColumnDefinition Width="Auto"/><ColumnDefinition Width="*"/></Grid.ColumnDefinitions>
+                                        <Grid.RowDefinitions><RowDefinition/><RowDefinition Height="Auto"/></Grid.RowDefinitions>
+                                        <TextBlock Text="{Binding Label}" VerticalAlignment="Center"/>
+                                        <Border Grid.Column="1" Style="{StaticResource Swatch}" Background="{Binding Swatch}"/>
+                                        <TextBox Grid.Column="2" Margin="8,0" Style="{StaticResource HexInput}" Text="{Binding Text, UpdateSourceTrigger=PropertyChanged}" AutomationProperties.Name="{Binding Label}"/>
+                                        <TextBlock Grid.Column="3" Style="{StaticResource Hint}" VerticalAlignment="Center" Text="글자는 항상 불투명"/>
+                                        <TextBlock Grid.Row="1" Grid.Column="2" Grid.ColumnSpan="2" Margin="8,4,0,0" Style="{StaticResource FieldError}" Text="{Binding ErrorText}"/>
+                                    </Grid>
+                                    <Grid DataContext="{Binding Colors[7]}" Margin="0,4">
+                                        <Grid.ColumnDefinitions><ColumnDefinition Width="116"/><ColumnDefinition Width="Auto"/><ColumnDefinition Width="Auto"/><ColumnDefinition Width="*"/></Grid.ColumnDefinitions>
+                                        <Grid.RowDefinitions><RowDefinition/><RowDefinition Height="Auto"/></Grid.RowDefinitions>
+                                        <TextBlock Text="{Binding Label}" VerticalAlignment="Center"/>
+                                        <Border Grid.Column="1" Style="{StaticResource Swatch}" Background="{Binding Swatch}"/>
+                                        <TextBox Grid.Column="2" Margin="8,0" Style="{StaticResource HexInput}" Text="{Binding Text, UpdateSourceTrigger=PropertyChanged}" AutomationProperties.Name="{Binding Label}"/>
+                                        <TextBlock Grid.Column="3" Style="{StaticResource Hint}" VerticalAlignment="Center" Text="글자는 항상 불투명"/>
+                                        <TextBlock Grid.Row="1" Grid.Column="2" Grid.ColumnSpan="2" Margin="8,4,0,0" Style="{StaticResource FieldError}" Text="{Binding ErrorText}"/>
+                                    </Grid>
+                                </StackPanel>
+                            </Border>
+                        </StackPanel>
+                    </Grid>
+                </ScrollViewer>
+            </Border>
+        </Grid>
+        <TextBlock Grid.Row="1" Text="{Binding ErrorText}" TextWrapping="Wrap" Foreground="#A32323" Margin="22,8,22,0"/>
+        <Border Grid.Row="2" Background="#EDEDED" BorderBrush="#DADADA" BorderThickness="0,1,0,0" Padding="20,12" Margin="0,8,0,0">
+            <DockPanel>
+                <Button x:Name="ResetButton" Content="기본값으로" Click="Reset_Click" Margin="0"
+                        ToolTip="현재 표시 스타일의 기본 설정을 미리 봅니다." DockPanel.Dock="Left"/>
+                <StackPanel Orientation="Horizontal" HorizontalAlignment="Right">
+                    <Button x:Name="CancelButton" Content="취소" IsCancel="True" Click="Cancel_Click"/>
+                    <Button x:Name="ApplyButton" Content="적용" Click="Apply_Click"/>
+                    <Button x:Name="AcceptButton" Content="확인" IsDefault="True" Click="Accept_Click"/>
+                </StackPanel>
+            </DockPanel>
+        </Border>
     </Grid>
 </Window>

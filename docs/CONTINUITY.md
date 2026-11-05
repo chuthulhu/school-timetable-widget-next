@@ -23,6 +23,15 @@ not authoritative and are not needed to build or resume development.
 
 ## Verified implementation baseline
 
+### Display settings left section list — 2026-11-05
+
+[ADR 0034](adr/0034-display-settings-section-layout.md) implements stage 2 of the approved UI
+direction below. The display settings window now has a left list of four sections: 스타일, 시계,
+시간표 글꼴 and 색상·투명도. Color rows pair each swatch and hex box with its opacity slider. A
+% readout and inline errors are added. Theme buttons show color strips, and preset management
+moves into an expander. No setting or storage format changed. Verification is CI-only; no native
+check has been performed.
+
 ### Unified widget right-click menu — 2026-11-05
 
 [ADR 0033](adr/0033-unified-widget-context-menu.md) replaces the two right-click menus with one shared
@@ -37,7 +46,8 @@ performed.
 The user reviewed interactive mock-ups and approved the following. Each item still needs its own
 ADR and contract update before implementation (AGENTS.md rules 4–5).
 
-- **Display settings window: left-list layout.**
+- **Display settings window: left-list layout.** Implemented by ADR 0034 (see above); kept here
+  as the approved description.
   - Sections in a left list: 스타일, 시계, 시간표 글꼴, 색상·투명도.
   - 스타일 separates presets, which save everything, from themes, which load colors and
     opacity only. Theme buttons show color strips. Preset management moves behind 관리 ▾.
@@ -71,6 +81,7 @@ ADR and contract update before implementation (AGENTS.md rules 4–5).
 | [v0.1.0](https://github.com/chuthulhu/school-timetable-widget-next/releases/tag/v0.1.0) | `bd6c7c464e3729543a967f73d73383e562c77b36` | First release; includes the installer (ADR 0029), automatic updates (ADR 0032) and all features merged up to PR #11 |
 | v0.1.1 | the commit carrying this entry | Released right after v0.1.0 to exercise the first release-to-release automatic update |
 | v0.2.0 | the merge commit of PR #13 | Unified right-click menu with 위치 고정 and 위젯 숨기기 (ADR 0033); released at the user's request before the native checks listed in ADR 0033 |
+| v0.3.0 | the merge commit of PR #14 | Display settings window with a left section list (ADR 0034); released at the user's request before the native checks listed in ADR 0034 |
 
 **v0.1.0 assets.** The release carries six files: `SchoolTimetableWidgetNext-win-Setup.exe`
 (about 83 MB, the file users install), `SchoolTimetableWidgetNext-win-Portable.zip`,
