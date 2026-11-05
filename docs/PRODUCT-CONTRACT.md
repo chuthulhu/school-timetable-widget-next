@@ -1142,6 +1142,24 @@ The user approved freely editable colors including text colors; themes are defer
 Contrast over real desktops, the dialog at 100/150/200% DPI and keyboard/IME input in the
 color boxes remain native acceptance checks.
 
+## Clock-area layout — approved 2026-11-05
+
+[ADR 0037](adr/0037-clock-area-layout.md). **APPROVED — user decision 2026-11-05.**
+
+- Date, weekday, time and status each choose a line (1–3), a position (left, center, right)
+  and an order. Elements on the same line and position follow list order. The time is always
+  shown; the other elements keep their show options.
+- Each built-in style starts with its former arrangement, so existing settings keep their look.
+  Choosing a style or 기본값으로 loads that style's arrangement into the Draft. The arrangement
+  follows the existing Draft/Preview/Apply/OK/Cancel/Reset transaction. It is saved with user
+  presets, preset files, the profile and full backups.
+- Only a non-centered status shrinks, with an ellipsis. The time is never truncated, and the
+  widget's minimum width keeps the date and weekday whole.
+- Display payloads gain an optional strict `clock` object (`version: 1` plus four element
+  slots). Absent means the stored style's arrangement. Invalid means writes are blocked and the
+  bytes are preserved. Before the first write that adds `clock` to a colors-extended profile, the
+  store flushes an exact-byte `profile-before-clock-*.json`.
+
 ## Display color themes — approved 2026-10-30
 
 The user approved built-in themes based on their own legacy color settings and on the

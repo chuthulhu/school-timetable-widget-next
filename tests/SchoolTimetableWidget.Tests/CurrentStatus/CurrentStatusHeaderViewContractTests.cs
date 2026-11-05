@@ -73,15 +73,20 @@ public class CurrentStatusHeaderViewContractTests
         var status = TextBlockOf(view, "StatusTextBlock");
 
         // Assert layout strategy, not unapproved candidate DIP values or rendered font pixels.
+        // ADR 0037: one row per clock line; each row has left, center and right cells in list order.
         Assert.True(double.IsFinite(view.Height) && view.Height > 0);
-        Assert.Equal(3, grid.ColumnDefinitions.Count);
-        Assert.True(grid.ColumnDefinitions[0].Width.IsAbsolute);
-        Assert.True(grid.ColumnDefinitions[0].Width.Value > 0);
-        Assert.True(grid.ColumnDefinitions[1].Width.IsAbsolute);
-        Assert.True(grid.ColumnDefinitions[2].Width.IsStar);
-        Assert.Equal(0, Grid.GetColumn((FrameworkElement)view.FindName("DateGroup")));
-        Assert.Equal(1, Grid.GetColumn((FrameworkElement)view.FindName("TimeGroup")));
-        Assert.Equal(2, Grid.GetColumn(status));
+        var row = Assert.IsType<Grid>(Assert.Single(grid.Children.Cast<UIElement>()));
+        Assert.Single(grid.RowDefinitions);
+        Assert.Equal(3, row.ColumnDefinitions.Count);
+        Assert.True(row.ColumnDefinitions[0].Width.IsStar);   // the left cell holds the status and fills
+        Assert.True(row.ColumnDefinitions[1].Width.IsAuto);
+        Assert.True(row.ColumnDefinitions[2].Width.IsAuto);
+        var left = Assert.IsType<Grid>(row.Children.Cast<UIElement>().Single(c => Grid.GetColumn(c) == 0));
+        Assert.Equal(new[] { "CurrentDateTextBlock", "WeekdayTextBlock", "TimeGroup", "StatusTextBlock" },
+            left.Children.Cast<FrameworkElement>().OrderBy(Grid.GetColumn).Select(e => e.Name));
+        Assert.True(left.ColumnDefinitions[3].Width.IsStar);  // only the status shrinks
+        Assert.Equal(3, Grid.GetColumn(status));
+        Assert.True(grid.MinWidth > 0);
         Assert.Equal(TextWrapping.NoWrap, time.TextWrapping);
         Assert.Equal(TextWrapping.NoWrap, status.TextWrapping);
         Assert.Equal(TextTrimming.CharacterEllipsis, status.TextTrimming);

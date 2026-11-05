@@ -92,6 +92,12 @@ public static class DisplayPresetFile
         if (settings.TryGetProperty("colors", out var colors))
             Require(colors, "version", "headerBackground", "todayHeaderBackground", "cellBackground",
                 "currentBackground", "border", "headerText", "cellText", "clockText");
+        if (settings.TryGetProperty("clock", out var clock))
+        {
+            Require(clock, "version", "elements");
+            if (clock.GetProperty("elements").ValueKind != JsonValueKind.Array) throw new JsonException("Invalid clock layout.");
+            foreach (var slot in clock.GetProperty("elements").EnumerateArray()) Require(slot, "element", "line", "position");
+        }
         foreach (var element in new[] { "time", "date", "weekday", "status" })
         {
             var typography = settings.GetProperty(element);
@@ -172,20 +178,36 @@ public static class DisplayPresetFile
                 RgbColor.Parse(CellText), RgbColor.Parse(ClockText));
         }
     }
+    private sealed record ClockSlotDto(string Element, int Line, string Position);
+    private sealed record ClockDto(int Version, ClockSlotDto[] Elements)
+    {
+        public static ClockDto From(ClockLayout value) => new(1,
+            value.Slots.Select(slot => new ClockSlotDto(slot.Element.ToString(), slot.Line, slot.Position.ToString())).ToArray());
+        public ClockLayout ToValue()
+        {
+            if (Version != 1) throw new JsonException("Unsupported clock layout version.");
+            if (Elements is null || Elements.Any(slot => slot is null)) throw new JsonException("Invalid clock layout.");
+            return new ClockLayout(Elements.Select(slot =>
+                new ClockSlot(Parse<ClockElement>(slot.Element), slot.Line, Parse<ClockPosition>(slot.Position))));
+        }
+    }
     private sealed record SettingsDto(string Layout, TypographyDto Time, TypographyDto Date,
         TypographyDto Weekday, TypographyDto Status, bool Use24Hour, bool ShowSeconds,
-        bool ShowDate, bool ShowWeekday, bool ShowStatus, TableDto? Table = null, ColorsDto? Colors = null)
+        bool ShowDate, bool ShowWeekday, bool ShowStatus, TableDto? Table = null, ColorsDto? Colors = null,
+        ClockDto? Clock = null)
     {
         public static SettingsDto From(DisplayConfiguration value) => new(value.Layout.ToString(),
             TypographyDto.From(value.Time), TypographyDto.From(value.Date), TypographyDto.From(value.Weekday),
             TypographyDto.From(value.Status), value.Use24Hour, value.ShowSeconds, value.ShowDate,
-            value.ShowWeekday, value.ShowStatus, TableDto.From(value.Table), ColorsDto.From(value.Colors));
+            value.ShowWeekday, value.ShowStatus, TableDto.From(value.Table), ColorsDto.From(value.Colors),
+            ClockDto.From(value.Clock));
         public DisplayConfiguration ToValue(DisplayPresetReference preset)
         {
             var result = new DisplayConfiguration(preset, Parse<DisplayLayout>(Layout), Time.ToValue(),
                 Date.ToValue(), Weekday.ToValue(), Status.ToValue(), Use24Hour, ShowSeconds,
                 ShowDate, ShowWeekday, ShowStatus)
             { Table = Table?.ToValue() ?? TableAppearance.Default, Colors = Colors?.ToValue() ?? DisplayColors.Default };
+            if (Clock is not null) result = result with { Clock = Clock.ToValue() };
             result.Validate();
             return result;
         }

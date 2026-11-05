@@ -23,6 +23,15 @@ not authoritative and are not needed to build or resume development.
 
 ## Verified implementation baseline
 
+### User-arranged clock area — 2026-11-05
+
+[ADR 0037](adr/0037-clock-area-layout.md) implements stage 4 and completes the approved UI
+direction below. Date, weekday, time and status each choose a line (1–3), a position and an
+order in display settings › 시계 › 배치. Each built-in style starts with its former arrangement,
+including 디지털's three centered lines. Display payloads gain an optional strict `clock` object.
+A colors-extended profile is backed up to `profile-before-clock-*.json` before its first clock
+write. Verification is CI-only; no native check has been performed.
+
 ### Color adjustment window and menu look — 2026-11-05
 
 [ADR 0035](adr/0035-in-app-color-adjustment.md) implements stage 3. Clicking a color swatch in
@@ -72,7 +81,8 @@ ADR and contract update before implementation (AGENTS.md rules 4–5).
     blocks. The warning notes that a background below 100% opacity makes real contrast depend
     on the desktop.
   - No alpha input, so R11 holds. A screen eyedropper is deferred.
-- **Clock-area layout.**
+- **Clock-area layout.** Implemented by ADR 0037 (see above), with up to three lines so the
+  digital style keeps its look (user decision 2026-11-05).
   - Each element (날짜, 요일, 시간, 상태) gets its own show/hide, position
     (왼쪽, 가운데 or 오른쪽) and order. Elements in the same position follow list order.
   - One-line and two-line arrangements must both be possible.

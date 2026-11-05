@@ -86,10 +86,11 @@ public sealed partial class JsonProfileStore : IProfileStore, IProfileRecoverySt
             profile.TryGetProperty("displayPresets", out var presets) &&
             presets.EnumerateArray().All(p => p.GetProperty("settings").TryGetProperty(name, out _));
         var tableExtended = v5 && Extended("table");
-        if (tableExtended && Extended("colors")) return;
+        var colorsExtended = tableExtended && Extended("colors");
+        if (colorsExtended && Extended("clock")) return;
         VerifyUnchanged();
-        // Name the first extension the original lacks; a pre-table profile lacks both.
-        var extension = tableExtended ? "colors" : "table";
+        // Name the first extension the original lacks (table, colors, then the ADR 0037 clock layout).
+        var extension = !tableExtended ? "table" : !colorsExtended ? "colors" : "clock";
         var path = Path.Combine(DirectoryPath, $"profile-before-{extension}-{Guid.NewGuid():N}.json");
         using var backup = new FileStream(path, FileMode.CreateNew, FileAccess.Write, FileShare.None);
         backup.Write(_expectedBytes);

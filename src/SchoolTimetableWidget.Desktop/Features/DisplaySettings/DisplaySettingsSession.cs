@@ -25,6 +25,33 @@ public sealed class DisplaySettingsSession : ObservableObject
     public IReadOnlyList<ElementTypographyDraft> TableElements => _tableElements;
     public IReadOnlyList<ColorDraft> Colors => _colors;
     public IReadOnlyList<DisplayTheme> Themes => DisplayThemes.All;
+    private ClockSlotDraft[] _clockSlots = [];
+    /// <summary>ADR 0037 clock layout rows, in list order. Rebuilt when the order changes or a preset loads.</summary>
+    public IReadOnlyList<ClockSlotDraft> ClockSlots => _clockSlots;
+    internal void UpdateClockSlot(ClockElement element, int line, ClockPosition position)
+    {
+        if (IsClosed) return;
+        Change(_configuration with { Clock = new ClockLayout(_configuration.Clock.Slots
+            .Select(slot => slot.Element == element ? new ClockSlot(element, line, position) : slot)) });
+    }
+    /// <summary>Moves an element earlier (-1) or later (+1) in the list; list order is the order within a cell.</summary>
+    public void MoveClockSlot(ClockElement element, int delta)
+    {
+        if (IsClosed) return;
+        var slots = _configuration.Clock.Slots.ToList();
+        var index = slots.FindIndex(slot => slot.Element == element);
+        var target = index + delta;
+        if (index < 0 || target < 0 || target >= slots.Count) return;
+        (slots[index], slots[target]) = (slots[target], slots[index]);
+        Change(_configuration with { Clock = new ClockLayout(slots) });
+        RebuildClockSlots();
+        OnPropertyChanged(nameof(ClockSlots));
+    }
+    private void RebuildClockSlots()
+    {
+        var slots = _configuration.Clock.Slots;
+        _clockSlots = slots.Select((slot, index) => new ClockSlotDraft(this, slot, index > 0, index < slots.Count - 1)).ToArray();
+    }
     /// <summary>Fills the color and opacity Draft from a theme and previews it; nothing is saved until Apply.</summary>
     public void LoadTheme(DisplayTheme theme)
     {
@@ -218,6 +245,7 @@ public sealed class DisplaySettingsSession : ObservableObject
             new("표 테두리", colors.Border), new("머리글 글자", colors.HeaderText), new("셀 글자", colors.CellText),
             new("시계 글자", colors.ClockText)];
         foreach (var color in _colors) color.PropertyChanged += ElementChanged;
+        RebuildClockSlots();
         Preview();
         OnPropertyChanged(string.Empty);
         OnPropertyChanged(nameof(Preset));

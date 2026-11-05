@@ -51,10 +51,12 @@ public class SemesterTests
             Assert.Equal(DisplayColors.Default, session.Current.Display.Colors);
             legacyShape["display"]!["settings"]!.AsObject().Remove("table");
             legacyShape["display"]!["settings"]!.AsObject().Remove("colors");
+            legacyShape["display"]!["settings"]!.AsObject().Remove("clock"); // ADR 0037 extension
             foreach (var preset in legacyShape["displayPresets"]!.AsArray())
             {
                 preset!["settings"]!.AsObject().Remove("table");
                 preset["settings"]!.AsObject().Remove("colors");
+                preset["settings"]!.AsObject().Remove("clock");
             }
             foreach (var field in new[] { "display", "displayPresets" }) Assert.True(JsonNode.DeepEquals(old[field], legacyShape[field]));
         }

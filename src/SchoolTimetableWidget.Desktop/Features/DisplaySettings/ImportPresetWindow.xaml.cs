@@ -13,10 +13,13 @@ public partial class ImportPresetWindow : Window
         InitializeComponent();
         NameInput.Text = candidate.Collision == PresetImportCollision.SameName
             ? SuggestCopyName(candidate.Preset.Name, session.Presets) : candidate.Preset.Name;
-        LayoutText.Text = candidate.Preset.Display.Layout switch
-        {
-            DisplayLayout.Standard => "표준 배치", DisplayLayout.Digital => "디지털 배치", _ => "한 줄 배치"
-        };
+        var display = candidate.Preset.Display;
+        LayoutText.Text = display.Clock != ClockLayout.For(display.Layout)
+            ? $"사용자 배치 · {display.Clock.LineCount}줄" // ADR 0037
+            : display.Layout switch
+            {
+                DisplayLayout.Standard => "표준 배치", DisplayLayout.Digital => "디지털 배치", _ => "한 줄 배치"
+            };
         OptionsText.Text = string.Join(" · ", new[]
         {
             candidate.Preset.Display.Use24Hour ? "24시간제" : "12시간제",
