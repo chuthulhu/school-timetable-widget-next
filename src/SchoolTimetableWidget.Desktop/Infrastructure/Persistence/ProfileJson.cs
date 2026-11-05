@@ -71,7 +71,7 @@ public static class ProfileJson
         {
             foreach (var property in node.EnumerateObject())
             {
-                if (property.Name is "table" or "colors" && property.Value.ValueKind != JsonValueKind.Object)
+                if (property.Name is "table" or "colors" or "clock" && property.Value.ValueKind != JsonValueKind.Object)
                     throw new JsonException("Invalid table settings.");
                 ValidateTableShapes(property.Value);
             }
@@ -241,20 +241,38 @@ public static class ProfileJson
         private static RgbColor Rgb(string text) =>
             RgbColor.TryParse(text, out var value) ? value : throw new JsonException("Invalid display color.");
     }
+    /// <summary>ADR 0037 clock layout: version 1 and exactly four element slots.</summary>
+    private sealed record ClockSlotDto(string Element, int Line, string Position);
+    private sealed record ClockDto(int Version, ClockSlotDto[] Elements)
+    {
+        public static ClockDto From(ClockLayout value) => new(1,
+            value.Slots.Select(slot => new ClockSlotDto(slot.Element.ToString(), slot.Line, slot.Position.ToString())).ToArray());
+        public ClockLayout ToValue()
+        {
+            if (Version != 1) throw new JsonException("Unsupported clock layout version.");
+            if (Elements is null || Elements.Any(slot => slot is null)) throw new JsonException("Invalid clock layout.");
+            var value = new ClockLayout(Elements.Select(slot =>
+                new ClockSlot(ParseName<ClockElement>(slot.Element), slot.Line, ParseName<ClockPosition>(slot.Position))));
+            try { value.Validate(); }
+            catch (ArgumentException error) { throw new JsonException("Invalid clock layout.", error); }
+            return value;
+        }
+    }
     private sealed record DisplayPayload(string Layout, Typography Time, Typography Date, Typography Weekday,
         Typography Status, bool Use24Hour, bool ShowSeconds, bool ShowDate, bool ShowWeekday, bool ShowStatus,
-        TableDto? Table = null, ColorsDto? Colors = null)
+        TableDto? Table = null, ColorsDto? Colors = null, ClockDto? Clock = null)
     {
         public static DisplayPayload From(DisplayConfiguration value) => new(value.Layout.ToString(),
             Typography.From(value.Time), Typography.From(value.Date), Typography.From(value.Weekday), Typography.From(value.Status),
             value.Use24Hour, value.ShowSeconds, value.ShowDate, value.ShowWeekday, value.ShowStatus, TableDto.From(value.Table),
-            ColorsDto.From(value.Colors));
+            ColorsDto.From(value.Colors), ClockDto.From(value.Clock));
         public DisplayConfiguration ToValue(DisplayPresetReference reference)
         {
             var value = new DisplayConfiguration(reference, ParseName<DisplayLayout>(Layout),
                 Time.ToValue(), Date.ToValue(), Weekday.ToValue(), Status.ToValue(),
                 Use24Hour, ShowSeconds, ShowDate, ShowWeekday, ShowStatus)
             { Table = Table?.ToValue() ?? TableAppearance.Default, Colors = Colors?.ToValue() ?? DisplayColors.Default };
+            if (Clock is not null) value = value with { Clock = Clock.ToValue() };
             value.Validate();
             return value;
         }

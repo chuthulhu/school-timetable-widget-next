@@ -23,6 +23,9 @@ public static class DisplayChoices
     public static IReadOnlyList<DisplayChoice<DisplayFontWeight>> Weights { get; } =
         [new(DisplayFontWeight.Thin, "얇게"), new(DisplayFontWeight.Normal, "보통"),
          new(DisplayFontWeight.Medium, "중간"), new(DisplayFontWeight.Bold, "굵게")];
+    public static IReadOnlyList<DisplayChoice<int>> ClockLines { get; } = [new(1, "1줄"), new(2, "2줄"), new(3, "3줄")];
+    public static IReadOnlyList<DisplayChoice<ClockPosition>> ClockPositions { get; } =
+        [new(ClockPosition.Left, "왼쪽"), new(ClockPosition.Center, "가운데"), new(ClockPosition.Right, "오른쪽")];
     public static IReadOnlyList<DisplayChoice<DisplayFontStyle>> Styles { get; } =
         [new(DisplayFontStyle.Normal, "보통"), new(DisplayFontStyle.Italic, "기울임")];
 }
@@ -170,6 +173,14 @@ public partial class DisplaySettingsWindow : Window
     }
     // Clicking outside closes the popup and keeps the previewed color, like 선택.
     private void ColorPopup_Closed(object? sender, EventArgs e) => ColorAdjust.Finish(confirm: true);
+    private void MoveClockUp_Click(object sender, RoutedEventArgs e)
+    {
+        if (sender is FrameworkElement { DataContext: ClockSlotDraft slot }) Session.MoveClockSlot(slot.Element, -1);
+    }
+    private void MoveClockDown_Click(object sender, RoutedEventArgs e)
+    {
+        if (sender is FrameworkElement { DataContext: ClockSlotDraft slot }) Session.MoveClockSlot(slot.Element, 1);
+    }
     private void Reset_Click(object sender, RoutedEventArgs e) => Session.Reset();
     private void Apply_Click(object sender, RoutedEventArgs e) => Session.TryApply();
     private void Accept_Click(object sender, RoutedEventArgs e) { if (Session.TryAccept()) Close(); }

@@ -1,29 +1,23 @@
 <UserControl x:Class="SchoolTimetableWidget.Desktop.Features.CurrentStatus.CurrentStatusHeaderView"
              xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" FontSize="16">
+    <!-- ADR 0037: the code-behind places these four named elements on up to three lines,
+         each with left, center and right positions, from the display configuration's clock layout. -->
     <Border Padding="16,8">
         <ScrollViewer HorizontalScrollBarVisibility="Auto" VerticalScrollBarVisibility="Disabled"
                       CanContentScroll="False" Focusable="False">
             <Grid x:Name="HeaderLayout">
-                <Grid.ColumnDefinitions>
-                    <ColumnDefinition Width="Auto"/>
-                    <ColumnDefinition Width="Auto"/>
-                    <ColumnDefinition Width="*"/>
-                </Grid.ColumnDefinitions>
-                <Grid.RowDefinitions><RowDefinition Height="*"/></Grid.RowDefinitions>
-                <StackPanel x:Name="DateGroup" Orientation="Horizontal" VerticalAlignment="Center">
-                    <TextBlock x:Name="CurrentDateTextBlock" Text="{Binding CurrentDateText, Mode=OneWay}"
-                               VerticalAlignment="Center" TextWrapping="NoWrap" Typography.NumeralAlignment="Tabular"/>
-                    <TextBlock x:Name="WeekdayTextBlock" Text="{Binding WeekdayText, Mode=OneWay}"
-                               VerticalAlignment="Center" TextWrapping="NoWrap"/>
-                </StackPanel>
-                <StackPanel x:Name="TimeGroup" Grid.Column="1" Orientation="Horizontal" VerticalAlignment="Center">
+                <TextBlock x:Name="CurrentDateTextBlock" Text="{Binding CurrentDateText, Mode=OneWay}"
+                           VerticalAlignment="Center" TextWrapping="NoWrap" Typography.NumeralAlignment="Tabular"/>
+                <TextBlock x:Name="WeekdayTextBlock" Text="{Binding WeekdayText, Mode=OneWay}"
+                           VerticalAlignment="Center" TextWrapping="NoWrap"/>
+                <StackPanel x:Name="TimeGroup" Orientation="Horizontal" VerticalAlignment="Center">
                     <TextBlock x:Name="AmPmTextBlock" Text="{Binding AmPmText, Mode=OneWay}"
                                VerticalAlignment="Center" TextWrapping="NoWrap"/>
                     <TextBlock x:Name="CurrentTimeTextBlock" Text="{Binding CurrentTimeText, Mode=OneWay}"
                                VerticalAlignment="Center" TextWrapping="NoWrap" Typography.NumeralAlignment="Tabular"/>
                 </StackPanel>
-                <TextBlock x:Name="StatusTextBlock" Grid.Column="2" Text="{Binding StatusText, Mode=OneWay}"
+                <TextBlock x:Name="StatusTextBlock" Text="{Binding StatusText, Mode=OneWay}"
                            VerticalAlignment="Center" TextWrapping="NoWrap" TextTrimming="CharacterEllipsis"/>
             </Grid>
         </ScrollViewer>
