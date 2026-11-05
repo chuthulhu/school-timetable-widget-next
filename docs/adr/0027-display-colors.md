@@ -51,7 +51,8 @@ sliders.
   invalid display input. The swatch shows the last valid value.
 
 Amended by [ADR 0034](0034-display-settings-section-layout.md): each color now shares a row with its
-opacity slider, and an invalid box is also reported directly under it.
+opacity slider, and an invalid box is also reported directly under it. [ADR 0035](0035-in-app-color-adjustment.md)
+adds the deferred graphical picker as an in-app color adjustment window.
 
 ## Consequences
 

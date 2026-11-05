@@ -114,13 +114,27 @@
                 </DataTrigger>
             </Style.Triggers>
         </Style>
-        <Style x:Key="Swatch" TargetType="Border">
+        <Style x:Key="SwatchButton" TargetType="Button">
             <Setter Property="Width" Value="34"/>
             <Setter Property="Height" Value="24"/>
-            <Setter Property="CornerRadius" Value="5"/>
-            <Setter Property="BorderBrush" Value="#8A8A8A"/>
-            <Setter Property="BorderThickness" Value="1"/>
+            <Setter Property="MinWidth" Value="0"/>
+            <Setter Property="Margin" Value="0"/>
+            <Setter Property="Cursor" Value="Hand"/>
             <Setter Property="VerticalAlignment" Value="Center"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="Button">
+                        <Border x:Name="Chip" CornerRadius="5" BorderBrush="#8A8A8A" BorderThickness="1" Background="{Binding Swatch}"/>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsMouseOver" Value="True"><Setter TargetName="Chip" Property="BorderBrush" Value="#0F6E66"/></Trigger>
+                            <Trigger Property="IsKeyboardFocused" Value="True">
+                                <Setter TargetName="Chip" Property="BorderBrush" Value="#0F6E66"/>
+                                <Setter TargetName="Chip" Property="BorderThickness" Value="2"/>
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
         </Style>
         <Style x:Key="SectionItem" TargetType="ListBoxItem">
             <Setter Property="Padding" Value="12,9"/>
@@ -266,12 +280,12 @@
                             <Border Style="{StaticResource Card}">
                                 <StackPanel>
                                     <TextBlock Text="배경과 테두리" Style="{StaticResource CardTitle}"/>
-                                    <TextBlock Style="{StaticResource Hint}" Margin="0,0,0,6" Text="불투명도: 왼쪽 0%, 오른쪽 100%"/>
+                                    <TextBlock Style="{StaticResource Hint}" Margin="0,0,0,6" Text="견본을 누르면 색 조정 창이 열립니다. 불투명도: 왼쪽 0%, 오른쪽 100%"/>
                                     <Grid DataContext="{Binding Colors[0]}" Margin="0,4">
                                         <Grid.ColumnDefinitions><ColumnDefinition Width="116"/><ColumnDefinition Width="Auto"/><ColumnDefinition Width="Auto"/><ColumnDefinition Width="*"/><ColumnDefinition Width="48"/></Grid.ColumnDefinitions>
                                         <Grid.RowDefinitions><RowDefinition/><RowDefinition Height="Auto"/></Grid.RowDefinitions>
                                         <TextBlock Text="{Binding Label}" VerticalAlignment="Center"/>
-                                        <Border Grid.Column="1" Style="{StaticResource Swatch}" Background="{Binding Swatch}"/>
+                                        <Button Grid.Column="1" Style="{StaticResource SwatchButton}" Tag="0" Click="Swatch_Click" AutomationProperties.Name="{Binding Label, StringFormat={}{0} 색 조정}" ToolTip="눌러서 색 조정"/>
                                         <TextBox Grid.Column="2" Margin="8,0" Style="{StaticResource HexInput}" Text="{Binding Text, UpdateSourceTrigger=PropertyChanged}" AutomationProperties.Name="{Binding Label}"/>
                                         <Slider x:Name="HeaderOpacitySlider" Grid.Column="3" Minimum="0" Maximum="1" VerticalAlignment="Center"
                                                 Value="{Binding DataContext.HeaderOpacity, RelativeSource={RelativeSource AncestorType=Window}, Mode=TwoWay}" AutomationProperties.Name="머리글 배경 불투명도"/>
@@ -282,7 +296,7 @@
                                         <Grid.ColumnDefinitions><ColumnDefinition Width="116"/><ColumnDefinition Width="Auto"/><ColumnDefinition Width="Auto"/><ColumnDefinition Width="*"/></Grid.ColumnDefinitions>
                                         <Grid.RowDefinitions><RowDefinition/><RowDefinition Height="Auto"/></Grid.RowDefinitions>
                                         <TextBlock Text="{Binding Label}" VerticalAlignment="Center"/>
-                                        <Border Grid.Column="1" Style="{StaticResource Swatch}" Background="{Binding Swatch}"/>
+                                        <Button Grid.Column="1" Style="{StaticResource SwatchButton}" Tag="1" Click="Swatch_Click" AutomationProperties.Name="{Binding Label, StringFormat={}{0} 색 조정}" ToolTip="눌러서 색 조정"/>
                                         <TextBox Grid.Column="2" Margin="8,0" Style="{StaticResource HexInput}" Text="{Binding Text, UpdateSourceTrigger=PropertyChanged}" AutomationProperties.Name="{Binding Label}"/>
                                         <TextBlock Grid.Column="3" Style="{StaticResource Hint}" VerticalAlignment="Center" Text="머리글 배경과 같은 불투명도"/>
                                         <TextBlock Grid.Row="1" Grid.Column="2" Grid.ColumnSpan="2" Margin="8,4,0,0" Style="{StaticResource FieldError}" Text="{Binding ErrorText}"/>
@@ -291,7 +305,7 @@
                                         <Grid.ColumnDefinitions><ColumnDefinition Width="116"/><ColumnDefinition Width="Auto"/><ColumnDefinition Width="Auto"/><ColumnDefinition Width="*"/><ColumnDefinition Width="48"/></Grid.ColumnDefinitions>
                                         <Grid.RowDefinitions><RowDefinition/><RowDefinition Height="Auto"/></Grid.RowDefinitions>
                                         <TextBlock Text="{Binding Label}" VerticalAlignment="Center"/>
-                                        <Border Grid.Column="1" Style="{StaticResource Swatch}" Background="{Binding Swatch}"/>
+                                        <Button Grid.Column="1" Style="{StaticResource SwatchButton}" Tag="2" Click="Swatch_Click" AutomationProperties.Name="{Binding Label, StringFormat={}{0} 색 조정}" ToolTip="눌러서 색 조정"/>
                                         <TextBox Grid.Column="2" Margin="8,0" Style="{StaticResource HexInput}" Text="{Binding Text, UpdateSourceTrigger=PropertyChanged}" AutomationProperties.Name="{Binding Label}"/>
                                         <Slider x:Name="CellOpacitySlider" Grid.Column="3" Minimum="0" Maximum="1" VerticalAlignment="Center"
                                                 Value="{Binding DataContext.CellOpacity, RelativeSource={RelativeSource AncestorType=Window}, Mode=TwoWay}" AutomationProperties.Name="일반 셀 배경 불투명도"/>
@@ -302,7 +316,7 @@
                                         <Grid.ColumnDefinitions><ColumnDefinition Width="116"/><ColumnDefinition Width="Auto"/><ColumnDefinition Width="Auto"/><ColumnDefinition Width="*"/><ColumnDefinition Width="48"/></Grid.ColumnDefinitions>
                                         <Grid.RowDefinitions><RowDefinition/><RowDefinition Height="Auto"/></Grid.RowDefinitions>
                                         <TextBlock Text="{Binding Label}" VerticalAlignment="Center"/>
-                                        <Border Grid.Column="1" Style="{StaticResource Swatch}" Background="{Binding Swatch}"/>
+                                        <Button Grid.Column="1" Style="{StaticResource SwatchButton}" Tag="3" Click="Swatch_Click" AutomationProperties.Name="{Binding Label, StringFormat={}{0} 색 조정}" ToolTip="눌러서 색 조정"/>
                                         <TextBox Grid.Column="2" Margin="8,0" Style="{StaticResource HexInput}" Text="{Binding Text, UpdateSourceTrigger=PropertyChanged}" AutomationProperties.Name="{Binding Label}"/>
                                         <Slider x:Name="CurrentOpacitySlider" Grid.Column="3" Minimum="0" Maximum="1" VerticalAlignment="Center"
                                                 Value="{Binding DataContext.CurrentOpacity, RelativeSource={RelativeSource AncestorType=Window}, Mode=TwoWay}" AutomationProperties.Name="현재 교시 배경 불투명도"/>
@@ -313,7 +327,7 @@
                                         <Grid.ColumnDefinitions><ColumnDefinition Width="116"/><ColumnDefinition Width="Auto"/><ColumnDefinition Width="Auto"/><ColumnDefinition Width="*"/><ColumnDefinition Width="48"/></Grid.ColumnDefinitions>
                                         <Grid.RowDefinitions><RowDefinition/><RowDefinition Height="Auto"/></Grid.RowDefinitions>
                                         <TextBlock Text="{Binding Label}" VerticalAlignment="Center"/>
-                                        <Border Grid.Column="1" Style="{StaticResource Swatch}" Background="{Binding Swatch}"/>
+                                        <Button Grid.Column="1" Style="{StaticResource SwatchButton}" Tag="4" Click="Swatch_Click" AutomationProperties.Name="{Binding Label, StringFormat={}{0} 색 조정}" ToolTip="눌러서 색 조정"/>
                                         <TextBox Grid.Column="2" Margin="8,0" Style="{StaticResource HexInput}" Text="{Binding Text, UpdateSourceTrigger=PropertyChanged}" AutomationProperties.Name="{Binding Label}"/>
                                         <Slider x:Name="BorderOpacitySlider" Grid.Column="3" Minimum="0" Maximum="1" VerticalAlignment="Center"
                                                 Value="{Binding DataContext.BorderOpacity, RelativeSource={RelativeSource AncestorType=Window}, Mode=TwoWay}" AutomationProperties.Name="표 테두리 불투명도"/>
@@ -329,7 +343,7 @@
                                         <Grid.ColumnDefinitions><ColumnDefinition Width="116"/><ColumnDefinition Width="Auto"/><ColumnDefinition Width="Auto"/><ColumnDefinition Width="*"/></Grid.ColumnDefinitions>
                                         <Grid.RowDefinitions><RowDefinition/><RowDefinition Height="Auto"/></Grid.RowDefinitions>
                                         <TextBlock Text="{Binding Label}" VerticalAlignment="Center"/>
-                                        <Border Grid.Column="1" Style="{StaticResource Swatch}" Background="{Binding Swatch}"/>
+                                        <Button Grid.Column="1" Style="{StaticResource SwatchButton}" Tag="5" Click="Swatch_Click" AutomationProperties.Name="{Binding Label, StringFormat={}{0} 색 조정}" ToolTip="눌러서 색 조정"/>
                                         <TextBox Grid.Column="2" Margin="8,0" Style="{StaticResource HexInput}" Text="{Binding Text, UpdateSourceTrigger=PropertyChanged}" AutomationProperties.Name="{Binding Label}"/>
                                         <TextBlock Grid.Column="3" Style="{StaticResource Hint}" VerticalAlignment="Center" Text="글자는 항상 불투명"/>
                                         <TextBlock Grid.Row="1" Grid.Column="2" Grid.ColumnSpan="2" Margin="8,4,0,0" Style="{StaticResource FieldError}" Text="{Binding ErrorText}"/>
@@ -338,7 +352,7 @@
                                         <Grid.ColumnDefinitions><ColumnDefinition Width="116"/><ColumnDefinition Width="Auto"/><ColumnDefinition Width="Auto"/><ColumnDefinition Width="*"/></Grid.ColumnDefinitions>
                                         <Grid.RowDefinitions><RowDefinition/><RowDefinition Height="Auto"/></Grid.RowDefinitions>
                                         <TextBlock Text="{Binding Label}" VerticalAlignment="Center"/>
-                                        <Border Grid.Column="1" Style="{StaticResource Swatch}" Background="{Binding Swatch}"/>
+                                        <Button Grid.Column="1" Style="{StaticResource SwatchButton}" Tag="6" Click="Swatch_Click" AutomationProperties.Name="{Binding Label, StringFormat={}{0} 색 조정}" ToolTip="눌러서 색 조정"/>
                                         <TextBox Grid.Column="2" Margin="8,0" Style="{StaticResource HexInput}" Text="{Binding Text, UpdateSourceTrigger=PropertyChanged}" AutomationProperties.Name="{Binding Label}"/>
                                         <TextBlock Grid.Column="3" Style="{StaticResource Hint}" VerticalAlignment="Center" Text="글자는 항상 불투명"/>
                                         <TextBlock Grid.Row="1" Grid.Column="2" Grid.ColumnSpan="2" Margin="8,4,0,0" Style="{StaticResource FieldError}" Text="{Binding ErrorText}"/>
@@ -347,7 +361,7 @@
                                         <Grid.ColumnDefinitions><ColumnDefinition Width="116"/><ColumnDefinition Width="Auto"/><ColumnDefinition Width="Auto"/><ColumnDefinition Width="*"/></Grid.ColumnDefinitions>
                                         <Grid.RowDefinitions><RowDefinition/><RowDefinition Height="Auto"/></Grid.RowDefinitions>
                                         <TextBlock Text="{Binding Label}" VerticalAlignment="Center"/>
-                                        <Border Grid.Column="1" Style="{StaticResource Swatch}" Background="{Binding Swatch}"/>
+                                        <Button Grid.Column="1" Style="{StaticResource SwatchButton}" Tag="7" Click="Swatch_Click" AutomationProperties.Name="{Binding Label, StringFormat={}{0} 색 조정}" ToolTip="눌러서 색 조정"/>
                                         <TextBox Grid.Column="2" Margin="8,0" Style="{StaticResource HexInput}" Text="{Binding Text, UpdateSourceTrigger=PropertyChanged}" AutomationProperties.Name="{Binding Label}"/>
                                         <TextBlock Grid.Column="3" Style="{StaticResource Hint}" VerticalAlignment="Center" Text="글자는 항상 불투명"/>
                                         <TextBlock Grid.Row="1" Grid.Column="2" Grid.ColumnSpan="2" Margin="8,4,0,0" Style="{StaticResource FieldError}" Text="{Binding ErrorText}"/>
@@ -371,5 +385,10 @@
                 </StackPanel>
             </DockPanel>
         </Border>
+        <!-- ADR 0035: one owned popup; outside click keeps the color, Esc or 취소 restores it. -->
+        <Popup x:Name="ColorPopup" StaysOpen="False" AllowsTransparency="True" Placement="Right" HorizontalOffset="8"
+               PopupAnimation="Fade" Closed="ColorPopup_Closed">
+            <local:ColorAdjustPanel x:Name="ColorAdjust"/>
+        </Popup>
     </Grid>
 </Window>
