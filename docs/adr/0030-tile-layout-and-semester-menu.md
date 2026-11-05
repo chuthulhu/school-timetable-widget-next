@@ -33,6 +33,9 @@ changes and one more:
   checked. Underscores in names are shown literally. The widget body no longer shows the
   semester controls.
 
+Amended by [ADR 0033](0033-unified-widget-context-menu.md): the two right-click menus are now one
+shared menu, and the 학기 submenu leads it. The semester behaviour above is unchanged.
+
 ## Consequences
 
 The active semester name is no longer visible on the widget face. It is shown by the check

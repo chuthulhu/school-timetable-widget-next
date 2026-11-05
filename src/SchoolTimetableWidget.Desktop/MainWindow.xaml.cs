@@ -7,6 +7,7 @@ using System.Windows;
 using SchoolTimetableWidget.Desktop.Features.CurrentStatus;
 using SchoolTimetableWidget.Desktop.Features.Timetable;
 using SchoolTimetableWidget.Desktop.Infrastructure.Windows;
+using SchoolTimetableWidget.Desktop.Features.TrayLifecycle;
 
 namespace SchoolTimetableWidget.Desktop;
 
@@ -34,17 +35,19 @@ public partial class MainWindow : Window
             display.Changed += appearanceChanged;
             Closed += (_, _) => display.Changed -= appearanceChanged;
         }
+        // ADR 0033: one right-click menu for the clock area and the timetable.
+        ContextMenu = Timetable.ContextMenu;
+        // X, Alt+F4 and the menu all hide through the close-to-tray path (ADR 0020); without a tray
+        // lifecycle (unshown tests) the window simply closes.
+        CommandBindings.Add(new CommandBinding(WidgetCommands.Hide, (_, e) => { Close(); e.Handled = true; }));
         StatusHeader.DataContext = headerViewModel;
         Timetable.DataContext = timetableViewModel;
         Timetable.ScheduleEditor = scheduleEditor;
         if (runtime is not null)
         {
-            // Both right-click menus get their own 학기 submenu, after the window items.
-            foreach (var menu in new[] { ContextMenu, Timetable.ContextMenu })
-            {
-                menu.Items.Insert(4, new Features.Semesters.SemesterMenu(runtime.Semesters, this));
-                menu.Items.Insert(5, new System.Windows.Controls.Separator());
-            }
+            // The 학기 submenu leads the shared menu (ADR 0033).
+            ContextMenu.Items.Insert(0, new Features.Semesters.SemesterMenu(runtime.Semesters, this));
+            ContextMenu.Items.Insert(1, new System.Windows.Controls.Separator());
         }
         if (runtime is not null && clock is not null)
         {

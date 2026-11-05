@@ -98,7 +98,7 @@ public class PeriodScheduleViewTests
             var root = (Grid)main.Content;
             var view = (WeeklyTimetableView)main.FindName("Timetable");
             Assert.Same(editor, view.ScheduleEditor);
-            var menu = Assert.Single(view.ContextMenu.Items.OfType<MenuItem>(), item => Equals(item.Header, "일과 시간 편집..."));
+            var menu = Assert.Single(SchoolTimetableWidget.Desktop.Features.WidgetMenu.WidgetContextMenu.AllItems(view.ContextMenu), item => Equals(item.Header, "일과 시간 편집..."));
             Assert.Same(PeriodScheduleCommands.Edit, menu.Command);
             view.ContextMenu.PlacementTarget = view;
             Drain(view);

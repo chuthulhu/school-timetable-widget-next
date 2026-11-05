@@ -1,6 +1,6 @@
 # Project continuity
 
-Tool-independent handoff entry point. Snapshot date: 2026-11-04.
+Tool-independent handoff entry point. Snapshot date: 2026-11-05.
 Read this after [README](../README.md), then follow [Development](DEVELOPMENT.md).
 This repository contains the implementation and authoritative project documentation.
 
@@ -23,12 +23,54 @@ not authoritative and are not needed to build or resume development.
 
 ## Verified implementation baseline
 
+### Unified widget right-click menu — 2026-11-05
+
+[ADR 0033](adr/0033-unified-widget-context-menu.md) replaces the two right-click menus with one shared
+menu, grouped into 학기, 시간표, 일과, 표시 설정, 창 and 데이터. It adds 위치 고정 / 위치 고정 풀기
+(the ADR 0019 movement lock, saved at once) and 위젯 숨기기 (the close-to-tray path). The cell tooltip
+is shortened. No storage format changed. This session could not download the .NET SDK, so nothing
+was built or run locally. Verification must come from the Windows CI job. No native check has been
+performed.
+
+### Approved UI direction, not yet implemented — 2026-11-05
+
+The user reviewed interactive mock-ups and approved the following. Each item still needs its own
+ADR and contract update before implementation (AGENTS.md rules 4–5).
+
+- **Display settings window: left-list layout.**
+  - Sections in a left list: 스타일, 시계, 시간표 글꼴, 색상·투명도.
+  - 스타일 separates presets, which save everything, from themes, which load colors and
+    opacity only. Theme buttons show color strips. Preset management moves behind 관리 ▾.
+  - 색상·투명도 puts each target on one row: swatch, `#RRGGBB` and its opacity slider with a %
+    readout. Invalid input is reported next to its field.
+- **In-app color adjustment window.**
+  - Clicking a swatch opens an owned in-app popup, not the Windows color dialog.
+  - It holds a hue bar, a saturation/brightness square (pointer and arrow keys), the `#RRGGBB`
+    box, a before/after sample, 24 recommended colors and recently used colors.
+  - Changes preview at once. 선택 keeps the color; 취소 restores the previous one. Neither saves:
+    the settings window's 적용/확인 still does.
+  - A low text/background contrast only warns: under 4.5:1 cautions, under 3:1 warns. It never
+    blocks. The warning notes that a background below 100% opacity makes real contrast depend
+    on the desktop.
+  - No alpha input, so R11 holds. A screen eyedropper is deferred.
+- **Clock-area layout.**
+  - Each element (날짜, 요일, 시간, 상태) gets its own show/hide, position
+    (왼쪽, 가운데 or 오른쪽) and order. Elements in the same position follow list order.
+  - One-line and two-line arrangements must both be possible.
+  - When space runs out, the status shrinks first, then the weekday, then the date. The time is
+    never truncated.
+  - The default must reproduce today's look: everything left-aligned, in the order 날짜, 요일,
+    시간, 상태.
+  - This adds display configuration and so extends the profile, preset and backup payloads. It
+    needs a new ADR following the ADR 0027 optional-extension pattern.
+
 ### Releases — 2026-11-04
 
 | Release | Commit | Notes |
 | --- | --- | --- |
 | [v0.1.0](https://github.com/chuthulhu/school-timetable-widget-next/releases/tag/v0.1.0) | `bd6c7c464e3729543a967f73d73383e562c77b36` | First release; includes the installer (ADR 0029), automatic updates (ADR 0032) and all features merged up to PR #11 |
 | v0.1.1 | the commit carrying this entry | Released right after v0.1.0 to exercise the first release-to-release automatic update |
+| v0.2.0 | the merge commit of PR #13 | Unified right-click menu with 위치 고정 and 위젯 숨기기 (ADR 0033); released at the user's request before the native checks listed in ADR 0033 |
 
 **v0.1.0 assets.** The release carries six files: `SchoolTimetableWidgetNext-win-Setup.exe`
 (about 83 MB, the file users install), `SchoolTimetableWidgetNext-win-Portable.zip`,

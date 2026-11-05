@@ -6,7 +6,7 @@ ordering confirmation; [ADR 0009](adr/0009-editable-base-period-schedule.md).
 
 ## Implemented behavior
 
-The timetable context menu opens `일과 시간 편집...`. Seven read-only period numbers
+The right-click menu opens `일과 › 일과 시간 편집...` ([ADR 0033](adr/0033-unified-widget-context-menu.md)). Seven read-only period numbers
 have separate start/end text inputs in exact 24-hour HH:mm. Draft can be empty or
 invalid. No runtime mutation occurs during editing. Apply parses/validates the entire
 candidate; the first invalid field or adjacent period pair gets a Korean explanation

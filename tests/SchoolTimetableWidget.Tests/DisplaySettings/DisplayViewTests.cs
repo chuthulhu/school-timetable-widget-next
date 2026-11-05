@@ -188,7 +188,7 @@ public class DisplayViewTests
             var table = (WeeklyTimetableView)window.FindName("Timetable");
             Assert.True(DisplaySettingsCommands.Open.CanExecute(null, table));
             Assert.True(DisplaySettingsCommands.Open.CanExecute(null, (CurrentStatusHeaderView)window.FindName("StatusHeader")));
-            Assert.Contains(table.ContextMenu.Items.OfType<MenuItem>(), m => m.Command == DisplaySettingsCommands.Open);
+            Assert.Contains(SchoolTimetableWidget.Desktop.Features.WidgetMenu.WidgetContextMenu.AllItems(table.ContextMenu), m => m.Command == DisplaySettingsCommands.Open);
             var arrow = (Button)table.FindName("PreviousWeekButton");
             Assert.Equal("‹", arrow.Content); Assert.NotNull(arrow.Template); Assert.NotNull(arrow.Style);
             var next = (Button)table.FindName("NextWeekButton"); Assert.Equal("›", next.Content);

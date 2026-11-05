@@ -999,7 +999,7 @@ Automatic content growth, temporary size caps and upward screen fit do not overw
 Content shrink returns to preferred bounds where possible. Remember a best-effort monitor hint;
 missing monitor falls back to primary and clamps within current work area. Negative virtual
 coordinates and current monitor DPI are supported. No numeric Settings UI is added.
-The context-menu reset affects only window intent. Invalid local state uses safe defaults
+The context-menu reset (창 › 창 위치·크기 초기화, [ADR 0033](adr/0033-unified-widget-context-menu.md)) affects only window intent. Invalid local state uses safe defaults
 without profile degradation. See [Window Placement](WINDOW-PLACEMENT.md) for evidence status.
 
 ## Tray lifecycle contract — 2026-09-16
@@ -1034,7 +1034,7 @@ GUID identifies a user-named semester containing its base 35 cells, seven period
 date timetable/period overrides. Names are plain labels, trimmed on input, nonblank, at most
 80 UTF-16 code units and unique by ordinal case-insensitive comparison. No dates or auto-selection.
 
-A right-click 학기 submenu ([ADR 0030](adr/0030-tile-layout-and-semester-menu.md); formerly a compact main selector) explicitly switches after successful whole-profile persistence. Viewed
+A right-click 학기 submenu ([ADR 0030](adr/0030-tile-layout-and-semester-menu.md); formerly a compact main selector; first item of the single widget menu since [ADR 0033](adr/0033-unified-widget-context-menu.md)) explicitly switches after successful whole-profile persistence. Viewed
 week and global style remain unchanged; actual Application Clock today resolves the active
 semester for status/countdown/highlight. Editors pin semester ID plus source/date/slot and reject
 stale targets. Bulk import is captured-semester Base-only and identifies the target in preview.
@@ -1094,6 +1094,7 @@ native acceptance. This evidence update does not change the approved behavior be
   A one-alpha table hit surface preserves blank-cell input even with zero-alpha configurable
   brushes (interactive table composite alpha has a 1/255 floor); unused fully transparent main
   areas retain native transparent-area behavior.
+- Right-click **위치 고정** / **위치 고정 풀기** ([ADR 0033](adr/0033-unified-widget-context-menu.md)) toggles the same movement lock and saves it at once; a failed save keeps the previous lock and warns.
 - Right-click **창 설정...** edits preferred width/height in DIPs and movement lock. Apply persists
   before changing intent; failure keeps the previous preference and retryable input. Cancel/X
   discards unapplied fields. Geometry reset retains movement lock. Current content, DPI and taskbar

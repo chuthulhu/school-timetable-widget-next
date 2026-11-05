@@ -64,8 +64,8 @@ public class ProfileBackupViewTests
         Assert.Equal(recovery, BackupCommands.Recover.CanExecute(null, window));
         Assert.False(BackupCommands.Backup.CanExecute(null, window));
         Assert.Equal(recovery ? Visibility.Visible : Visibility.Collapsed, ((Button)window.FindName("RecoveryButton")).Visibility);
-        Assert.Contains(window.ContextMenu.Items.OfType<MenuItem>(), i => Equals(i.Header, "데이터 백업..."));
-        Assert.Contains(window.ContextMenu.Items.OfType<MenuItem>(), i => Equals(i.Header, "데이터 복원..."));
+        Assert.Contains(SchoolTimetableWidget.Desktop.Features.WidgetMenu.WidgetContextMenu.AllItems(window.ContextMenu), i => i.Command == BackupCommands.Backup);
+        Assert.Contains(SchoolTimetableWidget.Desktop.Features.WidgetMenu.WidgetContextMenu.AllItems(window.ContextMenu), i => i.Command == BackupCommands.Restore);
         window.Close();
     });
     [Theory]

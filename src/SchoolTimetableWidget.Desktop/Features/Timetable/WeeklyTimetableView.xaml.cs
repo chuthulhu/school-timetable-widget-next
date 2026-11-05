@@ -7,7 +7,9 @@ using SchoolTimetableWidget.Core.Features.TimetableImport;
 using SchoolTimetableWidget.Desktop.Features.TimetableImport;
 using System.Windows;
 using System.Windows.Controls;
+using System.Windows.Data;
 using SchoolTimetableWidget.Desktop.Infrastructure.Windows;
+using SchoolTimetableWidget.Desktop.Features.WidgetMenu;
 
 namespace SchoolTimetableWidget.Desktop.Features.Timetable;
 
@@ -37,7 +39,14 @@ public partial class WeeklyTimetableView : UserControl
             ConfigureAppearance();
         }
     }
-    public WeeklyTimetableView() { InitializeComponent(); ConfigureAppearance(); }
+    public WeeklyTimetableView()
+    {
+        InitializeComponent();
+        // One menu instance also opens from the clock area (ADR 0033), so items target this view
+        // instead of the placement target. Window-level commands bubble from here to MainWindow.
+        WidgetContextMenu.SetCommandTargets(ContextMenu, this);
+        ConfigureAppearance();
+    }
     private void FontsChanged(object? sender, EventArgs e) => ConfigureAppearance();
     private void ConfigureAppearance()
     {
@@ -71,10 +80,21 @@ public partial class WeeklyTimetableView : UserControl
 
     public DateOverrideEditor? DateEditor { get; set; }
     public Func<DateOnly?>? GetCurrentDate { get; set; }
-    public LunchPresentationOption? LunchOption { get; set; }
+    private LunchPresentationOption? _lunchOption;
+    public LunchPresentationOption? LunchOption
+    {
+        get => _lunchOption;
+        set
+        {
+            _lunchOption = value;
+            if (value is null) BindingOperations.ClearBinding(LunchMenuItem, MenuItem.IsCheckedProperty);
+            else LunchMenuItem.SetBinding(MenuItem.IsCheckedProperty,
+                new Binding(nameof(LunchPresentationOption.Enabled)) { Source = value, Mode = BindingMode.OneWay });
+        }
+    }
 
     private void DateOverride_CanExecute(object sender, CanExecuteRoutedEventArgs e)
-    { e.CanExecute = DateEditor is not null && GetCurrentDate?.Invoke() is not null; e.Handled = true; }
+    { e.CanExecute = IsEnabled && DateEditor is not null && GetCurrentDate?.Invoke() is not null; e.Handled = true; }
     private void DateOverride_Executed(object sender, ExecutedRoutedEventArgs e)
     {
         e.Handled = true;
@@ -82,7 +102,7 @@ public partial class WeeklyTimetableView : UserControl
             new DateOverrideEditorWindow(DateEditor, date) { Owner = owner }.ShowDialog();
     }
     private void Lunch_CanExecute(object sender, CanExecuteRoutedEventArgs e)
-    { e.CanExecute = LunchOption is not null; e.Handled = true; }
+    { e.CanExecute = IsEnabled && LunchOption is not null; e.Handled = true; }
     private void Lunch_Executed(object sender, ExecutedRoutedEventArgs e)
     {
         e.Handled = true;
@@ -98,7 +118,7 @@ public partial class WeeklyTimetableView : UserControl
 
     private void PeriodSchedule_CanExecute(object sender, CanExecuteRoutedEventArgs e)
     {
-        e.CanExecute = ScheduleEditor is not null;
+        e.CanExecute = IsEnabled && ScheduleEditor is not null;
         e.Handled = true;
     }
     private void PeriodSchedule_Executed(object sender, ExecutedRoutedEventArgs e)
@@ -108,7 +128,7 @@ public partial class WeeklyTimetableView : UserControl
     }
     private void Import_CanExecute(object sender, CanExecuteRoutedEventArgs e)
     {
-        e.CanExecute = DataContext is WeeklyTimetableViewModel { Editor.ActiveSession: null };
+        e.CanExecute = IsEnabled && DataContext is WeeklyTimetableViewModel { Editor.ActiveSession: null };
         e.Handled = true;
     }
     private void SchoolImport_Executed(object sender, ExecutedRoutedEventArgs e) => OpenImport(TimetableImportMode.School, e);
@@ -118,6 +138,11 @@ public partial class WeeklyTimetableView : UserControl
         e.Handled = true;
         if (DataContext is WeeklyTimetableViewModel model && Window.GetWindow(this) is { IsVisible: true } owner)
             ImportActions.ShowImport(owner, model, mode);
+    }
+    private void CopyTemplate_CanExecute(object sender, CanExecuteRoutedEventArgs e)
+    {
+        e.CanExecute = IsEnabled;
+        e.Handled = true;
     }
     private void CopyTemplate_Executed(object sender, ExecutedRoutedEventArgs e)
     {
