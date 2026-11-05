@@ -64,6 +64,34 @@ ADR and contract update before implementation (AGENTS.md rules 4–5).
   - This adds display configuration and so extends the profile, preset and backup payloads. It
     needs a new ADR following the ADR 0027 optional-extension pattern.
 
+### Releases — 2026-11-04
+
+| Release | Commit | Notes |
+| --- | --- | --- |
+| [v0.1.0](https://github.com/chuthulhu/school-timetable-widget-next/releases/tag/v0.1.0) | `bd6c7c464e3729543a967f73d73383e562c77b36` | First release; includes the installer (ADR 0029), automatic updates (ADR 0032) and all features merged up to PR #11 |
+| v0.1.1 | the commit carrying this entry | Released right after v0.1.0 to exercise the first release-to-release automatic update |
+
+**v0.1.0 assets.** The release carries six files: `SchoolTimetableWidgetNext-win-Setup.exe`
+(about 83 MB, the file users install), `SchoolTimetableWidgetNext-win-Portable.zip`,
+`SchoolTimetableWidgetNext-0.1.0-full.nupkg`, and the update feed `releases.win.json`,
+`RELEASES` and `assets.win.json`.
+
+**How v0.1.0 was produced.** It came from the manual `installer.yml` run 41809023267 with
+`release_version=0.1.0`. The installer job succeeded on the first attempt. The release job
+then hit GitHub API errors three times between 09:41 and 09:44 UTC: HTTP 500, then 502, then
+500. The second attempt created the tag before failing. After a 20-minute pause, the fourth
+attempt succeeded.
+
+**How to release.** Agent sessions cannot push tags. Release by running `installer.yml` on
+`main` with `release_version`, or by publishing a release in the GitHub UI (ADR 0029). Every
+release must be a plain SemVer stable version, so the updater offers it. A failed release job
+that already created the tag can be re-run as is; `gh release create` reuses the existing tag.
+
+**Not yet verified.**
+- No real-PC install of v0.1.0, and no update from v0.1.0 to a later release, has been
+  observed.
+- Code signing is absent, so SmartScreen warns on first run.
+
 ### Automatic updates — 2026-11-04
 
 [ADR 0032](adr/0032-automatic-updates.md) lets an installed copy update from stable GitHub
