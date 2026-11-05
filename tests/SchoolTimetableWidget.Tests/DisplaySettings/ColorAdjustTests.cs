@@ -179,6 +179,9 @@ public class ColorAdjustTests
                 Assert.NotNull(hit);
                 Assert.True(ReferenceEquals(hit, target) || target.IsAncestorOf(hit!), $"{target.Name} missed at {point}");
             }
+        // Neither control may be clipped by the panel's content width.
+        foreach (var target in new FrameworkElement[] { panel.HueBar, panel.SaturationValuePad })
+            Assert.True(LayoutInformation.GetLayoutSlot(target).Width >= target.Width, $"{target.Name} is clipped");
         var readout = (TextBlock)panel.FindName("HsvReadout");
         Assert.Equal(TextWrapping.NoWrap, readout.TextWrapping); // no mid-word wrap beside the hex box
     });
